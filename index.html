@@ -131,6 +131,8 @@ section { padding-block: 36px; border-top: 1px solid var(--line); }
 .col { display: grid; gap: 8px; align-content: start; }
 .col .mark { width: 34px; height: 6px; border-radius: 3px; }
 .col p { color: var(--muted); }
+.col h3 a { text-decoration-color: var(--line); }
+.col h3 a:hover { text-decoration-color: currentColor; }
 .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
 ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 .status h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -162,6 +164,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
     <a href="#ideas">Three ideas</a>
     <a href="#status">What is built</a>
     <a href="#run">How it is run</a>
+    <a href="#notes">Engineering notes</a>
   </nav>
 </header>
 
@@ -279,9 +282,33 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   </div>
 </section>
 
+<section id="notes">
+  <h2>Engineering notes</h2>
+  <div class="prose">
+    <p>FRAD comes out of problems met in production. The author writes them up on a personal engineering blog; three posts cover ground this page only summarises.</p>
+  </div>
+  <div class="cols" style="margin-top: 18px">
+    <div class="col">
+      <div class="mark" style="background: var(--ceph)"></div>
+      <h3><a href="https://chienpanglee.github.io/posts/ceph-orchestration-pitfalls/">Ceph orchestration pitfalls</a></h3>
+      <p>Moving Ceph from native daemons to cephadm, and making it work air-gapped: the registries, mirrors and defaults that are hard-coded along the way.</p>
+    </div>
+    <div class="col">
+      <div class="mark" style="background: var(--ctl)"></div>
+      <h3><a href="https://chienpanglee.github.io/posts/Dont-want-to-miss-a-ball-with-OpenCVE/">Don't want to miss a ball with OpenCVE</a></h3>
+      <p>A self-hosted CVE feed built into a CI pipeline, so security updates are noticed in time. The same need drives FRAD's update channels.</p>
+    </div>
+    <div class="col">
+      <div class="mark" style="background: var(--zfs)"></div>
+      <h3><a href="https://chienpanglee.github.io/posts/small-footprint-of-a-power-editor-in-initramfs/">A power editor in initramfs</a></h3>
+      <p>Fitting a real editor into a boot-time filesystem where every megabyte counts. The kind of appliance-image work FRAD's installer is made of.</p>
+    </div>
+  </div>
+</section>
+
 <footer>
   <span>FRAD is closed-source. This page is its public face.</span>
-  <span>Design decisions live in the project's architecture decision records.</span>
+  <span>Design decisions live in the project's architecture decision records. More on the <a href="https://chienpanglee.github.io/">author's blog</a>.</span>
 </footer>
 </div>
 
