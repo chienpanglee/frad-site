@@ -65,7 +65,7 @@ nav a:hover { color: var(--fg); }
 /* The stage */
 .stage { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr); gap: 18px; margin-block: 22px 56px; }
 .scene, .narr { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
-.scene { padding: 10px; }
+.scene { padding: 10px; background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--ceph) 7%, var(--panel)), var(--panel) 70%); }
 .scene svg { width: 100%; height: auto; display: block; }
 .narr { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -82,47 +82,76 @@ nav a:hover { color: var(--fg); }
 .ctrl button.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .ctrl button:disabled { opacity: 0.4; cursor: default; }
 .progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
-.progress i { display: block; height: 100%; background: var(--ctl); width: 0; transition: width 0.3s; }
+.progress i { display: block; height: 100%; width: 0; transition: width 0.3s; }
 
 /* SVG parts */
 svg text { font-family: var(--body); fill: var(--fg); }
 svg .mono { font-family: var(--mono); }
 svg .muted { fill: var(--muted); }
-svg .node { transition: opacity 0.5s ease, transform 0.6s cubic-bezier(.2,.8,.2,1); }
-svg .node.enter { opacity: 0; transform: translateY(18px); }
-svg .node.leaving { opacity: 0; transform: translateY(26px); }
-svg .node .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; transition: stroke 0.4s; }
-svg .node.ctl .box { stroke: var(--ctl); stroke-width: 2.5; }
-svg .node .mon { opacity: 0; transition: opacity 0.4s; }
-svg .node.ctl .mon { opacity: 1; }
-svg .disk { fill: transparent; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 3 2; transition: fill 0.45s, stroke 0.45s; }
+svg .dots { fill: var(--line); }
+.scene svg { overflow: visible; }
+svg .node { transition: opacity 0.5s ease, transform 0.7s cubic-bezier(.2,.8,.2,1); }
+svg .node .inner { transition: transform 0.7s cubic-bezier(.2,.8,.2,1), opacity 0.5s ease; }
+svg .node.enter .inner { opacity: 0; transform: translate(40px, 0) scale(0.96); }
+svg .node.leaving .inner { opacity: 0; transform: translate(0, 34px) scale(0.96); }
+svg .node .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; transition: stroke 0.4s, filter 0.5s; filter: drop-shadow(0 8px 16px color-mix(in srgb, var(--fg) 9%, transparent)); }
+svg .node .cap { fill: color-mix(in srgb, var(--fg) 4%, var(--panel)); }
+svg .node.ctl .box { stroke: var(--ctl); stroke-width: 2.5; filter: drop-shadow(0 10px 20px color-mix(in srgb, var(--ctl) 30%, transparent)); }
+svg .node .mon { opacity: 0; transform: translateY(-8px); transition: opacity 0.4s, transform 0.5s cubic-bezier(.2,.8,.2,1); }
+svg .node.ctl .mon { opacity: 1; transform: none; }
+svg .disk { fill: transparent; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 3 2; transition: fill 0.5s, stroke 0.5s; transform-box: fill-box; transform-origin: center; }
 svg .disk.ceph { fill: var(--ceph); stroke: var(--ceph); stroke-dasharray: none; }
 svg .disk.zfs { fill: var(--zfs); stroke: var(--zfs); stroke-dasharray: none; }
-svg .disk.hot { stroke: var(--fg); stroke-width: 2.5; }
-svg .bus { stroke: var(--ceph); stroke-width: 2; opacity: 0; transition: opacity 0.5s; }
+svg .disk.hot { stroke: var(--fg); stroke-width: 2.5; animation: pop 0.7s cubic-bezier(.2,.8,.2,1); }
+svg .hl { fill: #fff; opacity: 0; transition: opacity 0.5s; pointer-events: none; }
+svg .hl.on { opacity: 0.28; }
+@keyframes pop { 0% { transform: scale(1); } 35% { transform: scale(1.16); } 100% { transform: scale(1); } }
+svg .bus { fill: none; stroke: var(--ceph); stroke-width: 2.5; opacity: 0; transition: opacity 0.5s, d 0.7s cubic-bezier(.2,.8,.2,1); }
 svg .bus.on { opacity: 1; }
-svg .tick { stroke: var(--ceph); stroke-width: 2; }
-svg .vip { opacity: 0; transition: opacity 0.5s; }
-svg .vip.on { opacity: 1; }
-svg .vip rect { fill: var(--ctl); }
+svg .flow { fill: none; stroke: color-mix(in srgb, var(--ceph) 45%, var(--panel)); stroke-width: 2.5; stroke-dasharray: 5 15; stroke-linecap: round; animation: flow 1.4s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -20; } }
+svg .busLabel { opacity: 0; transition: opacity 0.5s; }
+svg .busLabel.on { opacity: 1; }
+svg .tick { stroke: var(--ceph); stroke-width: 2; transition: opacity 0.5s; }
+svg .tick.enter, svg .tick.leaving { opacity: 0; }
+svg .vip { opacity: 0; transform: translateY(8px); transition: opacity 0.5s, transform 0.6s cubic-bezier(.2,.8,.2,1); }
+svg .vip.on { opacity: 1; transform: none; }
+svg .vip .pill { fill: var(--ctl); filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--ctl) 40%, transparent)); }
+svg .vip .halo { fill: none; stroke: var(--ctl); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: halo 2.6s ease-out infinite; }
+@keyframes halo { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.18, 1.7); opacity: 0; } }
 svg .vip text { fill: #fff; }
 svg .vip line { stroke: var(--ctl); stroke-width: 1.5; stroke-dasharray: 4 3; }
-svg .svc { opacity: 0; transition: opacity 0.5s; }
-svg .svc.on { opacity: 1; }
+svg .svc { opacity: 0; transform: translateY(-10px); transition: opacity 0.5s, transform 0.5s cubic-bezier(.2,.8,.2,1); }
+svg .svc.on { opacity: 1; transform: none; }
 svg .svc rect { fill: color-mix(in srgb, var(--ceph) 14%, var(--panel)); stroke: var(--ceph); }
-svg .fb { opacity: 0; transition: opacity 0.4s; }
-svg .fb.on { opacity: 1; }
-svg .fb rect { fill: var(--fg); }
-svg .fb text { fill: var(--bg); }
-svg .upd { opacity: 0; transition: opacity 0.5s; pointer-events: none; }
-svg .upd.on { opacity: 1; }
-svg .upd .pane { fill: var(--panel); stroke: var(--line); }
-svg .upd .be { fill: color-mix(in srgb, var(--fg) 5%, var(--panel)); stroke: var(--line); stroke-width: 1.5; transition: stroke 0.4s, fill 0.4s; }
-svg .upd .be.run { stroke: var(--ok); stroke-width: 2.5; }
+svg .svc .led { fill: var(--ok); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: 0.35; } }
+svg .fb { opacity: 0; transform: translateX(18px); transition: opacity 0.45s, transform 0.55s cubic-bezier(.2,.8,.2,1); }
+svg .fb.on { opacity: 1; transform: none; }
+svg .fb .screen { fill: #0f171d; stroke: #2a3a45; filter: drop-shadow(0 10px 22px color-mix(in srgb, var(--fg) 20%, transparent)); }
+svg .fb .bar { fill: #1b2731; }
+svg .fb text { fill: #d6e2ea; }
+svg .fb text.apply { fill: #7fe0a0; }
+svg .fb .cursor { fill: #7fe0a0; animation: blink 1s steps(1) infinite; }
+svg .fb .lead { stroke: var(--fg); stroke-width: 1.5; }
+svg .upd { pointer-events: none; }
+svg .upd .pane-g { transition: opacity 0.45s, transform 0.5s cubic-bezier(.2,.8,.2,1); }
+svg .upd .pane-g.enter { opacity: 0; transform: translateY(12px); }
+svg .upd .pane-g.out { opacity: 0; transform: translateY(-12px); }
+svg .upd .pane { fill: var(--panel); stroke: var(--line); filter: drop-shadow(0 10px 24px color-mix(in srgb, var(--fg) 10%, transparent)); }
+svg .upd .be { fill: color-mix(in srgb, var(--fg) 5%, var(--panel)); stroke: var(--line); stroke-width: 1.5; }
+svg .upd .be.run { stroke: var(--ok); stroke-width: 2.5; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--ok) 35%, transparent)); }
 svg .upd .be.bad { stroke: var(--warn); stroke-dasharray: 4 3; }
 svg .upd .frbe { fill: color-mix(in srgb, var(--zfs) 16%, var(--panel)); stroke: var(--zfs); stroke-width: 1.5; }
 svg .upd .lane { stroke: var(--muted); stroke-width: 1.5; }
-svg .dimmed { opacity: 0.28; }
+svg .upd .row { opacity: 0; transform: translateY(8px); animation: rise 0.5s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes rise { to { opacity: 1; transform: none; } }
+svg .dimmed { opacity: 0.22; }
+.narr .fade { animation: fadeup 0.45s cubic-bezier(.2,.8,.2,1); }
+@keyframes fadeup { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.stage { --accent: var(--ctl); }
+.progress i { background: var(--accent); }
+.narr .stepno #chapname { color: var(--accent); font-weight: 600; }
 .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); padding: 8px 6px 2px; }
 .legend span::before { content: ""; display: inline-block; width: 10px; height: 14px; border-radius: 2px; margin-right: 6px; vertical-align: -2px; }
 .legend .l-ceph::before { background: var(--ceph); }
@@ -155,7 +184,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   .cols, .two { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
-  svg *, .progress i { transition: none !important; }
+  svg *, .progress i, .narr .fade { transition: none !important; animation: none !important; }
 }
 </style>
 </head>
@@ -182,14 +211,19 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
 <div class="stage" id="story">
   <div class="scene">
     <svg id="svg" viewBox="0 0 960 470" role="img" aria-label="Animated FRAD cluster: nodes, disks, control role, storage pools and boot environments">
+      <defs>
+        <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle class="dots" cx="1" cy="1" r="1"></circle></pattern>
+      </defs>
+      <rect width="960" height="470" fill="url(#dots)" opacity="0.7"></rect>
       <g id="svc" class="svc">
-        <rect x="40" y="18" width="330" height="34" rx="6"></rect>
-        <text x="56" y="40" font-size="13">Live on the cluster:</text>
-        <text x="178" y="40" font-size="13" class="mono">CephFS · S3 · Dashboard</text>
+        <rect x="40" y="18" width="346" height="34" rx="17"></rect>
+        <circle class="led" cx="60" cy="35" r="4"></circle>
+        <text x="72" y="40" font-size="13">Live on the cluster:</text>
+        <text x="194" y="40" font-size="13" class="mono">CephFS · S3 · Dashboard</text>
       </g>
       <g id="vip" class="vip"></g>
-      <line id="bus" class="bus" x1="60" y1="130" x2="900" y2="130"></line>
-      <text id="busLabel" class="bus muted" x="900" y="122" font-size="11" text-anchor="end">cluster network · Ceph</text>
+      <g id="busg" class="bus"><path id="bus" class="bus on" d="M 480 130 H 480"></path><path id="flow" class="flow" d="M 480 130 H 480"></path></g>
+      <text id="busLabel" class="busLabel muted" x="900" y="122" font-size="11" text-anchor="end">cluster network · Ceph</text>
       <g id="ticks"></g>
       <g id="nodes"></g>
       <g id="fb" class="fb"></g>
@@ -401,24 +435,55 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function nodeX(idx) { return X0 + idx * GAP; }
+  var MARK = 'M50 13a37 37 0 1 1 0 74a37 37 0 1 1 0-74';
+
+  function miniMark(parent, x, y, sc) {
+    var g = el('g', { transform: 'translate(' + x + ' ' + y + ') scale(' + sc + ')' }, parent);
+    el('circle', { cx: 50, cy: 50, r: 37, fill: 'none', stroke: 'var(--ceph)', 'stroke-width': 9 }, g);
+    for (var k = 0; k < 5; k++) {
+      var a = (-90 + k * 72) * Math.PI / 180, px = 50 + 37 * Math.cos(a), py = 50 + 37 * Math.sin(a);
+      el('line', { x1: 50, y1: 50, x2: px.toFixed(1), y2: py.toFixed(1), stroke: 'var(--ceph)', 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+      el('circle', { cx: px.toFixed(1), cy: py.toFixed(1), r: 9, fill: 'var(--ceph)' }, g);
+    }
+    el('circle', { cx: 50, cy: 50, r: 14, fill: 'var(--zfs)' }, g);
+  }
 
   function buildNode(n) {
     var g = el('g', { 'class': 'node enter', 'data-id': n.id }, gNodes);
-    el('rect', { 'class': 'box', x: 0, y: 0, width: NODE_W, height: NODE_H, rx: 8 }, g);
-    txt(g, 12, 24, n.id, { 'class': 'mono', 'font-size': 15, 'font-weight': 600 });
-    var mon = el('g', { 'class': 'mon' }, g);
-    el('rect', { x: 78, y: 10, width: 42, height: 18, rx: 4, fill: 'var(--ctl)' }, mon);
-    txt(mon, 99, 23, 'control', { 'font-size': 10, 'text-anchor': 'middle', fill: '#fff' });
-    txt(g, 12, 46, 'FRAD OS · root on ZFS', { 'class': 'muted', 'font-size': 10.5 });
-    el('line', { x1: 12, y1: 56, x2: NODE_W - 12, y2: 56, stroke: 'var(--line)' }, g);
-    txt(g, 12, 76, 'disks', { 'class': 'muted', 'font-size': 10.5 });
+    var in_ = el('g', { 'class': 'inner' }, g);
+    el('rect', { 'class': 'box', x: 0, y: 0, width: NODE_W, height: NODE_H, rx: 10 }, in_);
+    el('path', { 'class': 'cap', d: 'M10 0.75H' + (NODE_W - 10) + 'a9.25 9.25 0 0 1 9.25 9.25V34H0.75V10A9.25 9.25 0 0 1 10 0.75Z' }, in_);
+    miniMark(in_, 11, 10, 0.14);
+    txt(in_, 30, 24, n.id, { 'class': 'mono', 'font-size': 15, 'font-weight': 600 });
+    var mon = el('g', { 'class': 'mon' }, in_);
+    el('rect', { x: 76, y: 9, width: 44, height: 18, rx: 9, fill: 'var(--ctl)' }, mon);
+    txt(mon, 98, 22, 'control', { 'font-size': 10, 'text-anchor': 'middle', fill: '#fff', 'font-weight': 600 });
+    txt(in_, 12, 52, 'FRAD OS · root on ZFS', { 'class': 'muted', 'font-size': 10.5 });
+    txt(in_, 12, 76, 'disks', { 'class': 'muted', 'font-size': 10.5 });
     for (var i = 0; i < 4; i++) {
-      el('rect', { 'class': 'disk', 'data-i': i, x: 12 + i * 27, y: 86, width: 22, height: 56, rx: 3 }, g);
+      el('rect', { 'class': 'disk', 'data-i': i, x: 12 + i * 27, y: 86, width: 22, height: 56, rx: 4 }, in_);
+      el('rect', { 'class': 'hl', 'data-i': i, x: 16 + i * 27, y: 92, width: 5, height: 44, rx: 2.5 }, in_);
     }
-    txt(g, 12, 164, 'sda  sdb  sdc  sdd', { 'class': 'mono muted', 'font-size': 9.5 });
-    txt(g, 12, 180, '', { 'class': 'muted lbl', 'font-size': 10.5 });
+    txt(in_, 12, 164, 'sda  sdb  sdc  sdd', { 'class': 'mono muted', 'font-size': 9.5 });
+    txt(in_, 12, 180, '', { 'class': 'muted lbl', 'font-size': 10.5 });
     return g;
   }
+
+  function settle(g, cls) {
+    // A forced style flush, not requestAnimationFrame: rAF does not run in hidden tabs and the element would stay invisible.
+    void g.getBoundingClientRect();
+    g.classList.remove(cls);
+  }
+  function retire(g, ms) {
+    g.classList.add('leaving');
+    setTimeout(function () { if (g.parentNode) g.parentNode.removeChild(g); }, reduced ? 0 : ms);
+  }
+  function isHot(s, id, d) {
+    if (!s.hot || s.hot.indexOf(id + ':') !== 0) return false;
+    return s.hot.split(':')[1].split(',').indexOf(String(d)) >= 0;
+  }
+
+  var fbBuilt = false, curUpd = null;
 
   function render(i) {
     var s = stateAt(i);
@@ -430,10 +495,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
     s.nodes.forEach(function (n, idx) { want[n.id] = idx; });
     Array.prototype.slice.call(gNodes.children).forEach(function (g) {
       var id = g.getAttribute('data-id');
-      if (!(id in want) && !g.classList.contains('leaving')) {
-        g.classList.add('leaving');
-        setTimeout(function () { if (g.parentNode) g.parentNode.removeChild(g); }, reduced ? 0 : 650);
-      }
+      if (!(id in want) && !g.classList.contains('leaving')) retire(g, 750);
     });
     s.nodes.forEach(function (n, idx) {
       var g = gNodes.querySelector('[data-id="' + n.id + '"]:not(.leaving)');
@@ -442,66 +504,96 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
       g.style.transform = 'translate(' + nodeX(idx) + 'px, ' + NODE_Y + 'px)';
       g.classList.toggle('ctl', n.control);
       g.classList.toggle('dimmed', n.dim || (inUpdate && n.id !== 'h1'));
-      var disks = g.querySelectorAll('.disk');
+      var disks = g.querySelectorAll('.disk'), hls = g.querySelectorAll('.hl');
       for (var d = 0; d < 4; d++) {
-        disks[d].setAttribute('class', 'disk ' + (n.disks[d] === 'free' ? '' : n.disks[d]) + (s.hot === n.id + ':' + d || (s.hot && s.hot.indexOf(n.id + ':') === 0 && s.hot.split(':')[1].split(',').indexOf(String(d)) >= 0) ? ' hot' : ''));
+        var hot = isHot(s, n.id, d);
+        var cls = 'disk ' + (n.disks[d] === 'free' ? '' : n.disks[d]) + (hot ? ' hot' : '');
+        if (disks[d].getAttribute('class') !== cls) disks[d].setAttribute('class', cls);
+        hls[d].classList.toggle('on', n.disks[d] !== 'free');
       }
       var zfs = n.disks.filter(function (k) { return k === 'zfs'; }).length;
       var ceph = n.disks.filter(function (k) { return k === 'ceph'; }).length;
       var lbl = g.querySelector('.lbl');
       lbl.textContent = n.dim ? 'installing…' : (ceph ? ceph + ' OSD' : '') + (zfs ? (ceph ? ' · ' : '') + 'dpool ' + zfs + ' disk' + (zfs > 1 ? 's' : '') : '') || 'no storage yet';
-      if (fresh) {
-        if (reduced) g.classList.remove('enter');
-        else requestAnimationFrame(function () { requestAnimationFrame(function () { g.classList.remove('enter'); }); });
-      }
+      if (fresh) settle(g, 'enter');
     });
 
-    // cluster bus and ticks
-    var bus = document.getElementById('bus'), busLabel = document.getElementById('busLabel');
+    // cluster bus: one path whose d is transitioned, a flowing dash overlay, and ticks keyed by node
+    var bus = document.getElementById('bus'), flow = document.getElementById('flow'), busLabel = document.getElementById('busLabel');
     var showBus = s.bus && !inUpdate;
-    bus.classList.toggle('on', showBus); busLabel.classList.toggle('on', showBus);
-    while (gTicks.firstChild) gTicks.removeChild(gTicks.firstChild);
-    if (showBus) {
-      bus.setAttribute('x1', nodeX(0) + NODE_W / 2); bus.setAttribute('x2', nodeX(s.nodes.length - 1) + NODE_W / 2);
-      s.nodes.forEach(function (n, idx) { el('line', { 'class': 'tick', x1: nodeX(idx) + NODE_W / 2, y1: 130, x2: nodeX(idx) + NODE_W / 2, y2: NODE_Y }, gTicks); });
-    }
+    var d0 = 'M ' + (nodeX(0) + NODE_W / 2) + ' 130 H ' + (nodeX(Math.max(0, s.nodes.length - 1)) + NODE_W / 2);
+    if (showBus) { bus.setAttribute('d', d0); flow.setAttribute('d', d0); }
+    document.getElementById('busg').classList.toggle('on', showBus);
+    busLabel.classList.toggle('on', showBus);
+    var tickWant = {};
+    if (showBus) s.nodes.forEach(function (n, idx) { tickWant[n.id] = idx; });
+    Array.prototype.slice.call(gTicks.children).forEach(function (t) {
+      var id = t.getAttribute('data-id');
+      if (!(id in tickWant) && !t.classList.contains('leaving')) retire(t, 500);
+    });
+    Object.keys(tickWant).forEach(function (id) {
+      var t = gTicks.querySelector('[data-id="' + id + '"]:not(.leaving)');
+      var x = nodeX(tickWant[id]) + NODE_W / 2;
+      if (!t) { t = el('line', { 'class': 'tick enter', 'data-id': id, x1: x, y1: 130, x2: x, y2: NODE_Y }, gTicks); settle(t, 'enter'); }
+    });
 
     // services banner
     document.getElementById('svc').classList.toggle('on', s.svc && !inUpdate);
 
-    // VIP badge over the control nodes
-    while (gVip.firstChild) gVip.removeChild(gVip.firstChild);
+    // VIP badge over the control nodes: built once, moved by transform
     var ctl = s.nodes.map(function (n, idx) { return n.control ? idx : -1; }).filter(function (v) { return v >= 0; });
-    if (s.vip && ctl.length && !inUpdate) {
+    var showVip = s.vip && ctl.length && !inUpdate;
+    if (showVip) {
       var cx = (nodeX(ctl[0]) + nodeX(ctl[ctl.length - 1]) + NODE_W) / 2;
-      el('rect', { x: cx - 112, y: 68, width: 224, height: 30, rx: 15 }, gVip);
-      txt(gVip, cx, 88, 'virtual IP · quorum of 3 · dashboard · S3', { 'font-size': 12, 'text-anchor': 'middle', 'font-weight': 600 });
-      ctl.forEach(function (idx) { el('line', { x1: nodeX(idx) + NODE_W / 2, y1: 98, x2: nodeX(idx) + NODE_W / 2, y2: 128 }, gVip); });
+      if (!gVip.firstChild) {
+        el('rect', { 'class': 'halo', x: -112, y: 68, width: 224, height: 30, rx: 15 }, gVip);
+        el('rect', { 'class': 'pill', x: -112, y: 68, width: 224, height: 30, rx: 15 }, gVip);
+        txt(gVip, 0, 88, 'virtual IP · quorum of 3 · dashboard · S3', { 'font-size': 12, 'text-anchor': 'middle', 'font-weight': 600 });
+        el('g', { 'class': 'legs' }, gVip);
+      }
+      var legs = gVip.querySelector('.legs');
+      while (legs.firstChild) legs.removeChild(legs.firstChild);
+      ctl.forEach(function (idx) { var lx = nodeX(idx) + NODE_W / 2 - cx; el('line', { x1: lx, y1: 98, x2: lx, y2: 128 }, legs); });
+      gVip.style.transform = 'translateX(' + cx + 'px)';
     }
-    gVip.classList.toggle('on', s.vip && !inUpdate);
+    gVip.classList.toggle('on', !!showVip);
 
-    // first-boot screen
-    while (gFb.firstChild) gFb.removeChild(gFb.firstChild);
-    if (s.fb) {
+    // first-boot screen: built once, slides in and out
+    if (s.fb && !fbBuilt) {
+      fbBuilt = true;
       var fx = nodeX(0) + NODE_W + 24, fy = NODE_Y - 10;
-      el('rect', { x: fx, y: fy, width: 360, height: 200, rx: 6 }, gFb);
+      el('rect', { 'class': 'screen', x: fx, y: fy, width: 372, height: 236, rx: 8 }, gFb);
+      el('path', { 'class': 'bar', d: 'M' + (fx + 8) + ' ' + fy + 'H' + (fx + 364) + 'a8 8 0 0 1 8 8v14H' + fx + 'V' + (fy + 8) + 'a8 8 0 0 1 8-8Z' }, gFb);
+      [['#ff5f57', 0], ['#febc2e', 1], ['#28c840', 2]].forEach(function (c) { el('circle', { cx: fx + 16 + c[1] * 14, cy: fy + 11, r: 4, fill: c[0] }, gFb); });
+      txt(gFb, fx + 186, fy + 15, 'h1 · first login', { 'class': 'mono', 'font-size': 10, 'text-anchor': 'middle', fill: '#8aa0ad' });
       var lines = ['Summary', 'Host name: h1          Cluster: new (bootstraps)', 'IF.1 10.0.0.11/24  gw 10.0.0.1   Storage: converged', 'Virtual IP: 10.0.0.10   NTP: pool   DNS: 10.0.0.1', '', '1: Apply the above configurations', '2: Config Host Name', '3: Config Networking Settings', '4: Config Password     5: Time Zone   6: NTP', '7: All other settings'];
-      lines.forEach(function (l, k) { txt(gFb, fx + 14, fy + 24 + k * 17.5, l, { 'class': 'mono', 'font-size': 11, 'font-weight': k === 5 ? 600 : 400 }); });
-      el('line', { x1: nodeX(0) + NODE_W, y1: NODE_Y + 30, x2: fx, y2: NODE_Y + 30, stroke: 'var(--fg)', 'stroke-width': 1.5 }, gFb);
+      lines.forEach(function (l, k) { txt(gFb, fx + 14, fy + 42 + k * 16.5, l, { 'class': 'mono' + (k === 5 ? ' apply' : ''), 'font-size': 11, 'font-weight': k === 5 || k === 0 ? 600 : 400 }); });
+      txt(gFb, fx + 14, fy + 42 + 11 * 16.5, 'Choice:', { 'class': 'mono', 'font-size': 11 });
+      el('rect', { 'class': 'cursor', x: fx + 68, y: fy + 42 + 11 * 16.5 - 10, width: 7, height: 13 }, gFb);
+      el('line', { 'class': 'lead', x1: nodeX(0) + NODE_W, y1: NODE_Y + 30, x2: fx, y2: NODE_Y + 30 }, gFb);
     }
     gFb.classList.toggle('on', !!s.fb);
 
-    // update inlay: boot environments and /frbe on h1
-    while (gUpd.firstChild) gUpd.removeChild(gUpd.firstChild);
-    if (s.upd) drawUpdate(s.upd);
-    gUpd.classList.toggle('on', !!s.upd);
+    // update inlay: boot environments and /frbe on h1; panes crossfade
+    if (s.upd !== curUpd) {
+      Array.prototype.slice.call(gUpd.children).forEach(function (pg) {
+        pg.classList.add('out');
+        setTimeout(function () { if (pg.parentNode) pg.parentNode.removeChild(pg); }, reduced ? 0 : 500);
+      });
+      if (s.upd) {
+        var pg = el('g', { 'class': 'pane-g enter' }, gUpd);
+        drawUpdate(s.upd, pg);
+        settle(pg, 'enter');
+      }
+      curUpd = s.upd;
+    }
   }
 
-  function drawUpdate(mode) {
+  function drawUpdate(mode, P) {
     var px = nodeX(1) + 10, py = 60, pw = 940 - px, ph = 390;
-    el('rect', { 'class': 'pane', x: px, y: py, width: pw, height: ph, rx: 8 }, gUpd);
+    el('rect', { 'class': 'pane', x: px, y: py, width: pw, height: ph, rx: 8 }, P);
     txt(gUpd, px + 18, py + 26, 'Inside h1', { 'font-size': 13, 'font-weight': 600 });
-    el('line', { 'class': 'lane', x1: nodeX(0) + NODE_W, y1: NODE_Y + 30, x2: px, y2: py + 30 }, gUpd);
+    el('line', { 'class': 'lane', x1: nodeX(0) + NODE_W, y1: NODE_Y + 30, x2: px, y2: py + 30 }, P);
 
     if (mode === 'channels') {
       var rows = [
@@ -515,8 +607,9 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
       txt(gUpd, px + 640, py + 56, 'rollback', { 'class': 'muted', 'font-size': 10.5 });
       rows.forEach(function (r, k) {
         var y = py + 90 + k * 92;
-        el('rect', { x: px + 18, y: y - 26, width: pw - 36, height: 72, rx: 6, fill: 'transparent', stroke: r[4], 'stroke-width': 1.5 }, gUpd);
-        el('rect', { x: px + 18, y: y - 26, width: 6, height: 72, rx: 2, fill: r[4] }, gUpd);
+        var P0 = P; P = el('g', { 'class': 'row', style: 'animation-delay: ' + (120 + k * 140) + 'ms' }, P0);
+        el('rect', { x: px + 18, y: y - 26, width: pw - 36, height: 72, rx: 6, fill: 'color-mix(in srgb, ' + r[4] + ' 6%, var(--panel))', stroke: r[4], 'stroke-width': 1.5 }, P);
+        el('rect', { x: px + 18, y: y - 26, width: 6, height: 72, rx: 2, fill: r[4] }, P);
         txt(gUpd, px + 36, y, r[0], { 'class': 'mono', 'font-size': 13, 'font-weight': 600 });
         txt(gUpd, px + 150, y, r[1], { 'font-size': 12 });
         txt(gUpd, px + 430, y, r[2], { 'font-size': 12 });
@@ -526,32 +619,32 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
       return;
     }
     if (mode === 'frbe') {
-      el('rect', { 'class': 'be run', x: px + 30, y: py + 60, width: 300, height: 150, rx: 6 }, gUpd);
+      el('rect', { 'class': 'be run', x: px + 30, y: py + 60, width: 300, height: 150, rx: 6 }, P);
       txt(gUpd, px + 46, py + 86, 'rpool/ROOT/be-2   (running)', { 'class': 'mono', 'font-size': 12, 'font-weight': 600 });
       txt(gUpd, px + 46, py + 110, 'base OS: kernel, systemd, ZFS, podman', { 'font-size': 12 });
       txt(gUpd, px + 46, py + 130, 'changed only by apt', { 'class': 'muted', 'font-size': 11 });
       txt(gUpd, px + 46, py + 170, 'cannot write into /frbe', { 'font-size': 11, fill: 'var(--ok)', 'font-weight': 600 });
-      el('rect', { 'class': 'frbe', x: px + 370, y: py + 60, width: 300, height: 150, rx: 6 }, gUpd);
+      el('rect', { 'class': 'frbe', x: px + 370, y: py + 60, width: 300, height: 150, rx: 6 }, P);
       txt(gUpd, px + 386, py + 86, 'rpool/frbe   (read-only)', { 'class': 'mono', 'font-size': 12, 'font-weight': 600 });
       txt(gUpd, px + 386, py + 110, 'frad_cli, frad_config, frad_sdk, Ceph image', { 'font-size': 12 });
       txt(gUpd, px + 386, py + 130, 'unlocked only for a fixpack or hotfix', { 'class': 'muted', 'font-size': 11 });
       txt(gUpd, px + 386, py + 170, 'snapshot before every change', { 'font-size': 11, fill: 'var(--zfs)', 'font-weight': 600 });
-      el('line', { 'class': 'lane', x1: px + 330, y1: py + 135, x2: px + 370, y2: py + 135, 'stroke-dasharray': '4 3' }, gUpd);
+      el('line', { 'class': 'lane', x1: px + 330, y1: py + 135, x2: px + 370, y2: py + 135, 'stroke-dasharray': '4 3' }, P);
       txt(gUpd, px + 30, py + 260, 'Two fast channels, two datasets, no way to collide.', { 'font-size': 14, 'font-weight': 600 });
       txt(gUpd, px + 30, py + 284, 'Ceph daemons are containers; cluster ceph_upgrade moves them to a new image in place.', { 'class': 'muted', 'font-size': 12 });
       return;
     }
     // clone / rollback: two boot environments
     var runA = mode === 'clone', runB = false;
-    var be1 = el('rect', { 'class': 'be ' + (mode === 'clone' ? 'run' : 'run'), x: px + 30, y: py + 70, width: 280, height: 120, rx: 6 }, gUpd);
+    var be1 = el('rect', { 'class': 'be ' + (mode === 'clone' ? 'run' : 'run'), x: px + 30, y: py + 70, width: 280, height: 120, rx: 6 }, P);
     txt(gUpd, px + 46, py + 96, 'be-1   ' + (mode === 'clone' ? '(running)' : '(running again)'), { 'class': 'mono', 'font-size': 12, 'font-weight': 600 });
     txt(gUpd, px + 46, py + 120, 'kernel 6.x · ZFS · podman', { 'font-size': 12 });
     txt(gUpd, px + 46, py + 142, mode === 'clone' ? 'serving storage the whole time' : 'untouched, so it simply boots', { 'class': 'muted', 'font-size': 11 });
-    var be2 = el('rect', { 'class': 'be ' + (mode === 'clone' ? '' : 'bad'), x: px + 380, y: py + 70, width: 280, height: 120, rx: 6 }, gUpd);
+    var be2 = el('rect', { 'class': 'be ' + (mode === 'clone' ? '' : 'bad'), x: px + 380, y: py + 70, width: 280, height: 120, rx: 6 }, P);
     txt(gUpd, px + 396, py + 96, 'be-2   ' + (mode === 'clone' ? '(clone)' : '(failed validation)'), { 'class': 'mono', 'font-size': 12, 'font-weight': 600 });
     txt(gUpd, px + 396, py + 120, mode === 'clone' ? 'apt upgrade applied here' : 'left in place for diagnosis', { 'font-size': 12 });
     txt(gUpd, px + 396, py + 142, mode === 'clone' ? 'checked against what /frbe was validated with' : 'never became the boot target', { 'class': 'muted', 'font-size': 11 });
-    el('line', { 'class': 'lane', x1: px + 310, y1: py + 130, x2: px + 380, y2: py + 130 }, gUpd);
+    el('line', { 'class': 'lane', x1: px + 310, y1: py + 130, x2: px + 380, y2: py + 130 }, P);
     txt(gUpd, px + 345, py + 122, mode === 'clone' ? 'clone' : 'back', { 'class': 'muted', 'font-size': 10.5, 'text-anchor': 'middle' });
     var stepsY = py + 240;
     var seq = mode === 'clone'
@@ -584,6 +677,8 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
     var t = document.getElementById('title'); t.textContent = st.title;
     if (st.designed) { var c = document.createElement('span'); c.className = 'chip'; c.textContent = 'designed'; t.appendChild(c); }
     document.getElementById('text').textContent = st.text;
+    document.getElementById('story').style.setProperty('--accent', ['var(--zfs)', 'var(--ceph)', 'var(--ctl)', 'var(--ok)'][st.ch]);
+    ['title', 'text', 'cmd'].forEach(function (id) { var e = document.getElementById(id); e.classList.remove('fade'); void e.offsetWidth; e.classList.add('fade'); });
     var cmd = document.getElementById('cmd'); cmd.textContent = '';
     st.cmd.split('\n').forEach(function (line, k) {
       if (k) cmd.appendChild(document.createTextNode('\n'));
@@ -595,7 +690,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
     document.getElementById('next').disabled = cur === steps.length - 1;
     if (playing) armBar();
   }
-  var PERIOD = 4200;
+  var PERIOD = 5000;
   function armBar() {
     var bar = document.getElementById('bar');
     bar.style.transition = 'none'; bar.style.width = '0';
