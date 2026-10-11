@@ -222,12 +222,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
 <div class="hero">
   <div class="eyebrow">Fünftes Rad · the storage appliance OS for small teams</div>
   <h1>One image. One node to a cluster. Storage that grows in every direction.</h1>
-  <p class="lead">FRAD boots a machine straight into a storage platform: operating system, storage stack, clustering, high availability and the management CLI ship and update as one product, so a small team can run a lot of storage.</p>
-  <div class="cta">
-    <a class="btn primary" href="#story" id="tour">Watch the 75-second tour</a>
-    <a class="btn" href="mailto:lee.chienpang@gmail.com?subject=FRAD">Talk to us</a>
-    <span class="note">Fifteen steps, one node to a cluster, no sign-up.</span>
-  </div>
+  <p class="lead">FRAD boots a machine straight into a storage platform: operating system, storage stack, clustering, high availability and the management CLI ship and update as one product, so a small team can run a lot of storage. Watch a node become a cluster.</p>
 </div>
 
 <div class="stage" id="story">
@@ -787,10 +782,6 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
     }, { threshold: 0.45 }).observe(stage);
   }
 
-  document.getElementById('tour').addEventListener('click', function (e) {
-    e.preventDefault(); touched = false; suspended = false; stop(); go(0); autoDone = true; autoplay();
-    stage.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); setHash('#story');
-  });
   var start = fromHash();
   go(start >= 0 ? start : 0);
   if (start >= 0) setTimeout(function () { stage.scrollIntoView(); }, 0);
