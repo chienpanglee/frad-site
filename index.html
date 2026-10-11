@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="FRAD: an appliance storage OS. One node grows into a cluster; storage scales up with ZFS and out with Ceph; updates roll back from the boot menu.">
 <meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta property="og:title" content="FRAD Storage OS">
+<meta property="og:description" content="One image. One node to a cluster. Storage that grows in every direction.">
+<meta property="og:image" content="https://chienpanglee.github.io/frad-site/logo/frad-social.png">
+<meta name="twitter:card" content="summary_large_image">
 <title>FRAD Storage OS</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -49,7 +54,7 @@ a { color: inherit; }
 
 header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .wordmark { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: 0.04em; display: flex; align-items: center; gap: 10px; }
-.wordmark i { width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(135deg, var(--zfs), var(--ceph)); display: inline-block; }
+.wordmark .mark-svg { display: block; flex: none; }
 nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; }
 nav a { text-decoration: none; color: var(--muted); }
 nav a:hover { color: var(--fg); }
@@ -158,7 +163,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
 
 <div class="wrap">
 <header class="top">
-  <div class="wordmark"><i></i>FRAD</div>
+  <div class="wordmark"><svg class="mark-svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><circle cx="50" cy="50" r="37" fill="none" stroke="var(--ceph)" stroke-width="7"/><line x1="50" y1="50" x2="50.0" y2="13.0" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="50.0" cy="13.0" r="7.5" fill="var(--ceph)"/><line x1="50" y1="50" x2="85.2" y2="38.6" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="85.2" cy="38.6" r="7.5" fill="var(--ceph)"/><line x1="50" y1="50" x2="71.7" y2="79.9" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="71.7" cy="79.9" r="7.5" fill="var(--ceph)"/><line x1="50" y1="50" x2="28.3" y2="79.9" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="28.3" cy="79.9" r="7.5" fill="var(--ceph)"/><line x1="50" y1="50" x2="14.8" y2="38.6" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="14.8" cy="38.6" r="7.5" fill="var(--ceph)"/><circle cx="50" cy="50" r="13" fill="var(--zfs)"/></svg>FRAD</div>
   <nav>
     <a href="#story">The story</a>
     <a href="#ideas">Three ideas</a>
