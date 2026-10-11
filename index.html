@@ -707,8 +707,10 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   }
   function tick() {
     if (!playing) return;
-    if (cur >= steps.length - 1) { stop(); return; }
-    go(cur + 1);
+    if (cur >= steps.length - 1) {
+      if (!auto) { stop(); return; }
+      go(0);                       // autoplay loops until someone touches the controls
+    } else go(cur + 1);
     timer = setTimeout(tick, PERIOD);
   }
   function play() {
@@ -722,10 +724,12 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
     playLabel();
     var bar = document.getElementById('bar'); bar.style.transition = 'none'; bar.style.width = '0';
   }
-  // Any hand on the controls ends autoplay for good; hovering or scrolling away only suspends it.
-  var touched = false, suspended = false, autoDone = false;
-  function manual(fn) { return function () { touched = true; suspended = false; stop(); fn(); }; }
-  document.getElementById('play').addEventListener('click', function () { touched = true; suspended = false; playing ? stop() : play(); });
+  // Autoplay: starts when the stage scrolls into view, loops, pauses only while hidden or out of view.
+  // Any hand on the controls ends it for good; Play then runs through once.
+  var touched = false, suspended = false, autoDone = false, auto = false;
+  function autoplay() { auto = true; play(); }
+  function manual(fn) { return function () { touched = true; auto = false; suspended = false; stop(); fn(); }; }
+  document.getElementById('play').addEventListener('click', function () { touched = true; auto = false; suspended = false; playing ? stop() : play(); });
   document.getElementById('prev').addEventListener('click', manual(function () { go(cur - 1); }));
   document.getElementById('next').addEventListener('click', manual(function () { go(cur + 1); }));
   document.addEventListener('keydown', function (e) {
@@ -737,15 +741,11 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   function resume() { if (suspended && !document.hidden) { suspended = false; play(); } }
   document.addEventListener('visibilitychange', function () { document.hidden ? suspend() : resume(); });
   var stage = document.getElementById('story');
-  stage.addEventListener('mouseenter', suspend);
-  stage.addEventListener('mouseleave', resume);
-
-  // 6. autoplay once, when the stage scrolls into view; pause while it is out of view
   if ('IntersectionObserver' in window && !reduced) {
     new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (en.isIntersecting) {
-          if (!autoDone && !touched) { autoDone = true; play(); }
+          if (!autoDone && !touched) { autoDone = true; autoplay(); }
           else resume();
         } else suspend();
       });
@@ -755,7 +755,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   var start = fromHash();
   go(start >= 0 ? start : 0);
   if (start >= 0) setTimeout(function () { stage.scrollIntoView(); }, 0);
-  window.addEventListener('hashchange', function () { var i = fromHash(); if (i >= 0) { stop(); go(i); stage.scrollIntoView(); if (!touched) play(); } });
+  window.addEventListener('hashchange', function () { var i = fromHash(); if (i >= 0) { stop(); go(i); stage.scrollIntoView(); if (!touched) autoplay(); } });
 })();
 </script>
 </body>
