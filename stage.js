@@ -365,7 +365,7 @@
     tabs.appendChild(b);
   });
 
-  function chip(status) { var c = document.createElement('span'); c.className = 'chip ' + status; c.textContent = status; return c; }
+  function chip(status, cls) { var c = document.createElement('span'); c.className = 'chip ' + (cls || status); c.textContent = status; return c; }
   function fade(e) { e.classList.remove('fade'); void e.offsetWidth; e.classList.add('fade'); }
 
   function buildNarr() {
@@ -387,6 +387,7 @@
       var ft = ch.features[seq.f];
       E.upchapter.textContent = '‹ ' + ch.title;
       E.ftitle.textContent = ft.title; E.ftitle.appendChild(chip(ft.status));
+      if (!ft.recipe) E.ftitle.appendChild(chip('no animation yet', 'still'));   // one frame from its summary until its recipe exists
       E.fsummary.textContent = ft.summary;
       E.details.textContent = '';
       (ft.details || []).forEach(function (p) { var e = document.createElement('p'); e.textContent = p; E.details.appendChild(e); });
@@ -410,8 +411,12 @@
     fade(E.title); fade(E.text);
     if (seq.kind === 'tour') document.getElementById('story').style.setProperty('--accent', ACCENT[C.chapters[st.c].accent] || 'var(--ctl)');
     Array.prototype.forEach.call(tabs.children, function (b, c) { b.setAttribute('aria-selected', c === st.c ? 'true' : 'false'); });
-    E.prev.disabled = cur === 0 && !seq.loop;
-    E.next.disabled = cur === seq.steps.length - 1 && !seq.loop;
+    var still = seq.kind === 'feature' && seq.steps.length === 1;   // a one-frame feature: the buttons lead on instead of going dead
+    E.prev.textContent = still ? 'Up to the chapter' : 'Back';
+    E.next.textContent = still ? (nextFeature() ? 'Next feature' : 'Next chapter') : 'Next';
+    E.prev.disabled = !still && cur === 0 && !seq.loop;
+    E.next.disabled = still ? !nextFeature() : cur === seq.steps.length - 1 && !seq.loop;
+    E.play.disabled = still;
     termClear();                                  // the transcript is rebuilt from the steps before this one, so jumps are exact
     for (var j = 0; j < cur; j++) flushItems(seq.steps[j].term);
     var typeMs = playTerminal(seq, cur, function () { render(s, hot); });
@@ -469,8 +474,13 @@
   function scrollTo() { setTimeout(function () { stage.scrollIntoView({ block: 'start' }); }, 0); }
 
   E.play.addEventListener('click', function () { touched = true; suspended = false; playing ? stop() : play(); });
-  E.prev.addEventListener('click', function () { touched = true; stop(); prevStep(); });
-  E.next.addEventListener('click', function () { touched = true; stop(); nextStep(); });
+  function nextFeature() {                         // after a one-frame feature: the chapter's next feature, else the next chapter
+    var ch = C.chapters[seq.c];
+    if (seq.f + 1 < ch.features.length) return ch.slug + '/' + ch.features[seq.f + 1].slug;
+    return seq.c + 1 < C.chapters.length ? C.chapters[seq.c + 1].slug : null;
+  }
+  E.prev.addEventListener('click', function () { touched = true; stop(); if (seq.kind === 'feature' && seq.steps.length === 1) location.hash = C.chapters[seq.c].slug; else prevStep(); });
+  E.next.addEventListener('click', function () { touched = true; stop(); if (seq.kind === 'feature' && seq.steps.length === 1) { var h = nextFeature(); if (h) location.hash = h; } else nextStep(); });
   E.open.addEventListener('click', function () { touched = true; location.hash = C.chapters[seq.steps[cur].c].slug; });
   E.totour.addEventListener('click', function () { location.hash = 'tour'; });
   E.upchapter.addEventListener('click', function () { location.hash = C.chapters[seq.c].slug; });
