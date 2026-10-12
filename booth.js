@@ -36,6 +36,7 @@
     if (!up) split(false);
   }
   function drawNodes(j) {
+    if (j.current) current = j.current;          // the console is shared: what it shows is what the booth says
     nodesEl.textContent = '';
     j.nodes.forEach(function (n) {
       var b = document.createElement('button'); b.className = n.name === current ? 'on' : ''; b.textContent = n.name + (n.alive ? '' : ' (off)');
