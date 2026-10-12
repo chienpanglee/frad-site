@@ -12,195 +12,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <title>FRAD Storage OS</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>
-/* Layout: one wide "stage" (the animated cluster) with a narrator panel beside it; prose sections below in a 65ch column. */
-:root {
-  --bg: #eef1f4;       /* cool paper */
-  --panel: #ffffff;
-  --fg: #15202b;
-  --muted: #5b6b7a;
-  --line: #cfd7df;
-  --zfs: #c0731a;      /* host-local pool */
-  --ceph: #0e7c86;     /* cluster storage */
-  --ctl: #4f46e5;      /* control role / VIP */
-  --ok: #2e8b57;
-  --warn: #b7791f;
-  --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
-  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0f1519; --panel: #171f26; --fg: #e8edf1; --muted: #93a3b1; --line: #2a3640;
-    --zfs: #e39a3b; --ceph: #2cb3bf; --ctl: #8b85ff; --ok: #4fbf7f; --warn: #d9a441; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0f1519; --panel: #171f26; --fg: #e8edf1; --muted: #93a3b1; --line: #2a3640;
-  --zfs: #e39a3b; --ceph: #2cb3bf; --ctl: #8b85ff; --ok: #4fbf7f; --warn: #d9a441; color-scheme: dark;
-}
-* { box-sizing: border-box; }
-body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55; }
-.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 0; }
-h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; text-wrap: balance; margin: 0; }
-h1 { font-size: clamp(30px, 4vw, 46px); letter-spacing: -0.015em; }
-h2 { font-size: clamp(26px, 3.2vw, 36px); margin-bottom: 14px; }
-h3 { font-size: 19px; font-weight: 700; }
-p { margin: 0; }
-code, .cmd { font-family: var(--mono); font-size: 0.92em; }
-.eyebrow { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-a { color: inherit; }
-:focus-visible { outline: 2px solid var(--ctl); outline-offset: 2px; }
-
-header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-header.top .right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-.wordmark { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: 0.04em; display: flex; align-items: center; gap: 10px; }
-.wordmark .mark-svg { display: block; flex: none; }
-nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; }
-nav a { text-decoration: none; color: var(--muted); }
-.btn { display: inline-flex; align-items: center; gap: 8px; font: 600 15px var(--body); padding: 11px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; cursor: pointer; transition: transform 0.15s, border-color 0.2s, background 0.2s; }
-.btn:hover { border-color: var(--fg); transform: translateY(-1px); }
-.btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-.btn.primary:hover { background: color-mix(in srgb, var(--fg) 85%, var(--ceph)); }
-.btn.small { font-size: 13px; padding: 8px 13px; }
-.cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
-.cta .note { align-self: center; font-size: 13px; color: var(--muted); }
-nav a:hover { color: var(--fg); }
-
-.hero { padding-block: 26px 6px; display: grid; gap: 12px; max-width: 980px; }
-.hero .lead { font-size: 17px; color: var(--muted); max-width: 78ch; }
-
-/* The stage */
-.stage { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr); gap: 18px; margin-block: 16px 56px; scroll-margin-top: 76px; }
-.scene, .narr { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
-.scene { padding: 10px; background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--ceph) 7%, var(--panel)), var(--panel) 70%); }
-.scene svg { width: 100%; height: auto; display: block; }
-.narr { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-.tabs button { font: 600 12px/1 var(--body); letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 10px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
-.tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-.narr .stepno { font-family: var(--mono); font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
-.narr h3 { font-size: 22px; }
-.narr p.text { color: var(--fg); min-height: 5.5em; }
-.chip { display: inline-block; font: 600 11px/1 var(--body); letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 7px; border-radius: 4px; border: 1px solid var(--warn); color: var(--warn); margin-left: 8px; vertical-align: middle; }
-.cmd { background: color-mix(in srgb, var(--fg) 6%, var(--panel)); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; font-size: 13px; }
-.cmd .prompt { color: var(--muted); }
-.ctrl { display: flex; gap: 8px; align-items: center; margin-top: auto; flex-wrap: wrap; }
-.ctrl button { font: 500 14px var(--body); padding: 9px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
-.ctrl button.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-.ctrl button:disabled { opacity: 0.4; cursor: default; }
-.progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
-.progress i { display: block; height: 100%; width: 0; transition: width 0.3s; }
-
-/* SVG parts */
-svg text { font-family: var(--body); fill: var(--fg); }
-svg .mono { font-family: var(--mono); }
-svg .muted { fill: var(--muted); }
-svg .dots { fill: var(--line); }
-.scene svg { overflow: visible; }
-svg .node { transition: opacity 0.5s ease, transform 0.7s cubic-bezier(.2,.8,.2,1); }
-svg .node .inner { transition: transform 0.7s cubic-bezier(.2,.8,.2,1), opacity 0.5s ease; }
-svg .node.enter .inner { opacity: 0; transform: translate(40px, 0) scale(0.96); }
-svg .node.leaving .inner { opacity: 0; transform: translate(0, 34px) scale(0.96); }
-svg .node .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; transition: stroke 0.4s, filter 0.5s; filter: drop-shadow(0 8px 16px color-mix(in srgb, var(--fg) 9%, transparent)); }
-svg .node .cap { fill: color-mix(in srgb, var(--fg) 4%, var(--panel)); }
-svg .node.ctl .box { stroke: var(--ctl); stroke-width: 2.5; filter: drop-shadow(0 10px 20px color-mix(in srgb, var(--ctl) 30%, transparent)); }
-svg .node .mon { opacity: 0; transform: translateY(-8px); transition: opacity 0.4s, transform 0.5s cubic-bezier(.2,.8,.2,1); }
-svg .node.ctl .mon { opacity: 1; transform: none; }
-svg .disk { fill: transparent; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 3 2; transition: fill 0.5s, stroke 0.5s; transform-box: fill-box; transform-origin: center; }
-svg .disk.ceph { fill: var(--ceph); stroke: var(--ceph); stroke-dasharray: none; }
-svg .disk.zfs { fill: var(--zfs); stroke: var(--zfs); stroke-dasharray: none; }
-svg .disk.hot { stroke: var(--fg); stroke-width: 2.5; animation: pop 0.7s cubic-bezier(.2,.8,.2,1); }
-svg .hl { fill: #fff; opacity: 0; transition: opacity 0.5s; pointer-events: none; }
-svg .hl.on { opacity: 0.28; }
-@keyframes pop { 0% { transform: scale(1); } 35% { transform: scale(1.16); } 100% { transform: scale(1); } }
-svg .bus { fill: none; stroke: var(--ceph); stroke-width: 2.5; opacity: 0; transition: opacity 0.5s, d 0.7s cubic-bezier(.2,.8,.2,1); }
-svg .bus.on { opacity: 1; }
-svg .flow { fill: none; stroke: color-mix(in srgb, var(--ceph) 45%, var(--panel)); stroke-width: 2.5; stroke-dasharray: 5 15; stroke-linecap: round; animation: flow 1.4s linear infinite; }
-@keyframes flow { to { stroke-dashoffset: -20; } }
-svg .busLabel { opacity: 0; transition: opacity 0.5s; }
-svg .busLabel.on { opacity: 1; }
-svg .tick { stroke: var(--ceph); stroke-width: 2; transition: opacity 0.5s; }
-svg .tick.enter, svg .tick.leaving { opacity: 0; }
-svg .vip { opacity: 0; transform: translateY(8px); transition: opacity 0.5s, transform 0.6s cubic-bezier(.2,.8,.2,1); }
-svg .vip.on { opacity: 1; transform: none; }
-svg .vip .pill { fill: var(--ctl); filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--ctl) 40%, transparent)); }
-svg .vip .halo { fill: none; stroke: var(--ctl); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: halo 2.6s ease-out infinite; }
-@keyframes halo { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.18, 1.7); opacity: 0; } }
-svg .vip text { fill: #fff; }
-svg .vip line { stroke: var(--ctl); stroke-width: 1.5; stroke-dasharray: 4 3; }
-svg .svc { opacity: 0; transform: translateY(-10px); transition: opacity 0.5s, transform 0.5s cubic-bezier(.2,.8,.2,1); }
-svg .svc.on { opacity: 1; transform: none; }
-svg .svc rect { fill: color-mix(in srgb, var(--ceph) 14%, var(--panel)); stroke: var(--ceph); }
-svg .svc .led { fill: var(--ok); animation: blink 2s ease-in-out infinite; }
-@keyframes blink { 50% { opacity: 0.35; } }
-svg .fb { opacity: 0; transform: translateX(18px); transition: opacity 0.45s, transform 0.55s cubic-bezier(.2,.8,.2,1); }
-svg .fb.on { opacity: 1; transform: none; }
-svg .fb .screen { fill: #0f171d; stroke: #2a3a45; filter: drop-shadow(0 10px 22px color-mix(in srgb, var(--fg) 20%, transparent)); }
-svg .fb .bar { fill: #1b2731; }
-svg .fb text { fill: #d6e2ea; }
-svg .fb text.apply { fill: #7fe0a0; }
-svg .fb .cursor { fill: #7fe0a0; animation: blink 1s steps(1) infinite; }
-svg .fb .lead { stroke: var(--fg); stroke-width: 1.5; }
-svg .upd { pointer-events: none; }
-svg .upd .pane-g { transition: opacity 0.45s, transform 0.5s cubic-bezier(.2,.8,.2,1); }
-svg .upd .pane-g.enter { opacity: 0; transform: translateY(12px); }
-svg .upd .pane-g.out { opacity: 0; transform: translateY(-12px); }
-svg .upd .pane { fill: var(--panel); stroke: var(--line); filter: drop-shadow(0 10px 24px color-mix(in srgb, var(--fg) 10%, transparent)); }
-svg .upd .be { fill: color-mix(in srgb, var(--fg) 5%, var(--panel)); stroke: var(--line); stroke-width: 1.5; }
-svg .upd .be.run { stroke: var(--ok); stroke-width: 2.5; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--ok) 35%, transparent)); }
-svg .upd .be.bad { stroke: var(--warn); stroke-dasharray: 4 3; }
-svg .upd .frbe { fill: color-mix(in srgb, var(--zfs) 16%, var(--panel)); stroke: var(--zfs); stroke-width: 1.5; }
-svg .upd .lane { stroke: var(--muted); stroke-width: 1.5; }
-svg .upd .row { opacity: 0; transform: translateY(8px); animation: rise 0.5s cubic-bezier(.2,.8,.2,1) forwards; }
-@keyframes rise { to { opacity: 1; transform: none; } }
-svg .dimmed { opacity: 0.22; }
-.narr .fade { animation: fadeup 0.45s cubic-bezier(.2,.8,.2,1); }
-@keyframes fadeup { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.stage { --accent: var(--ctl); }
-.progress i { background: var(--accent); }
-.narr .stepno #chapname { color: var(--accent); font-weight: 600; }
-.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); padding: 8px 6px 2px; }
-.legend span::before { content: ""; display: inline-block; width: 10px; height: 14px; border-radius: 2px; margin-right: 6px; vertical-align: -2px; }
-.legend .l-ceph::before { background: var(--ceph); }
-.legend .l-zfs::before { background: var(--zfs); }
-.legend .l-free::before { border: 1.5px dashed var(--line); }
-.legend .l-ctl::before { border: 2px solid var(--ctl); height: 12px; }
-
-/* Prose sections */
-section { padding-block: 36px; border-top: 1px solid var(--line); scroll-margin-top: 62px; }
-.builton { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin: -30px 0 44px; padding: 16px 0 0; border-top: 1px solid var(--line); }
-.builton .eyebrow { flex: none; }
-.builton ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px 26px; flex-wrap: wrap; }
-.builton li { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: 0.02em; color: var(--muted); white-space: nowrap; transition: color 0.2s; }
-.builton li:hover { color: var(--fg); }
-.builton li small { font: 500 11px var(--body); letter-spacing: 0.08em; text-transform: uppercase; display: block; color: var(--muted); margin-top: 1px; }
-.cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-.col { display: grid; gap: 8px; align-content: start; }
-.col .mark { width: 34px; height: 6px; border-radius: 3px; }
-.col p { color: var(--muted); }
-.col h3 a { text-decoration-color: var(--line); }
-.col h3 a:hover { text-decoration-color: currentColor; }
-.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
-ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
-.status h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.status .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.prose { max-width: 68ch; display: grid; gap: 12px; }
-.prose p { color: var(--muted); }
-table { border-collapse: collapse; width: 100%; font-size: 14px; }
-th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.tablewrap { overflow-x: auto; }
-footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-
-@media (max-width: 860px) {
-  .stage { grid-template-columns: 1fr; }
-  .cols, .two { grid-template-columns: 1fr; }
-}
-@media (prefers-reduced-motion: reduce) {
-  svg *, .progress i, .narr .fade { transition: none !important; animation: none !important; }
-}
-</style>
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
 
@@ -210,6 +22,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   <div class="right">
     <nav>
       <a href="#story">The story</a>
+      <a href="cli.html">CLI manual</a>
       <a href="#ideas">Three ideas</a>
       <a href="#status">What is built</a>
       <a href="#run">How it is run</a>
@@ -224,7 +37,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   <p class="lead">FRAD boots a machine straight into a storage platform: operating system, storage stack, clustering, high availability and the management CLI ship and update as one product, so a small team can run a lot of storage. Watch a node become a cluster.</p>
 </div>
 
-<div class="stage" id="story">
+<div class="stage" id="story" data-mode="tour">
   <div class="scene">
     <svg id="svg" viewBox="0 0 960 470" role="img" aria-label="Animated FRAD cluster: nodes, disks, control role, storage pools and boot environments">
       <defs>
@@ -244,26 +57,48 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
       <g id="nodes"></g>
       <g id="fb" class="fb"></g>
       <g id="upd" class="upd"></g>
+      <g id="ver" class="ver"></g>
       <text id="empty" class="muted" x="480" y="250" font-size="14" text-anchor="middle">A machine, waiting for an image.</text>
     </svg>
+    <div class="term" id="term" aria-live="polite" aria-label="Operator terminal"></div>
     <div class="legend">
       <span class="l-ceph">disk serving Ceph (OSD)</span>
       <span class="l-zfs">disk in the local ZFS pool</span>
       <span class="l-free">free disk</span>
       <span class="l-ctl">control node (monitor + quorum)</span>
+      <span class="l-down">node without power</span>
     </div>
   </div>
-  <div class="narr">
-    <div class="tabs" role="tablist" id="tabs"></div>
-    <div class="stepno"><span id="stepno">1 / 15</span><span id="chapname"></span></div>
-    <h3 id="title"></h3>
-    <p class="text" id="text"></p>
-    <div class="cmd" id="cmd"></div>
+  <div class="narr" id="narr" data-mode="tour">
+    <div class="tabs" role="tablist" id="tabs" aria-label="Chapters"></div>
+    <div class="nhead tour-only">
+      <div class="stepno"><span id="stepno"></span><span id="chapname"></span></div>
+    </div>
+    <div class="nhead chapter-only">
+      <div class="eyebrow" id="chno"></div>
+      <h3 id="chtitle"></h3>
+      <p class="intro" id="chintro"></p>
+    </div>
+    <div class="nhead feature-only">
+      <button class="linkish" id="upchapter" type="button"></button>
+      <h3 id="ftitle"></h3>
+      <p class="intro" id="fsummary"></p>
+    </div>
+    <div class="step">
+      <h3 id="title"></h3>
+      <p class="text" id="text"></p>
+    </div>
+    <ul class="features chapter-only" id="features"></ul>
+    <div class="details feature-only" id="details"></div>
+    <div class="evidence feature-only" id="evidence"></div>
     <div class="progress"><i id="bar"></i></div>
     <div class="ctrl">
       <button id="play" class="primary" type="button">Play</button>
       <button id="prev" type="button">Back</button>
       <button id="next" type="button">Next</button>
+      <span class="spacer"></span>
+      <button id="open" class="tour-only" type="button">Open this chapter</button>
+      <button id="totour" class="chapter-only" type="button">Back to the tour</button>
     </div>
   </div>
 </div>
@@ -310,7 +145,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
       <ul class="plain">
         <li>Root on ZFS with ZFSBootMenu; UEFI install from ISO, USB or PXE, including UEFI HTTP boot</li>
         <li>The read-only <code>/frbe</code> dataset holding all FRAD binaries, scripts and the SDK</li>
-        <li>One first-boot screen: a proposed configuration, one press to apply; <code>frad_cli -0</code> for unattended fleets</li>
+        <li>One first-boot screen: a proposed configuration, one press to apply; an unattended mode for fleets</li>
         <li>Single node to cluster growth by <code>node join</code>; control group promotion in one step; cluster discovery by mDNS</li>
         <li>Host-local ZFS pool scaling per disk; Ceph via cephadm with block, CephFS and S3</li>
         <li>Corosync, Pacemaker and HAProxy for the virtual IP, dashboard and S3 endpoint; cluster-wide checks and repairs</li>
@@ -327,7 +162,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
         <li>Fleet-wide rolling apply of updates</li>
         <li>iSCSI gateway on cephadm</li>
       </ul>
-      <p style="color: var(--muted); margin-top: 12px; font-size: 14px">The animation marks these steps as <span class="chip" style="margin-left:0">designed</span>. Nothing on this page is a benchmark or a forecast.</p>
+      <p style="color: var(--muted); margin-top: 12px; font-size: 14px">Every step and feature above carries a <span class="chip built" style="margin-left:0">built</span> or <span class="chip" style="margin-left:0">designed</span> chip. Nothing on this page is a benchmark or a forecast.</p>
     </div>
   </div>
 </section>
@@ -340,12 +175,12 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   <div class="tablewrap" style="margin-top: 16px">
     <table>
       <tr><th>Day</th><th>What happens</th><th>Command</th></tr>
-      <tr><td>Day 1</td><td>Boot the image, press 1 on the first-boot screen, log in. The node serves Ceph, CephFS and S3 on its own.</td><td><code>frad_cli</code></td></tr>
-      <tr><td>Day 2</td><td>Install the next node the same way and join it. Its disks become OSDs.</td><td><code>frad_cli -c node join &lt;existing-node&gt;</code></td></tr>
-      <tr><td>Three nodes</td><td>Promote the control group once. Monitors and quorum land on all three.</td><td><code>frad_cli -c cluster set control h1,h2,h3</code></td></tr>
-      <tr><td>Any day</td><td>Move a disk between the local pool and Ceph, one disk at a time.</td><td><code>frad_cli -c node disks zfs_add | zfs_remove | ceph_add | ceph_remove</code></td></tr>
-      <tr><td>Any day</td><td>See the live state: virtual IP, quorum, Ceph, every member.</td><td><code>frad_cli -c cluster status</code></td></tr>
-      <tr><td>Patch day</td><td>List and apply base-OS security updates on the node.</td><td><code>frad_cli -c node update security_update all</code></td></tr>
+      <tr><td>Day 1</td><td>Boot the image, press 1 on the first-boot screen. The node serves Ceph, CephFS and S3 on its own.</td><td><code>h1<code>h1&gt; </code> the login shellgt;</code> the CLI is the login shell</td></tr>
+      <tr><td>Day 2</td><td>Install the next node the same way and join it. Its disks become OSDs.</td><td><code>node join &lt;existing-node&gt;</code></td></tr>
+      <tr><td>Three nodes</td><td>Promote the control group once. Monitors and quorum land on all three.</td><td><code>cluster set control h1,h2,h3</code></td></tr>
+      <tr><td>Any day</td><td>Move a disk between the local pool and Ceph, one disk at a time.</td><td><code>node disks zfs_add | zfs_remove | ceph_add | ceph_remove</code></td></tr>
+      <tr><td>Any day</td><td>See the live state: virtual IP, quorum, Ceph, every member.</td><td><code>cluster status</code></td></tr>
+      <tr><td>Patch day</td><td>List and apply base-OS security updates on the node.</td><td><code>node update security_update all</code></td></tr>
     </table>
   </div>
 </section>
@@ -380,412 +215,9 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
 </footer>
 </div>
 
-<script>
-(function () {
-  'use strict';
-  var NODE_W = 130, NODE_H = 190, NODE_Y = 170, GAP = 150, X0 = 40;
-  var chapters = ['One node', 'One to N', 'Scale', 'Updates'];
-  var slugs = ['one-node', 'one-to-n', 'scale', 'updates'];   // deep links: #scale, #step-9
-
-  // Each step mutates a plain state; the state at step i is the replay of steps 0..i.
-  function node(id) { return { id: id, control: false, disks: ['free', 'free', 'free', 'free'], dim: false }; }
-  function findNode(s, id) { for (var i = 0; i < s.nodes.length; i++) if (s.nodes[i].id === id) return s.nodes[i]; return null; }
-  function allCeph(n) { n.disks = ['ceph', 'ceph', 'ceph', 'free']; }
-
-  var steps = [
-    { ch: 0, title: 'Boot from the image', cmd: '# ISO, USB or PXE. Root on ZFS, no partitioning questions.',
-      text: 'The installer lays out ZFS and copies the image. One image carries the OS, the storage stack, clustering, HA and the CLI; there is nothing to assemble afterwards.',
-      run: function (s) { var n = node('h1'); n.dim = true; s.nodes.push(n); } },
-    { ch: 0, title: 'One screen, one press', cmd: 'frad_cli\n# first login: the node proposes its configuration. Press 1.',
-      text: 'The node proposes its own setup: host name, network, cluster new or join, virtual IP, time. Press 1 and it is applied. Fleets and PXE farms run frad_cli -0 and never see the screen.',
-      run: function (s) { s.fb = 'h1'; findNode(s, 'h1').dim = false; } },
-    { ch: 0, title: 'A storage node, by itself', cmd: 'frad_cli -c node status',
-      text: 'Ceph is up with the local disks as OSDs. CephFS, S3 and the dashboard are live. A single node is useful on day one, and it already behaves like a one-member cluster.',
-      run: function (s) { s.fb = null; allCeph(findNode(s, 'h1')); s.svc = true; } },
-
-    { ch: 1, title: 'A second node joins', cmd: 'frad_cli -c node join 10.0.0.11',
-      text: 'The join handshake sets up SSH trust with every member, registers the node with ceph orch and pulls the cluster’s configuration and credentials. Its disks become OSDs.',
-      run: function (s) { var n = node('h2'); allCeph(n); s.nodes.push(n); s.bus = true; } },
-    { ch: 1, title: 'A third node joins', cmd: 'frad_cli -c node join 10.0.0.11',
-      text: 'No re-install, no hand-written configuration. Nodes find each other by mDNS, so the first-boot screen on a new machine already proposes: join.',
-      run: function (s) { var n = node('h3'); allCeph(n); s.nodes.push(n); } },
-    { ch: 1, title: 'One step makes it resilient', cmd: 'frad_cli -c cluster set control h1,h2,h3',
-      text: 'Ceph monitors and the Pacemaker quorum are placed on three nodes at once, and the cluster virtual IP fails over between them. The last control node can never be demoted by accident.',
-      run: function (s) { ['h1', 'h2', 'h3'].forEach(function (id) { findNode(s, id).control = true; }); s.vip = true; } },
-    { ch: 1, title: '… and so on to N', cmd: 'frad_cli -c node join 10.0.0.10    # on each new node',
-      text: 'Every further node is the same command. Capacity, CephFS and S3 grow with the disks that arrive. Control stays with three nodes; the rest just bring storage.',
-      run: function (s) { ['h4', 'h5', 'h6'].forEach(function (id) { var n = node(id); n.disks = ['ceph', 'ceph', 'free', 'free']; s.nodes.push(n); }); } },
-
-    { ch: 2, title: 'Up: local disks join dpool (ZFS)', cmd: 'frad_cli -c node disks zfs_add dpool mirror /dev/sdc /dev/sdd',
-      text: 'Local disks join a host-local ZFS pool one vdev at a time, as stripe, mirror or raidz. Which backend a disk serves is the operator’s per-disk choice, never inferred from the node’s role.',
-      run: function (s) { var n = findNode(s, 'h4'); n.disks[2] = 'zfs'; n.disks[3] = 'zfs'; s.hot = 'h4:2,3'; } },
-    { ch: 2, title: 'Down: a disk leaves, data first', cmd: 'frad_cli -c node disks zfs_remove /dev/sdd',
-      text: 'The disk is evacuated onto its siblings before it is released. FRAD refuses what OpenZFS cannot do and never drops the last vdev by accident.',
-      run: function (s) { findNode(s, 'h4').disks[3] = 'free'; s.hot = 'h4:3'; } },
-    { ch: 2, title: 'Out: the same disk goes to Ceph', cmd: 'frad_cli -c node disks ceph_add /dev/sdd',
-      text: 'A released disk is a clean block device. The same disk can serve Ceph as an OSD today and come back to the local pool tomorrow. Capacity moves between the two backends disk by disk.',
-      run: function (s) { findNode(s, 'h4').disks[3] = 'ceph'; s.hot = 'h4:3'; } },
-    { ch: 2, title: 'In: a node leaves the cluster', cmd: 'frad_cli -c cluster remove_node h6',
-      text: 'Its OSDs drain onto the rest of the cluster, then the node is removed. Capacity goes out and in one node at a time, while the other nodes keep serving.',
-      run: function (s) { s.hot = null; s.nodes = s.nodes.filter(function (n) { return n.id !== 'h6'; }); } },
-
-    { ch: 3, title: 'Three channels, three speeds', cmd: 'frad_cli -c node update security_list',
-      text: 'Base-OS security fixes, FRAD’s own code and whole firmware images each travel on their own channel, so a kernel CVE never waits for a firmware release, and a FRAD fix never re-images the base OS.',
-      run: function (s) { s.upd = 'channels'; } },
-    { ch: 3, title: 'Clone, validate, then switch', designed: true, cmd: 'frad_cli -c node update security_update all',
-      text: 'The upgrade is applied to a clone of the running boot environment and checked there. Only then does the clone become the boot target. The running system is never patched in place.',
-      run: function (s) { s.upd = 'clone'; } },
-    { ch: 3, title: 'Rollback is one menu away', designed: true, cmd: '# ZFSBootMenu: pick the previous boot environment',
-      text: 'A bad upgrade is undone by booting the previous environment. There is nothing to restore and nothing to rebuild; the old root is still there, untouched.',
-      run: function (s) { s.upd = 'rollback'; } },
-    { ch: 3, title: 'FRAD’s code is fenced off', cmd: '# /frbe: read-only dataset, a snapshot before every fixpack',
-      text: 'Everything FRAD adds lives in its own read-only dataset. apt cannot touch it and a fixpack cannot touch the base OS, so the two fast channels cannot collide. Ceph itself upgrades in place with cluster ceph_upgrade.',
-      run: function (s) { s.upd = 'frbe'; } }
-  ];
-
-  function stateAt(i) {
-    var s = { nodes: [], fb: null, svc: false, bus: false, vip: false, hot: null, upd: null };
-    for (var k = 0; k <= i; k++) steps[k].run(s);
-    return s;
-  }
-
-  var svg = document.getElementById('svg');
-  var gNodes = document.getElementById('nodes'), gTicks = document.getElementById('ticks');
-  var gVip = document.getElementById('vip'), gFb = document.getElementById('fb'), gUpd = document.getElementById('upd');
-  var NS = 'http://www.w3.org/2000/svg';
-  function el(tag, attrs, parent) {
-    var e = document.createElementNS(NS, tag);
-    for (var k in attrs) if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]);
-    if (parent) parent.appendChild(e);
-    return e;
-  }
-  function txt(parent, x, y, s, attrs) {
-    var t = el('text', attrs || {}, parent); t.setAttribute('x', x); t.setAttribute('y', y); t.textContent = s; return t;
-  }
-  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function nodeX(idx) { return X0 + idx * GAP; }
-  var MARK = 'M50 13a37 37 0 1 1 0 74a37 37 0 1 1 0-74';
-
-  function miniMark(parent, x, y, sc) {
-    var g = el('g', { transform: 'translate(' + x + ' ' + y + ') scale(' + sc + ')' }, parent);
-    el('circle', { cx: 50, cy: 50, r: 37, fill: 'none', stroke: 'var(--ceph)', 'stroke-width': 9 }, g);
-    for (var k = 0; k < 5; k++) {
-      var a = (-90 + k * 72) * Math.PI / 180, px = 50 + 37 * Math.cos(a), py = 50 + 37 * Math.sin(a);
-      el('line', { x1: 50, y1: 50, x2: px.toFixed(1), y2: py.toFixed(1), stroke: 'var(--ceph)', 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
-      el('circle', { cx: px.toFixed(1), cy: py.toFixed(1), r: 9, fill: 'var(--ceph)' }, g);
-    }
-    el('circle', { cx: 50, cy: 50, r: 14, fill: 'var(--zfs)' }, g);
-  }
-
-  function buildNode(n) {
-    var g = el('g', { 'class': 'node enter', 'data-id': n.id }, gNodes);
-    var in_ = el('g', { 'class': 'inner' }, g);
-    el('rect', { 'class': 'box', x: 0, y: 0, width: NODE_W, height: NODE_H, rx: 10 }, in_);
-    el('path', { 'class': 'cap', d: 'M10 0.75H' + (NODE_W - 10) + 'a9.25 9.25 0 0 1 9.25 9.25V34H0.75V10A9.25 9.25 0 0 1 10 0.75Z' }, in_);
-    miniMark(in_, 11, 10, 0.14);
-    txt(in_, 30, 24, n.id, { 'class': 'mono', 'font-size': 15, 'font-weight': 600 });
-    var mon = el('g', { 'class': 'mon' }, in_);
-    el('rect', { x: 76, y: 9, width: 44, height: 18, rx: 9, fill: 'var(--ctl)' }, mon);
-    txt(mon, 98, 22, 'control', { 'font-size': 10, 'text-anchor': 'middle', fill: '#fff', 'font-weight': 600 });
-    txt(in_, 12, 52, 'FRAD OS · root on ZFS', { 'class': 'muted', 'font-size': 10.5 });
-    txt(in_, 12, 76, 'disks', { 'class': 'muted', 'font-size': 10.5 });
-    for (var i = 0; i < 4; i++) {
-      el('rect', { 'class': 'disk', 'data-i': i, x: 12 + i * 27, y: 86, width: 22, height: 56, rx: 4 }, in_);
-      el('rect', { 'class': 'hl', 'data-i': i, x: 16 + i * 27, y: 92, width: 5, height: 44, rx: 2.5 }, in_);
-    }
-    txt(in_, 12, 164, 'sda  sdb  sdc  sdd', { 'class': 'mono muted', 'font-size': 9.5 });
-    txt(in_, 12, 180, '', { 'class': 'muted lbl', 'font-size': 10.5 });
-    return g;
-  }
-
-  function settle(g, cls) {
-    // A forced style flush, not requestAnimationFrame: rAF does not run in hidden tabs and the element would stay invisible.
-    void g.getBoundingClientRect();
-    g.classList.remove(cls);
-  }
-  function retire(g, ms) {
-    g.classList.add('leaving');
-    setTimeout(function () { if (g.parentNode) g.parentNode.removeChild(g); }, reduced ? 0 : ms);
-  }
-  function isHot(s, id, d) {
-    if (!s.hot || s.hot.indexOf(id + ':') !== 0) return false;
-    return s.hot.split(':')[1].split(',').indexOf(String(d)) >= 0;
-  }
-
-  var fbBuilt = false, curUpd = null;
-
-  function render(i) {
-    var s = stateAt(i);
-    var inUpdate = !!s.upd;
-    document.getElementById('empty').style.opacity = s.nodes.length ? 0 : 1;
-
-    // nodes: keyed by id, keep existing elements so CSS transitions animate changes
-    var want = {};
-    s.nodes.forEach(function (n, idx) { want[n.id] = idx; });
-    Array.prototype.slice.call(gNodes.children).forEach(function (g) {
-      var id = g.getAttribute('data-id');
-      if (!(id in want) && !g.classList.contains('leaving')) retire(g, 750);
-    });
-    s.nodes.forEach(function (n, idx) {
-      var g = gNodes.querySelector('[data-id="' + n.id + '"]:not(.leaving)');
-      var fresh = false;
-      if (!g) { g = buildNode(n); fresh = true; }
-      g.style.transform = 'translate(' + nodeX(idx) + 'px, ' + NODE_Y + 'px)';
-      g.classList.toggle('ctl', n.control);
-      g.classList.toggle('dimmed', n.dim || (inUpdate && n.id !== 'h1'));
-      var disks = g.querySelectorAll('.disk'), hls = g.querySelectorAll('.hl');
-      for (var d = 0; d < 4; d++) {
-        var hot = isHot(s, n.id, d);
-        var cls = 'disk ' + (n.disks[d] === 'free' ? '' : n.disks[d]) + (hot ? ' hot' : '');
-        if (disks[d].getAttribute('class') !== cls) disks[d].setAttribute('class', cls);
-        hls[d].classList.toggle('on', n.disks[d] !== 'free');
-      }
-      var zfs = n.disks.filter(function (k) { return k === 'zfs'; }).length;
-      var ceph = n.disks.filter(function (k) { return k === 'ceph'; }).length;
-      var lbl = g.querySelector('.lbl');
-      lbl.textContent = n.dim ? 'installing…' : (ceph ? ceph + ' OSD' : '') + (zfs ? (ceph ? ' · ' : '') + 'dpool ' + zfs + ' disk' + (zfs > 1 ? 's' : '') : '') || 'no storage yet';
-      if (fresh) settle(g, 'enter');
-    });
-
-    // cluster bus: one path whose d is transitioned, a flowing dash overlay, and ticks keyed by node
-    var bus = document.getElementById('bus'), flow = document.getElementById('flow'), busLabel = document.getElementById('busLabel');
-    var showBus = s.bus && !inUpdate;
-    var d0 = 'M ' + (nodeX(0) + NODE_W / 2) + ' 130 H ' + (nodeX(Math.max(0, s.nodes.length - 1)) + NODE_W / 2);
-    if (showBus) { bus.setAttribute('d', d0); flow.setAttribute('d', d0); }
-    document.getElementById('busg').classList.toggle('on', showBus);
-    busLabel.classList.toggle('on', showBus);
-    var tickWant = {};
-    if (showBus) s.nodes.forEach(function (n, idx) { tickWant[n.id] = idx; });
-    Array.prototype.slice.call(gTicks.children).forEach(function (t) {
-      var id = t.getAttribute('data-id');
-      if (!(id in tickWant) && !t.classList.contains('leaving')) retire(t, 500);
-    });
-    Object.keys(tickWant).forEach(function (id) {
-      var t = gTicks.querySelector('[data-id="' + id + '"]:not(.leaving)');
-      var x = nodeX(tickWant[id]) + NODE_W / 2;
-      if (!t) { t = el('line', { 'class': 'tick enter', 'data-id': id, x1: x, y1: 130, x2: x, y2: NODE_Y }, gTicks); settle(t, 'enter'); }
-    });
-
-    // services banner
-    document.getElementById('svc').classList.toggle('on', s.svc && !inUpdate);
-
-    // VIP badge over the control nodes: built once, moved by transform
-    var ctl = s.nodes.map(function (n, idx) { return n.control ? idx : -1; }).filter(function (v) { return v >= 0; });
-    var showVip = s.vip && ctl.length && !inUpdate;
-    if (showVip) {
-      var cx = (nodeX(ctl[0]) + nodeX(ctl[ctl.length - 1]) + NODE_W) / 2;
-      if (!gVip.firstChild) {
-        el('rect', { 'class': 'halo', x: -112, y: 68, width: 224, height: 30, rx: 15 }, gVip);
-        el('rect', { 'class': 'pill', x: -112, y: 68, width: 224, height: 30, rx: 15 }, gVip);
-        txt(gVip, 0, 88, 'virtual IP · quorum of 3 · dashboard · S3', { 'font-size': 12, 'text-anchor': 'middle', 'font-weight': 600 });
-        el('g', { 'class': 'legs' }, gVip);
-      }
-      var legs = gVip.querySelector('.legs');
-      while (legs.firstChild) legs.removeChild(legs.firstChild);
-      ctl.forEach(function (idx) { var lx = nodeX(idx) + NODE_W / 2 - cx; el('line', { x1: lx, y1: 98, x2: lx, y2: 128 }, legs); });
-      gVip.style.transform = 'translateX(' + cx + 'px)';
-    }
-    gVip.classList.toggle('on', !!showVip);
-
-    // first-boot screen: built once, slides in and out
-    if (s.fb && !fbBuilt) {
-      fbBuilt = true;
-      var fx = nodeX(0) + NODE_W + 24, fy = NODE_Y - 10;
-      el('rect', { 'class': 'screen', x: fx, y: fy, width: 372, height: 236, rx: 8 }, gFb);
-      el('path', { 'class': 'bar', d: 'M' + (fx + 8) + ' ' + fy + 'H' + (fx + 364) + 'a8 8 0 0 1 8 8v14H' + fx + 'V' + (fy + 8) + 'a8 8 0 0 1 8-8Z' }, gFb);
-      [['#ff5f57', 0], ['#febc2e', 1], ['#28c840', 2]].forEach(function (c) { el('circle', { cx: fx + 16 + c[1] * 14, cy: fy + 11, r: 4, fill: c[0] }, gFb); });
-      txt(gFb, fx + 186, fy + 15, 'h1 · first login', { 'class': 'mono', 'font-size': 10, 'text-anchor': 'middle', fill: '#8aa0ad' });
-      var lines = ['Summary', 'Host name: h1          Cluster: new (bootstraps)', 'IF.1 10.0.0.11/24  gw 10.0.0.1   Storage: converged', 'Virtual IP: 10.0.0.10   NTP: pool   DNS: 10.0.0.1', '', '1: Apply the above configurations', '2: Config Host Name', '3: Config Networking Settings', '4: Config Password     5: Time Zone   6: NTP', '7: All other settings'];
-      lines.forEach(function (l, k) { txt(gFb, fx + 14, fy + 42 + k * 16.5, l, { 'class': 'mono' + (k === 5 ? ' apply' : ''), 'font-size': 11, 'font-weight': k === 5 || k === 0 ? 600 : 400 }); });
-      txt(gFb, fx + 14, fy + 42 + 11 * 16.5, 'Choice:', { 'class': 'mono', 'font-size': 11 });
-      el('rect', { 'class': 'cursor', x: fx + 68, y: fy + 42 + 11 * 16.5 - 10, width: 7, height: 13 }, gFb);
-      el('line', { 'class': 'lead', x1: nodeX(0) + NODE_W, y1: NODE_Y + 30, x2: fx, y2: NODE_Y + 30 }, gFb);
-    }
-    gFb.classList.toggle('on', !!s.fb);
-
-    // update inlay: boot environments and /frbe on h1; panes crossfade
-    if (s.upd !== curUpd) {
-      Array.prototype.slice.call(gUpd.children).forEach(function (pg) {
-        pg.classList.add('out');
-        setTimeout(function () { if (pg.parentNode) pg.parentNode.removeChild(pg); }, reduced ? 0 : 500);
-      });
-      if (s.upd) {
-        var pg = el('g', { 'class': 'pane-g enter' }, gUpd);
-        drawUpdate(s.upd, pg);
-        settle(pg, 'enter');
-      }
-      curUpd = s.upd;
-    }
-  }
-
-  function drawUpdate(mode, P) {
-    var px = nodeX(1) + 10, py = 60, pw = 940 - px, ph = 390;
-    el('rect', { 'class': 'pane', x: px, y: py, width: pw, height: ph, rx: 8 }, P);
-    txt(gUpd, px + 18, py + 26, 'Inside h1', { 'font-size': 13, 'font-weight': 600 });
-    el('line', { 'class': 'lane', x1: nodeX(0) + NODE_W, y1: NODE_Y + 30, x2: px, y2: py + 30 }, P);
-
-    if (mode === 'channels') {
-      var rows = [
-        ['apt', 'base OS: kernel, systemd, OpenSSH, ZFS, podman', 'Ubuntu security cadence', 'previous boot environment', 'var(--ctl)'],
-        ['/frbe fixpack', 'FRAD’s own code and bundled images', 'whenever a fix ships, no reboot', 'snapshot before every change', 'var(--zfs)'],
-        ['PPU image', 'the whole firmware', 'rare: air-gapped sites, major versions', 'boot environment switch', 'var(--ceph)']
-      ];
-      txt(gUpd, px + 18, py + 56, 'channel', { 'class': 'muted', 'font-size': 10.5 });
-      txt(gUpd, px + 150, py + 56, 'carries', { 'class': 'muted', 'font-size': 10.5 });
-      txt(gUpd, px + 430, py + 56, 'cadence', { 'class': 'muted', 'font-size': 10.5 });
-      txt(gUpd, px + 640, py + 56, 'rollback', { 'class': 'muted', 'font-size': 10.5 });
-      rows.forEach(function (r, k) {
-        var y = py + 90 + k * 92;
-        var P0 = P; P = el('g', { 'class': 'row', style: 'animation-delay: ' + (120 + k * 140) + 'ms' }, P0);
-        el('rect', { x: px + 18, y: y - 26, width: pw - 36, height: 72, rx: 6, fill: 'color-mix(in srgb, ' + r[4] + ' 6%, var(--panel))', stroke: r[4], 'stroke-width': 1.5 }, P);
-        el('rect', { x: px + 18, y: y - 26, width: 6, height: 72, rx: 2, fill: r[4] }, P);
-        txt(gUpd, px + 36, y, r[0], { 'class': 'mono', 'font-size': 13, 'font-weight': 600 });
-        txt(gUpd, px + 150, y, r[1], { 'font-size': 12 });
-        txt(gUpd, px + 430, y, r[2], { 'font-size': 12 });
-        txt(gUpd, px + 640, y, r[3], { 'font-size': 12 });
-        txt(gUpd, px + 36, y + 26, k === 0 ? 'a kernel CVE never waits for a firmware release' : k === 1 ? 'a FRAD fix never re-images the base OS' : 'one file, verified, for sites with no network', { 'class': 'muted', 'font-size': 11 });
-      });
-      return;
-    }
-    if (mode === 'frbe') {
-      el('rect', { 'class': 'be run', x: px + 30, y: py + 60, width: 300, height: 150, rx: 6 }, P);
-      txt(gUpd, px + 46, py + 86, 'rpool/ROOT/be-2   (running)', { 'class': 'mono', 'font-size': 12, 'font-weight': 600 });
-      txt(gUpd, px + 46, py + 110, 'base OS: kernel, systemd, ZFS, podman', { 'font-size': 12 });
-      txt(gUpd, px + 46, py + 130, 'changed only by apt', { 'class': 'muted', 'font-size': 11 });
-      txt(gUpd, px + 46, py + 170, 'cannot write into /frbe', { 'font-size': 11, fill: 'var(--ok)', 'font-weight': 600 });
-      el('rect', { 'class': 'frbe', x: px + 370, y: py + 60, width: 300, height: 150, rx: 6 }, P);
-      txt(gUpd, px + 386, py + 86, 'rpool/frbe   (read-only)', { 'class': 'mono', 'font-size': 12, 'font-weight': 600 });
-      txt(gUpd, px + 386, py + 110, 'frad_cli, frad_config, frad_sdk, Ceph image', { 'font-size': 12 });
-      txt(gUpd, px + 386, py + 130, 'unlocked only for a fixpack or hotfix', { 'class': 'muted', 'font-size': 11 });
-      txt(gUpd, px + 386, py + 170, 'snapshot before every change', { 'font-size': 11, fill: 'var(--zfs)', 'font-weight': 600 });
-      el('line', { 'class': 'lane', x1: px + 330, y1: py + 135, x2: px + 370, y2: py + 135, 'stroke-dasharray': '4 3' }, P);
-      txt(gUpd, px + 30, py + 260, 'Two fast channels, two datasets, no way to collide.', { 'font-size': 14, 'font-weight': 600 });
-      txt(gUpd, px + 30, py + 284, 'Ceph daemons are containers; cluster ceph_upgrade moves them to a new image in place.', { 'class': 'muted', 'font-size': 12 });
-      return;
-    }
-    // clone / rollback: two boot environments
-    var runA = mode === 'clone', runB = false;
-    var be1 = el('rect', { 'class': 'be ' + (mode === 'clone' ? 'run' : 'run'), x: px + 30, y: py + 70, width: 280, height: 120, rx: 6 }, P);
-    txt(gUpd, px + 46, py + 96, 'be-1   ' + (mode === 'clone' ? '(running)' : '(running again)'), { 'class': 'mono', 'font-size': 12, 'font-weight': 600 });
-    txt(gUpd, px + 46, py + 120, 'kernel 6.x · ZFS · podman', { 'font-size': 12 });
-    txt(gUpd, px + 46, py + 142, mode === 'clone' ? 'serving storage the whole time' : 'untouched, so it simply boots', { 'class': 'muted', 'font-size': 11 });
-    var be2 = el('rect', { 'class': 'be ' + (mode === 'clone' ? '' : 'bad'), x: px + 380, y: py + 70, width: 280, height: 120, rx: 6 }, P);
-    txt(gUpd, px + 396, py + 96, 'be-2   ' + (mode === 'clone' ? '(clone)' : '(failed validation)'), { 'class': 'mono', 'font-size': 12, 'font-weight': 600 });
-    txt(gUpd, px + 396, py + 120, mode === 'clone' ? 'apt upgrade applied here' : 'left in place for diagnosis', { 'font-size': 12 });
-    txt(gUpd, px + 396, py + 142, mode === 'clone' ? 'checked against what /frbe was validated with' : 'never became the boot target', { 'class': 'muted', 'font-size': 11 });
-    el('line', { 'class': 'lane', x1: px + 310, y1: py + 130, x2: px + 380, y2: py + 130 }, P);
-    txt(gUpd, px + 345, py + 122, mode === 'clone' ? 'clone' : 'back', { 'class': 'muted', 'font-size': 10.5, 'text-anchor': 'middle' });
-    var stepsY = py + 240;
-    var seq = mode === 'clone'
-      ? [['1', 'clone the running boot environment'], ['2', 'apply the upgrade to the clone'], ['3', 'validate: kernel, ZFS, podman within what /frbe supports'], ['4', 'make the clone the boot target; reboot']]
-      : [['1', 'the new environment misbehaves'], ['2', 'reboot, ZFSBootMenu lists both environments'], ['3', 'pick be-1; it was never modified'], ['4', 'storage is back; be-2 waits for a fix']];
-    seq.forEach(function (r, k) {
-      txt(gUpd, px + 36, stepsY + k * 26, r[0], { 'class': 'mono', 'font-size': 12, fill: 'var(--ctl)', 'font-weight': 600 });
-      txt(gUpd, px + 58, stepsY + k * 26, r[1], { 'font-size': 12.5 });
-    });
-    txt(gUpd, px + 36, py + ph - 18, 'designed, in progress (ADR 0009, ADR 0016)', { 'class': 'muted', 'font-size': 11 });
-  }
-
-  // Narrator
-  var cur = 0, playing = false, timer = null, barTimer = null;
-  var tabs = document.getElementById('tabs');
-  chapters.forEach(function (name, k) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.textContent = name; b.setAttribute('role', 'tab'); b.id = 'tab-' + k;
-    b.addEventListener('click', function () { stop(); go(firstOf(k)); setHash('#' + slugs[k]); });
-    tabs.appendChild(b);
-  });
-  function firstOf(ch) { for (var i = 0; i < steps.length; i++) if (steps[i].ch === ch) return i; return 0; }
-
-  function go(i) {
-    cur = Math.max(0, Math.min(steps.length - 1, i));
-    var st = steps[cur];
-    render(cur);
-    document.getElementById('stepno').textContent = (cur + 1) + ' / ' + steps.length;
-    document.getElementById('chapname').textContent = chapters[st.ch];
-    var t = document.getElementById('title'); t.textContent = st.title;
-    if (st.designed) { var c = document.createElement('span'); c.className = 'chip'; c.textContent = 'designed'; t.appendChild(c); }
-    document.getElementById('text').textContent = st.text;
-    document.getElementById('story').style.setProperty('--accent', ['var(--zfs)', 'var(--ceph)', 'var(--ctl)', 'var(--ok)'][st.ch]);
-    ['title', 'text', 'cmd'].forEach(function (id) { var e = document.getElementById(id); e.classList.remove('fade'); void e.offsetWidth; e.classList.add('fade'); });
-    var cmd = document.getElementById('cmd'); cmd.textContent = '';
-    st.cmd.split('\n').forEach(function (line, k) {
-      if (k) cmd.appendChild(document.createTextNode('\n'));
-      if (line.charAt(0) === '#') { var m = document.createElement('span'); m.className = 'prompt'; m.textContent = line; cmd.appendChild(m); }
-      else { var p = document.createElement('span'); p.className = 'prompt'; p.textContent = '# '; cmd.appendChild(p); cmd.appendChild(document.createTextNode(line)); }
-    });
-    Array.prototype.forEach.call(tabs.children, function (b, k) { b.setAttribute('aria-selected', k === st.ch ? 'true' : 'false'); });
-    document.getElementById('prev').disabled = cur === 0;
-    document.getElementById('next').disabled = cur === steps.length - 1;
-    if (playing) armBar(); else playLabel();
-  }
-  function playLabel() { document.getElementById('play').textContent = cur >= steps.length - 1 ? 'Replay' : 'Play'; }
-  function setHash(h) { if (history.replaceState) history.replaceState(null, '', h); else location.hash = h; }
-  function fromHash() {
-    var h = location.hash.slice(1), m = /^step-(\d+)$/.exec(h), k = slugs.indexOf(h);
-    if (m) return Math.max(0, Math.min(steps.length - 1, parseInt(m[1], 10) - 1));
-    return k >= 0 ? firstOf(k) : -1;
-  }
-  var PERIOD = 5000;
-  function armBar() {
-    var bar = document.getElementById('bar');
-    bar.style.transition = 'none'; bar.style.width = '0';
-    clearTimeout(barTimer);
-    barTimer = setTimeout(function () { bar.style.transition = 'width ' + PERIOD + 'ms linear'; bar.style.width = '100%'; }, 30);
-  }
-  function tick() {
-    if (!playing) return;
-    if (cur >= steps.length - 1) {
-      if (!auto) { stop(); return; }
-      go(0);                       // autoplay loops until someone touches the controls
-    } else go(cur + 1);
-    timer = setTimeout(tick, PERIOD);
-  }
-  function play() {
-    playing = true; document.getElementById('play').textContent = 'Pause';
-    if (cur >= steps.length - 1) go(0);
-    armBar();
-    timer = setTimeout(tick, PERIOD);
-  }
-  function stop() {
-    playing = false; clearTimeout(timer); clearTimeout(barTimer);
-    playLabel();
-    var bar = document.getElementById('bar'); bar.style.transition = 'none'; bar.style.width = '0';
-  }
-  // Autoplay: starts when the stage scrolls into view, loops, pauses only while hidden or out of view.
-  // Any hand on the controls ends it for good; Play then runs through once.
-  var touched = false, suspended = false, autoDone = false, auto = false;
-  function autoplay() { auto = true; play(); }
-  function manual(fn) { return function () { touched = true; auto = false; suspended = false; stop(); fn(); }; }
-  document.getElementById('play').addEventListener('click', function () { touched = true; auto = false; suspended = false; playing ? stop() : play(); });
-  document.getElementById('prev').addEventListener('click', manual(function () { go(cur - 1); }));
-  document.getElementById('next').addEventListener('click', manual(function () { go(cur + 1); }));
-  document.addEventListener('keydown', function (e) {
-    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
-    if (e.key === 'ArrowRight') manual(function () { go(cur + 1); })();
-    if (e.key === 'ArrowLeft') manual(function () { go(cur - 1); })();
-  });
-  function suspend() { if (playing) { suspended = true; stop(); } }
-  function resume() { if (suspended && !document.hidden) { suspended = false; play(); } }
-  document.addEventListener('visibilitychange', function () { document.hidden ? suspend() : resume(); });
-  var stage = document.getElementById('story');
-  if ('IntersectionObserver' in window && !reduced) {
-    new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          if (!autoDone && !touched) { autoDone = true; autoplay(); }
-          else resume();
-        } else suspend();
-      });
-    }, { threshold: 0.45 }).observe(stage);
-  }
-
-  var start = fromHash();
-  go(start >= 0 ? start : 0);
-  if (start >= 0) setTimeout(function () { stage.scrollIntoView(); }, 0);
-  window.addEventListener('hashchange', function () { var i = fromHash(); if (i >= 0) { stop(); go(i); stage.scrollIntoView(); if (!touched) autoplay(); } });
-})();
-</script>
+<script src="term.js"></script>
+<script src="examples.js"></script>
+<script src="content.js"></script>
+<script src="stage.js"></script>
 </body>
 </html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The FRAD CLI, command by command: usage from the product's own command tree and replays of recorded test runs.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<title>FRAD CLI manual</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+/* The manual: a rail with the command tree, a panel for one command */
+.manual { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 24px; margin-block: 18px 56px; align-items: start; }
+.rail { position: sticky; top: 72px; max-height: calc(100vh - 90px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 6px; font-family: var(--mono); font-size: 13px; }
+.rail ul { list-style: none; margin: 0; padding-left: 0; }
+.rail ul ul { padding-left: 14px; border-left: 1px solid var(--line); margin-left: 9px; }
+.rail li { margin: 1px 0; }
+.rail a { display: block; padding: 3px 8px; border-radius: 5px; text-decoration: none; color: var(--fg); }
+.rail li.mode > a { font-weight: 600; }
+.rail li.global > a { color: var(--muted); }
+.rail a.destructive::after { content: " !"; color: var(--warn); }
+.rail a:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.rail a.on { background: var(--fg); color: var(--bg); }
+.cmdpanel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: grid; gap: 14px; min-width: 0; }
+.cmdpanel h2 { font-family: var(--mono); font-size: 26px; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cmdpanel .chip { margin-left: 0; }
+.chip.mode { border-color: var(--ctl); color: var(--ctl); }
+.chip.readonly { border-color: var(--ok); color: var(--ok); }
+.chip.mutating { border-color: var(--zfs); color: var(--zfs); }
+.chip.destructive { border-color: var(--warn); color: var(--warn); }
+.forms { display: grid; gap: 8px; }
+.form { font-family: var(--mono); font-size: 13.5px; white-space: pre-wrap; background: color-mix(in srgb, var(--fg) 5%, var(--panel)); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.form .ps { color: var(--muted); }
+.usage code { font-size: 13px; color: var(--muted); }
+.cmeta { color: var(--muted); max-width: 70ch; }
+.subs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.subs li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--line); padding: 6px 2px; }
+.subs a { text-decoration: none; }
+.subs a:hover code { text-decoration: underline; }
+.subs code { font-size: 13px; }
+.subs .muted { font-size: 12px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+.muted { color: var(--muted); }
+.cmdpanel .term { margin-top: 0; height: 14em; }
+.replayrow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.replayrow button { font: 500 14px var(--body); padding: 9px 14px; border-radius: 6px; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; }
+.cprov { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.cseen { font-size: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+.cseen a { color: var(--fg); }
+.source { font-size: 13px; color: var(--muted); }
+@media (max-width: 860px) {
+  .manual { grid-template-columns: 1fr; }
+  .rail { position: static; max-height: 40vh; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="wordmark"><svg class="mark-svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><circle cx="50" cy="50" r="37" fill="none" stroke="var(--ceph)" stroke-width="7"/><line x1="50" y1="50" x2="50.0" y2="13.0" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="50.0" cy="13.0" r="7.5" fill="var(--ceph)"/><line x1="50" y1="50" x2="85.2" y2="38.6" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="85.2" cy="38.6" r="7.5" fill="var(--ceph)"/><line x1="50" y1="50" x2="71.7" y2="79.9" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="71.7" cy="79.9" r="7.5" fill="var(--ceph)"/><line x1="50" y1="50" x2="28.3" y2="79.9" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="28.3" cy="79.9" r="7.5" fill="var(--ceph)"/><line x1="50" y1="50" x2="14.8" y2="38.6" stroke="var(--ceph)" stroke-width="4.5" stroke-linecap="round"/><circle cx="14.8" cy="38.6" r="7.5" fill="var(--ceph)"/><circle cx="50" cy="50" r="13" fill="var(--zfs)"/></svg>FRAD</div>
+  <div class="right">
+    <nav>
+      <a href="index.html#story">The story</a>
+      <a href="cli.html" aria-current="page">CLI manual</a>
+      <a href="index.html#status">What is built</a>
+      <a href="index.html#run">How it is run</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">CLI manual · every command, as the product defines it</div>
+  <h1>The FRAD command line, one path at a time.</h1>
+  <p class="lead">The tree on the left is the product's own command tree, the one its tests are generated from. Each page shows how the command is typed at the prompt, what it accepts, and a replay of a recorded test run where one exists.</p>
+</div>
+
+<div class="manual">
+  <aside class="rail"><nav id="tree" aria-label="Command tree"></nav></aside>
+  <main class="cmdpanel">
+    <div class="eyebrow" id="cpath"></div>
+    <h2 id="cname"></h2>
+    <div class="forms" id="cforms"></div>
+    <div class="usage" id="cusage"></div>
+    <p class="cmeta" id="cmeta"></p>
+    <ul class="subs" id="csubs"></ul>
+    <div class="term" id="term" aria-live="polite" aria-label="Recorded session"></div>
+    <div class="replayrow"><button id="replay" type="button">Replay</button><span class="cprov" id="cprov"></span></div>
+    <div class="cseen" id="cseen"></div>
+  </main>
+</div>
+
+<p class="source">Tree from the product's command baseline; sessions from passing test logs, shown as typed at the prompt and as printed back, nothing else. A command without a recorded run on this page shows the prompt only.</p>
+
+<footer>
+  <span>FRAD is closed-source. This page is its public face.</span>
+  <span><a href="index.html">Back to the story</a></span>
+</footer>
+</div>
+
+<script src="term.js"></script>
+<script src="examples.js"></script>
+<script src="content.js"></script>
+<script src="cli-tree.js"></script>
+<script src="cli.js"></script>
+</body>
+</html>

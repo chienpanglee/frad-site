@@ -1,0 +1,300 @@
+/* FRAD site content, hand-written in the form the frad generator will emit (see VOCABULARY.md).
+   Status chips are an editorial reading until the generator derives them from the repository. */
+window.FRAD_CONTENT = { chapters: [
+
+{ slug: 'install', label: 'Install', title: 'Install media', accent: 'ctl',
+  intro: 'One image, four ways to boot it. The installer lays out root on ZFS and copies the image; there is nothing to partition and nothing to assemble afterwards.',
+  tour: [
+    ['step', 'Boot from the image', 'ISO, USB, PXE or UEFI HTTP boot: the same image every time. One image carries the OS, the storage stack, clustering, HA and the CLI.'],
+    ['note', '# UEFI only. Root on ZFS, rpool as a mirror when two disks are there.'],
+    ['node', 'h1', 'installing'],
+    ['step', 'Verified before it runs', 'Every build ships with its software bill of materials, a vulnerability report and a signature. Online the signature is attested; offline the same check runs against a bundled key.', 'designed'],
+    ['note', '# sbom · vulnerability report · signature: checked before the image is written'],
+    ['verify', 'image', 'online']
+  ],
+  features: [
+    { slug: 'media', title: 'ISO, USB, PXE and UEFI HTTP boot', status: 'built', tests: 4,
+      summary: 'Four media, one image, UEFI only. PXE and UEFI HTTP boot come from the PXE server appliance built from the same tree.',
+      details: ['A site with a network boots the image over PXE or UEFI HTTP from the appliance. A site without one writes the ISO to a USB stick. The result is the same install.', 'Legacy BIOS is not supported, which keeps one boot path, one bootloader and one set of firmware variables to test.'],
+      recipe: [['step', 'The same image, four ways', 'ISO and USB for a single machine, PXE and UEFI HTTP boot for a rack.'], ['note', '# iso · usb · pxe · uefi http'], ['node', 'h1', 'installing']] },
+    { slug: 'pxe-appliance', title: 'PXE server appliance', status: 'built', tests: 2,
+      summary: 'A small image that serves DHCP, TFTP and HTTP boot for a whole rack, built and tested with every release.',
+      details: ['The appliance is built from the same tree as the product, so a release always carries a matching boot server.'] },
+    { slug: 'rpool-mirror', title: 'rpool mirrored by default', status: 'built', tests: 1, adr: '0021',
+      summary: 'With two system disks the installer mirrors the root pool; a single disk installs as a stripe that can be mirrored later.',
+      details: ['The root pool scales like the data pool: a second disk can be attached after the install, and a failed one replaced, without reinstalling.'] },
+    { slug: 'sbom', title: 'Bill of materials and vulnerability report', status: 'built', tests: 1,
+      summary: 'Every build produces its SBOM and a vulnerability scan; the build prints one line per finding with its severity and the scanner database date.',
+      details: ['The report is part of the build output, not an afterthought: a release with a new critical finding is visible before it ships.'] },
+    { slug: 'signature', title: 'Signed image, online attestation or offline check', status: 'designed', adr: '0028',
+      summary: 'The image is signed at build time. A connected site attests the signature online; an air-gapped site checks it against a key bundled with the appliance.',
+      details: ['The same check runs before a fixpack or a firmware image is applied, so every channel is verified the same way.'],
+      recipe: [['step', 'Online: attested', 'The signature is checked against the release key and the check is recorded with a transparency log.', 'designed'], ['node', 'h1', 'installing'], ['note', '# online: signature, attestation, bill of materials, vulnerability report'], ['verify', 'image', 'online'], ['out', 'signature: valid · attestation: recorded · sbom: present · vulnerabilities: no critical finding'], ['step', 'Offline: the same check', 'An air-gapped site verifies against the key bundled with the appliance. The result is the same; only the attestation step is local.', 'designed'], ['note', '# offline: signature checked against the bundled key'], ['verify', 'image', 'offline'], ['out', 'signature: valid (bundled key) · sbom: present · vulnerabilities: no critical finding']] }
+  ] },
+
+{ slug: 'first-boot', label: 'First boot', title: 'Zero-touch first boot', accent: 'ok',
+  intro: 'The node proposes its own configuration on the first login. One press applies it; a fleet never sees the screen at all.',
+  tour: [
+    ['step', 'One screen, one press', 'Host name, network, cluster new or join, virtual IP, time: the node proposes all of it. One key applies it. Everything can be changed later.'],
+    ['note', '# first login: frad_cli is the login shell and proposes the configuration'],
+    ['verify', null], ['screen', 'h1', 'fts-menu'], ['ready', 'h1'],
+    ['step', 'A storage node, by itself', 'Ceph is up with the local disks as OSDs. CephFS, S3 and the dashboard are live. A single node is useful on day one, and it already behaves like a one-member cluster.'],
+    ['type', 'node status'],
+    ['screen', null], ['disks', 'h1', ['ceph', 'ceph', 'free', 'free']], ['services', 'on'],
+    ['out', 'h1: cluster new · 2 OSD · CephFS, S3 and dashboard live']
+  ],
+  features: [
+    { slug: 'menu', title: 'The interactive first-boot screen', status: 'built', tests: 3, adr: '0024',
+      summary: 'One summary screen with a proposed configuration and a numbered menu. Accept it, or change a line first. The screens here are from a test log.',
+      details: ['The proposal comes from what the node can see: its interfaces, a DHCP lease, the time source, and any cluster already on the segment.'],
+      recipe: [['step', 'The proposal', 'Everything the node needs is on one screen, as the first login shows it. Each numbered line changes one thing.'], ['note', '# first login: frad_cli is the login shell'], ['ready', 'h1'], ['screen', 'h1', 'fts-menu-unconfigured'], ['step', 'Change one line', 'Option 2 asks for the host name and nothing else.'], ['note', '# Select option: 2'], ['screen', 'h1', 'fts-menu-hostname'], ['step', 'The proposal, updated', 'The same screen comes back with the new name. Everything else is still the proposal.'], ['note', '# Enter the new host name: h1'], ['screen', 'h1', 'fts-menu'], ['step', 'Accept', 'One key accepts the license terms and applies the configuration. The node is a storage node.'], ['note', '# Select option: a'], ['screen', null], ['disks', 'h1', ['ceph', 'ceph', 'free', 'free']], ['services', 'on'], ['out', 'applied: h1 · cluster new · 2 OSD']] },
+    { slug: 'zero-touch', title: 'Unattended: zero touch', status: 'built', tests: 2, adr: '0024',
+      summary: 'With one flag the proposal is applied without the screen. PXE farms and fleets install themselves.',
+      details: ['The unattended mode applies exactly what the screen would have proposed, so a fleet install and a hand install end in the same state.'],
+      recipe: [['step', 'No screen at all', 'The same proposal, applied without a keyboard.'], ['note', '# unattended mode: the proposal is applied without the screen'], ['ready', 'h1'], ['disks', 'h1', ['ceph', 'ceph', 'free', 'free']], ['services', 'on'], ['out', 'applied: h1 · cluster new · 2 OSD']] },
+    { slug: 'discovery', title: 'Online: a cluster on the segment is proposed', status: 'built', tests: 2,
+      summary: 'Nodes find each other by mDNS. A new machine on a segment with a cluster is proposed to join it; alone, it proposes a new cluster.',
+      details: ['Several clusters on one segment are told apart; the screen names the one it proposes and the operator can pick another.'] },
+    { slug: 'changeable', title: 'Every setting can change afterwards', status: 'built', tests: 4,
+      summary: 'Host name, addresses and the storage network are all day-2 commands on a running member, not install-time decisions.',
+      details: ['A member can be renamed, readdressed or moved to another storage network while the cluster keeps serving.'] },
+    { slug: 'commit-time', title: 'A fast, measured first boot', status: 'built', tests: 2,
+      summary: 'The time from first login to a serving node is measured on every build and gated in the test pipeline, so it cannot creep.',
+      details: ['Nothing on this page is a benchmark. The point is that the number is watched: a change that slows the first boot fails the build.'] }
+  ] },
+
+{ slug: 'zfs-scale', label: 'ZFS up', title: 'Scale up and down with ZFS', accent: 'zfs',
+  intro: 'Local disks join or leave the host-local pool one vdev at a time. Both the root pool and the data pool grow and shrink the same way.',
+  tour: [
+    ['step', 'Up: local disks join dpool', 'Disks join a host-local ZFS pool as stripe, mirror or raidz. Which backend a disk serves is the operator’s per-disk choice, never inferred from the node’s role.'],
+    ['type', 'node disks zfs_add dpool mirror /dev/sdc /dev/sdd'],
+    ['disk', 'h1', 2, 'zfs'], ['disk', 'h1', 3, 'zfs'],
+    ['out', 'dpool: mirror-0 (sdc sdd) added'],
+    ['step', 'Down: a disk leaves, data first', 'The disk is evacuated onto its siblings before it is released. FRAD refuses what OpenZFS cannot do and never drops the last vdev by accident.'],
+    ['type', 'node disks zfs_remove /dev/sdd'],
+    ['disk', 'h1', 3, 'free'],
+    ['out', 'sdd: evacuated, released']
+  ],
+  features: [
+    { slug: 'add-vdev', title: 'Add a vdev: stripe, mirror or raidz', status: 'built', tests: 3, adr: '0007',
+      summary: 'A new vdev joins the pool in one command. The layout is chosen per vdev, so a pool can mix what the disks allow.',
+      recipe: [['step', 'Two disks, one mirror', 'The pool grows by one mirrored vdev.'], ['type', 'node disks zfs_add dpool mirror /dev/sdc /dev/sdd'], ['disk', 'h1', 2, 'zfs'], ['disk', 'h1', 3, 'zfs'], ['out', 'dpool: mirror-0 (sdc sdd) added']] },
+    { slug: 'evacuate', title: 'Remove a disk: evacuate, then release', status: 'built', tests: 2, adr: '0007',
+      summary: 'A disk leaves only after its data has moved to the rest of the pool. The released disk is a clean block device.',
+      recipe: [['step', 'A mirror in dpool', 'sdc and sdd hold the same data.'], ['disk', 'h1', 2, 'zfs'], ['disk', 'h1', 3, 'zfs'], ['step', 'Data first', 'The disk is drained onto its sibling, then detached.'], ['type', 'node disks zfs_remove /dev/sdd'], ['disk', 'h1', 3, 'free'], ['out', 'sdd: evacuated, released']] },
+    { slug: 'last-vdev', title: 'The last vdev cannot be dropped by accident', status: 'built', tests: 1,
+      summary: 'A removal that OpenZFS could not survive is refused before anything happens.',
+      recipe: [['step', 'One vdev left', 'dpool is a single disk.'], ['disk', 'h1', 2, 'zfs'], ['step', 'Refused', 'The only remaining vdev stays where it is.'], ['type', 'node disks zfs_remove /dev/sdc'], ['err', 'refused: sdc is the last vdev of dpool']] },
+    { slug: 'per-disk', title: 'The backend is a per-disk choice', status: 'built', tests: 2,
+      summary: 'A released disk can serve Ceph as an OSD today and come back to the local pool tomorrow. Capacity moves between the two backends disk by disk.',
+      recipe: [['step', 'The same disk goes to Ceph', 'A clean block device becomes an OSD.'], ['type', 'node disks ceph_add /dev/sdd'], ['disk', 'h1', 3, 'ceph'], ['out', 'sdd: osd.2 created']] },
+    { slug: 'rpool', title: 'The root pool scales the same way', status: 'built', tests: 1,
+      summary: 'A second system disk attaches as a mirror after the install; a failed one is replaced in place.',
+      details: ['The installer mirrors rpool when two disks are present; raidz is an installer-only choice because the boot loader has to find it.'] },
+    { slug: 'clients', title: 'Clients on the local pool', status: 'designed',
+      summary: 'Datasets on the local pool are shared to clients from the same node, for data that should stay on one machine.',
+      details: ['Which protocols the local pool exposes is part of the design work; the stage will show a client once it is decided.'] },
+    { slug: 'encrypted-dataset', title: 'Encrypted datasets', status: 'designed', adr: '0028',
+      summary: 'A dataset can be created encrypted; the key is unlocked at boot by the node or by the cluster.',
+      details: ['The unlock model, a key sealed to the machine with a cluster escrow, is decided under the security work.'] },
+    { slug: 'rpool-snapshot', title: 'Snapshot the root, restore the root', status: 'designed', adr: '0016',
+      summary: 'The root pool is snapshotted before any change to the system, and a snapshot is one boot-menu choice away.',
+      details: ['This is the same mechanism that makes an OS update reversible: a boot environment is a clone of a snapshot.'] }
+  ] },
+
+{ slug: 'join', label: 'Join', title: 'Scale with zero-touch join', accent: 'ceph',
+  intro: 'A new machine finds the cluster and joins it. No re-install, no hand-written configuration; control is promoted afterwards, in one step.',
+  tour: [
+    ['step', 'A second node joins', 'The join handshake sets up SSH trust with every member, registers the node with the orchestrator and pulls the cluster’s configuration and credentials. Its disks become OSDs.'],
+    ['type', 'node join 10.0.0.11', 'h2'],
+    ['node', 'h2'], ['disks', 'h2', ['ceph', 'ceph', 'ceph', 'free']], ['bus', 'on'],
+    ['out', 'h2 joined: trust established · 3 OSD'],
+    ['step', 'Three nodes, one control group', 'Ceph monitors and the quorum are placed on three nodes at once, and the cluster virtual IP fails over between them. The last control node can never be demoted by accident.'],
+    ['type', 'cluster set control h1,h2,h3'],
+    ['node', 'h3'], ['disks', 'h3', ['ceph', 'ceph', 'ceph', 'free']], ['control', ['h1', 'h2', 'h3']], ['vip', 'on'],
+    ['out', 'control: h1 h2 h3 · quorum 3 of 3 · virtual IP up']
+  ],
+  features: [
+    { slug: 'menu-join', title: 'Join from the first-boot screen', status: 'built', tests: 3, adr: '0024',
+      summary: 'On a segment with a cluster the first-boot screen already proposes: join. One press, and the new machine is a member.',
+      recipe: [['step', 'Proposed: join', 'The screen on the new machine names the cluster it found.'], ['note', '# h2, first login: the screen proposes join'], ['node', 'h2'], ['note', '# Cluster: join 10.0.0.11 (found by discovery). Choice: 1'], ['disks', 'h2', ['ceph', 'ceph', 'ceph', 'free']], ['bus', 'on'], ['out', 'h2 joined · 3 OSD']] },
+    { slug: 'promote-later', title: 'Join first, promote control afterwards', status: 'built', tests: 2, adr: '0021',
+      summary: 'Members join as storage. The control group of three is set once, when three nodes exist, and the virtual IP comes with it.',
+      recipe: [['step', 'Three members', 'Two nodes have joined; all three are storage.'], ['node', 'h2'], ['disks', 'h2', ['ceph', 'ceph', 'ceph', 'free']], ['node', 'h3'], ['disks', 'h3', ['ceph', 'ceph', 'ceph', 'free']], ['bus', 'on'], ['step', 'One step makes it resilient', 'Monitors, quorum and the virtual IP land on three nodes at once.'], ['type', 'cluster set control h1,h2,h3'], ['control', ['h1', 'h2', 'h3']], ['vip', 'on'], ['out', 'control: h1 h2 h3 · quorum 3 of 3']] },
+    { slug: 'management', title: 'Cluster and node management', status: 'built', tests: 6, adr: '0018',
+      summary: 'Every command names its scope first, node or cluster. A cluster command run on any member acts on the whole cluster and is safe to run again.',
+      details: ['A member that was unreachable is picked up the next time the command runs. Rename, readdress and the storage network move are ordinary commands on a running member.'] },
+    { slug: 'secured', title: 'Secured authentication and inter-node traffic', status: 'built', tests: 2, adr: '0017',
+      summary: 'Per-install SSH keys, a per-cluster service secret and a cluster-wide admin password, all rotatable. A cluster certificate authority replaces every remaining TLS exception.',
+      details: ['The certificate authority is designed under the security work; the keys and secrets are in place today.'] },
+    { slug: 'attested-join', title: 'A joining node proves its image', status: 'designed', adr: '0028',
+      summary: 'Before a node is trusted, its peers verify what it booted: a signed image and a measured boot.',
+      details: ['Peer-verified audit is part of the security lockdown design; until then trust rests on the per-install keys.'],
+      recipe: [['step', 'A node asks to join', 'Before trust is extended, the peers check what the node booted.', 'designed'], ['type', 'node join 10.0.0.11', 'h2'], ['node', 'h2'], ['verify', 'h2', 'peers'], ['out', 'h2: image signature valid · measured boot matches · audit forwarded'], ['step', 'Then it joins', 'Trust established, disks become OSDs.', 'designed'], ['verify', null], ['disks', 'h2', ['ceph', 'ceph', 'ceph', 'free']], ['bus', 'on'], ['out', 'h2 joined · 3 OSD']] }
+  ] },
+
+{ slug: 'ceph-scale', label: 'Ceph out', title: 'Scale out and in with Ceph', accent: 'ceph',
+  intro: 'Multi-node FRAD is a Ceph cluster. Block, file and object storage come from the same disks; capacity goes out and in one node at a time while the others keep serving.',
+  tour: [
+    ['step', '… and so on to N', 'Every further node is the same command. Capacity, CephFS and S3 grow with the disks that arrive. Control stays with three nodes; the rest just bring storage.'],
+    ['note', '# on each new node: node join 10.0.0.11'],
+    ['node', 'h4'], ['disks', 'h4', ['ceph', 'ceph', 'free', 'free']], ['node', 'h5'], ['disks', 'h5', ['ceph', 'ceph', 'free', 'free']], ['node', 'h6'], ['disks', 'h6', ['ceph', 'ceph', 'free', 'free']],
+    ['step', 'In: a node leaves after its disks drain', 'Its OSDs drain onto the rest of the cluster, then the node is removed. The other nodes keep serving throughout.'],
+    ['type', 'cluster remove_node h6'],
+    ['drop', 'h6'],
+    ['out', 'h6: OSDs drained, removed']
+  ],
+  features: [
+    { slug: 'out-in', title: 'Out and in, one node at a time', status: 'built', tests: 4,
+      summary: 'A node joins with its disks; a node leaves after its disks drain. Nothing is reinstalled and nothing stops.',
+      recipe: [['step', 'A node joins', 'Its disks become OSDs.'], ['type', 'node join 10.0.0.11', 'h4'], ['node', 'h4'], ['disks', 'h4', ['ceph', 'ceph', 'free', 'free']], ['out', 'h4 joined · 2 OSD'], ['step', 'A node leaves', 'Its OSDs drain onto the rest of the cluster first.'], ['type', 'cluster remove_node h4'], ['drop', 'h4'], ['out', 'h4: OSDs drained, removed']] },
+    { slug: 'three-kinds', title: 'Block, file and object from one cluster', status: 'built', tests: 3,
+      summary: 'RBD block devices, CephFS and an S3 endpoint come from the same cluster, behind the virtual IP.',
+      details: ['The dashboard and the S3 endpoint are fronted by HAProxy on the control group, so a client address never changes when a node does.'] },
+    { slug: 'clients', title: 'Clients: NFS, CephFS, block and S3', status: 'designed',
+      summary: 'CephFS, RBD and S3 are served today; an NFS gateway and an iSCSI gateway are designed on the orchestrator.',
+      details: ['The gateways run as orchestrated services, so they move with the cluster like everything else.'] },
+    { slug: 'move', title: 'Rename, readdress, move the storage network', status: 'built', tests: 3,
+      summary: 'A member can change its name, its addresses or the network its storage traffic uses, while serving.',
+      details: ['The orchestrator and the monitors are updated together, so the change is one command and one commit.'] }
+  ] },
+
+{ slug: 'protection', label: 'Protection', title: 'Data protection', accent: 'zfs',
+  intro: 'Copies where they survive a failure, and data that cannot be read from a stolen disk.',
+  tour: [
+    ['step', 'Three copies, three hosts', 'Ceph keeps three copies of every object. On one node they sit on three disks; with three nodes the failure domain becomes the host, so a whole machine can fail.'],
+    ['note', '# replica 3 · failure domain: host'],
+    ['step', 'Encrypted at rest', 'Local datasets and OSDs are encrypted; the keys are unlocked at boot by the machine or by the cluster, never typed.', 'designed'],
+    ['note', '# zfs: encrypted datasets · ceph: encrypted OSDs']
+  ],
+  features: [
+    { slug: 'zfs-mirror', title: 'ZFS: mirror and raidz', status: 'built', tests: 2,
+      summary: 'The local pool is laid out per vdev; a mirror survives a disk, raidz survives what its parity allows.' },
+    { slug: 'zfs-encryption', title: 'ZFS: encrypted datasets', status: 'designed', adr: '0028',
+      summary: 'A dataset is created encrypted and unlocked at boot without a passphrase at the console.' },
+    { slug: 'replica', title: 'Ceph: replicas and the failure domain', status: 'built', tests: 2,
+      summary: 'Three copies by default. The failure domain is the OSD on a single node and the host once there are three, set by the cluster itself.',
+      details: ['The rule moves up when the third node joins, so copies spread across machines as soon as there are machines to spread across.'] },
+    { slug: 'erasure', title: 'Ceph: erasure coding k+m', status: 'designed',
+      summary: 'For large, cold data an erasure-coded pool stores k data and m parity chunks instead of three copies.' },
+    { slug: 'osd-encryption', title: 'Ceph: encrypted OSDs', status: 'designed', adr: '0028',
+      summary: 'Each OSD sits on an encrypted volume; a disk that leaves the building carries nothing readable.' },
+    { slug: 'unlock', title: 'The unlock model', status: 'designed', adr: '0028',
+      summary: 'Keys are sealed to the machine and escrowed in the cluster, so a node unlocks itself at boot and a replaced machine can be re-keyed by its peers.' }
+  ] },
+
+{ slug: 'failover', label: 'Failover', title: 'Failover', accent: 'ctl',
+  intro: 'A control node goes dark. The virtual IP moves, the quorum holds, storage keeps serving. When the node returns, there is nothing to repair.',
+  tour: [
+    ['step', 'A control node goes dark', 'The virtual IP moves to a surviving control node and the quorum holds with two of three. Clients keep their address; Ceph keeps serving from the copies on the other hosts.'],
+    ['note', '# h2 loses power'],
+    ['down', 'h2'],
+    ['type', 'cluster status'],
+    ['out', 'h2: unreachable · quorum 2 of 3 · virtual IP on h1 · ceph HEALTH_WARN, serving'],
+    ['step', 'It comes back, nothing to repair', 'The node rejoins the quorum and its OSDs catch up. No command was needed on either side.'],
+    ['up', 'h2'],
+    ['type', 'cluster status'],
+    ['out', 'h2: member · quorum 3 of 3 · ceph HEALTH_OK']
+  ],
+  features: [
+    { slug: 'control-loss', title: 'Losing a control node', status: 'built', tests: 2,
+      summary: 'Monitors, quorum and the virtual IP are on three nodes; one can go at any time.',
+      recipe: [['step', 'h2 goes dark', 'The virtual IP moves; two of three keep the quorum.'], ['note', '# h2 loses power'], ['down', 'h2'], ['type', 'cluster status'], ['out', 'h2: unreachable · quorum 2 of 3 · virtual IP on h1']] },
+    { slug: 'recovery', title: 'Control recovers onto a storage host', status: 'built', tests: 2,
+      summary: 'When control nodes are lost for good, the control group is rebuilt on the storage members that are left.',
+      recipe: [['step', 'Two control nodes lost', 'One control node is left, with the virtual IP.'], ['note', '# h2 and h3 lose power'], ['down', 'h2'], ['down', 'h3'], ['step', 'Rebuild control on what is left', 'The control group moves to the storage hosts.'], ['type', 'cluster set control h1,h4,h5'], ['control', ['h1', 'h4', 'h5']], ['out', 'control: h1 h4 h5 · quorum 3 of 3']] },
+    { slug: 'return', title: 'A node returns', status: 'built', tests: 2,
+      summary: 'A returning node rejoins the quorum and its OSDs resynchronise. Nothing is reinstalled.',
+      recipe: [['step', 'h2 is back', 'It rejoins the quorum; its OSDs catch up.'], ['note', '# h2 loses power'], ['down', 'h2'], ['step', 'Power returns', 'No command on either side.'], ['up', 'h2'], ['type', 'cluster status'], ['out', 'h2: member · quorum 3 of 3 · ceph HEALTH_OK']] },
+    { slug: 'status', title: 'The live view', status: 'built', tests: 3,
+      summary: 'One command shows the virtual IP, the quorum, Ceph and every member. Cluster-wide checks find and repair what drifted.' }
+  ] },
+
+{ slug: 'os-update', label: 'OS update', title: 'OS security update', accent: 'ok',
+  intro: 'Base-OS fixes arrive on their own channel, behind a compatibility gate, applied to a clone of the running system. The previous system is one boot-menu choice away.',
+  tour: [
+    ['step', 'Three channels, three speeds', 'Base-OS security fixes, FRAD’s own code and whole firmware images each travel on their own channel, so a kernel CVE never waits for a firmware release, and a FRAD fix never re-images the base OS.'],
+    ['type', 'node update security_list'],
+    ['inside', 'channels'],
+    ['step', 'Clone, validate, switch', 'The upgrade is applied to a clone of the running boot environment and checked there. Only then does the clone become the boot target. A bad one is undone from the boot menu.', 'designed'],
+    ['type', 'node update security_update all'],
+    ['inside', 'clone']
+  ],
+  features: [
+    { slug: 'channels', title: 'Three update channels', status: 'built', tests: 1, adr: '0009',
+      summary: 'apt for the base OS, a fixpack for FRAD’s own code, a whole image for air-gapped sites and major versions. Each has its own cadence and its own rollback.',
+      recipe: [['step', 'What travels where', 'Each channel carries one kind of change.'], ['type', 'node update security_list'], ['inside', 'channels']] },
+    { slug: 'gate', title: 'The compatibility gate', status: 'designed', adr: '0009',
+      summary: 'An OS upgrade is refused if it would move the kernel, ZFS or podman past what FRAD’s own code was validated against.',
+      recipe: [['step', 'Refused', 'The upgrade would move ZFS past what /frbe was validated with.'], ['type', 'node update security_update all'], ['err', 'refused: zfs 2.3 is outside the validated range for frbe 1.0.1']] },
+    { slug: 'clone', title: 'Clone, validate, then switch', status: 'designed', adr: '0016',
+      summary: 'The running system is never patched in place. The upgrade lands on a clone, is checked there, and only then becomes the boot target.',
+      recipe: [['step', 'On a clone', 'be-1 keeps serving while be-2 is upgraded and checked.'], ['type', 'node update security_update all'], ['inside', 'clone']] },
+    { slug: 'rollback', title: 'Rollback is one menu away', status: 'designed', adr: '0016',
+      summary: 'A bad upgrade is undone by booting the previous environment. There is nothing to restore and nothing to rebuild.',
+      recipe: [['step', 'Pick the previous environment', 'The old root is still there, untouched.'], ['note', '# ZFSBootMenu: pick be-1'], ['inside', 'rollback']] }
+  ] },
+
+{ slug: 'fixpack', label: 'Fixpack', title: 'Fixpack', accent: 'zfs',
+  intro: 'Everything FRAD adds lives in its own read-only dataset. A fix lands there, after a snapshot, without a reboot, and cannot touch the base OS.',
+  tour: [
+    ['step', 'FRAD’s code is fenced off', 'The read-only dataset holds the CLI, the configuration engine, the SDK and the bundled Ceph image. apt cannot touch it and a fixpack cannot touch the base OS, so the two fast channels cannot collide.'],
+    ['note', '# /frbe: read-only dataset, a snapshot before every fixpack'],
+    ['inside', 'frbe']
+  ],
+  features: [
+    { slug: 'frbe', title: 'A read-only dataset for FRAD’s code', status: 'built', tests: 2,
+      summary: 'All FRAD binaries, scripts and the SDK live in one dataset, mounted read-only, separate from the base OS.',
+      recipe: [['step', 'Two datasets', 'The base OS and FRAD’s code never share a write path.'], ['inside', 'frbe']] },
+    { slug: 'snapshot', title: 'A snapshot before every change', status: 'designed', adr: '0009',
+      summary: 'A fixpack is applied after a snapshot of the dataset, so the previous version is a rollback, not a reinstall.' },
+    { slug: 'no-reboot', title: 'No reboot', status: 'designed', adr: '0009',
+      summary: 'A fixpack swaps FRAD’s code and restarts its services. The kernel and Ceph keep running.' },
+    { slug: 'ceph-upgrade', title: 'Ceph upgrades in place', status: 'built', tests: 1,
+      summary: 'Ceph daemons are containers; one command moves them to a new image, one daemon at a time, from the bundled image.',
+      recipe: [['step', 'A new Ceph image', 'Daemons are moved one at a time while the cluster serves.'], ['inside', null], ['type', 'cluster ceph_upgrade'], ['out', 'upgrade: mon, mgr, osd, mds, rgw moved to the bundled image']] }
+  ] },
+
+{ slug: 'rolling', label: 'Rolling', title: 'Rolling update', accent: 'ceph',
+  intro: 'An update walks the cluster one node at a time. Each node clones, validates and switches while the others serve; the virtual IP never moves twice at once.',
+  tour: [
+    ['step', 'One node at a time', 'Each node takes its update in turn: clone, validate, switch, come back, then the next one. Services keep their address throughout.', 'designed'],
+    ['type', 'cluster update security_update all'],
+    ['inside', null],
+    ['out', 'h1: updated, back · h2: updated, back · h3: updated, back · …']
+  ],
+  features: [
+    { slug: 'rolling-apply', title: 'Fleet-wide rolling apply', status: 'designed', adr: '0016',
+      summary: 'One cluster command applies an update to every member in turn and stops at the first node that fails validation.' },
+    { slug: 'ceph-image', title: 'Ceph image upgrades', status: 'built', tests: 1,
+      summary: 'The orchestrator upgrades Ceph one daemon at a time from the image the fixpack brought.',
+      recipe: [['step', 'In place', 'The orchestrator moves daemons to the new image.'], ['inside', null], ['type', 'cluster ceph_upgrade'], ['out', 'upgrade: complete']] },
+    { slug: 'firmware', title: 'Whole-image firmware channel', status: 'designed', adr: '0009',
+      summary: 'Air-gapped sites and major versions take one verified file: a complete image that becomes a new boot environment.',
+      details: ['The image build exists today; applying it as a boot environment is part of the boot-environment work.'] }
+  ] },
+
+{ slug: 'lockdown', label: 'Lockdown', title: 'Security lockdown', accent: 'warn',
+  intro: 'Ten layers, from the firewall a node derives from its own policy to the audit its peers run on it. Designed as one piece, shipped layer by layer.',
+  tour: [
+    ['step', 'Ten layers, one policy', 'The firewall is derived from the node’s policy, inter-node traffic rides a cluster certificate authority, boot is measured, services are confined, and peers audit each other. Each layer is a ticket; the design is one record.', 'designed'],
+    ['note', '# firewall from policy · cluster CA · hardened SSH · measured boot · confined services · peer audit']
+  ],
+  features: [
+    { slug: 'firewall', title: 'Firewall from policy', status: 'designed', adr: '0028',
+      summary: 'A node opens exactly the ports its roles need, derived from the same policy that assigns the roles. The port surface is tested end to end.' },
+    { slug: 'cluster-ca', title: 'Cluster certificate authority', status: 'designed', adr: '0028',
+      summary: 'Every internal TLS endpoint gets a certificate from the cluster’s own authority; every remaining verification bypass goes away.' },
+    { slug: 'ssh', title: 'Hardened SSH', status: 'designed', adr: '0028',
+      summary: 'Certificate-based SSH between members, per-install keys, no passwords on the wire.' },
+    { slug: 'measured-boot', title: 'Measured boot', status: 'designed', adr: '0028',
+      summary: 'A TPM baseline per node; a changed boot chain is visible to the node and to its peers.' },
+    { slug: 'confinement', title: 'Confined services', status: 'designed', adr: '0028',
+      summary: 'Mandatory access profiles for FRAD’s own services, enforced.' },
+    { slug: 'audit', title: 'Peer-verified audit', status: 'designed', adr: '0028',
+      summary: 'A node’s audit log is forwarded to its peers and checked there, so a compromised node cannot hide its own trail.' },
+    { slug: 'secrets', title: 'Rotatable keys and secrets', status: 'built', tests: 2, adr: '0017',
+      summary: 'Per-install SSH keys, a per-cluster service secret and a cluster-wide admin password are in place today and can all be rotated.' }
+  ] }
+
+] };

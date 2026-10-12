@@ -281,7 +281,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
       <ul class="plain">
         <li>Root on ZFS with ZFSBootMenu; UEFI install from ISO, USB or PXE, including UEFI HTTP boot</li>
         <li>The read-only <code>/frbe</code> dataset holding all FRAD binaries, scripts and the SDK</li>
-        <li>One first-boot screen: a proposed configuration, one press to apply; <code>frad_cli -0</code> for unattended fleets</li>
+        <li>One first-boot screen: a proposed configuration, one press to apply; an unattended mode for fleets</li>
         <li>Single node to cluster growth by <code>node join</code>; control group promotion in one step; cluster discovery by mDNS</li>
         <li>Host-local ZFS pool scaling per disk; Ceph via cephadm with block, CephFS and S3</li>
         <li>Corosync, Pacemaker and HAProxy for the virtual IP, dashboard and S3 endpoint; cluster-wide checks and repairs</li>
@@ -311,12 +311,12 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
   <div class="tablewrap" style="margin-top: 16px">
     <table>
       <tr><th>Day</th><th>What happens</th><th>Command</th></tr>
-      <tr><td>Day 1</td><td>Boot the image, press 1 on the first-boot screen, log in. The node serves Ceph, CephFS and S3 on its own.</td><td><code>frad_cli</code></td></tr>
-      <tr><td>Day 2</td><td>Install the next node the same way and join it. Its disks become OSDs.</td><td><code>frad_cli -c node join &lt;existing-node&gt;</code></td></tr>
-      <tr><td>Three nodes</td><td>Promote the control group once. Monitors and quorum land on all three.</td><td><code>frad_cli -c cluster set control h1,h2,h3</code></td></tr>
-      <tr><td>Any day</td><td>Move a disk between the local pool and Ceph, one disk at a time.</td><td><code>frad_cli -c node disks zfs_add | zfs_remove | ceph_add | ceph_remove</code></td></tr>
-      <tr><td>Any day</td><td>See the live state: virtual IP, quorum, Ceph, every member.</td><td><code>frad_cli -c cluster status</code></td></tr>
-      <tr><td>Patch day</td><td>List and apply base-OS security updates on the node.</td><td><code>frad_cli -c node update security_update all</code></td></tr>
+      <tr><td>Day 1</td><td>Boot the image, press 1 on the first-boot screen. The node serves Ceph, CephFS and S3 on its own.</td><td><code>h1<code>h1&gt; </code> the login shellgt;</code> the CLI is the login shell</td></tr>
+      <tr><td>Day 2</td><td>Install the next node the same way and join it. Its disks become OSDs.</td><td><code>node join &lt;existing-node&gt;</code></td></tr>
+      <tr><td>Three nodes</td><td>Promote the control group once. Monitors and quorum land on all three.</td><td><code>cluster set control h1,h2,h3</code></td></tr>
+      <tr><td>Any day</td><td>Move a disk between the local pool and Ceph, one disk at a time.</td><td><code>node disks zfs_add | zfs_remove | ceph_add | ceph_remove</code></td></tr>
+      <tr><td>Any day</td><td>See the live state: virtual IP, quorum, Ceph, every member.</td><td><code>cluster status</code></td></tr>
+      <tr><td>Patch day</td><td>List and apply base-OS security updates on the node.</td><td><code>node update security_update all</code></td></tr>
     </table>
   </div>
 </section>
@@ -367,43 +367,43 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
     { ch: 0, title: 'Boot from the image', cmd: '# ISO, USB or PXE. Root on ZFS, no partitioning questions.',
       text: 'The installer lays out ZFS and copies the image. One image carries the OS, the storage stack, clustering, HA and the CLI; there is nothing to assemble afterwards.',
       run: function (s) { var n = node('h1'); n.dim = true; s.nodes.push(n); } },
-    { ch: 0, title: 'One screen, one press', cmd: 'frad_cli\n# first login: the node proposes its configuration. Press 1.',
-      text: 'The node proposes its own setup: host name, network, cluster new or join, virtual IP, time. Press 1 and it is applied. Fleets and PXE farms run frad_cli -0 and never see the screen.',
+    { ch: 0, title: 'One screen, one press', cmd: '# first login: the node proposes its configuration. Press 1.',
+      text: 'The node proposes its own setup: host name, network, cluster new or join, virtual IP, time. Press 1 and it is applied. Fleets and PXE farms use the unattended mode and never see the screen.',
       run: function (s) { s.fb = 'h1'; findNode(s, 'h1').dim = false; } },
-    { ch: 0, title: 'A storage node, by itself', cmd: 'frad_cli -c node status',
+    { ch: 0, title: 'A storage node, by itself', cmd: 'node status',
       text: 'Ceph is up with the local disks as OSDs. CephFS, S3 and the dashboard are live. A single node is useful on day one, and it already behaves like a one-member cluster.',
       run: function (s) { s.fb = null; allCeph(findNode(s, 'h1')); s.svc = true; } },
 
-    { ch: 1, title: 'A second node joins', cmd: 'frad_cli -c node join 10.0.0.11',
+    { ch: 1, title: 'A second node joins', cmd: 'node join 10.0.0.11',
       text: 'The join handshake sets up SSH trust with every member, registers the node with ceph orch and pulls the cluster’s configuration and credentials. Its disks become OSDs.',
       run: function (s) { var n = node('h2'); allCeph(n); s.nodes.push(n); s.bus = true; } },
-    { ch: 1, title: 'A third node joins', cmd: 'frad_cli -c node join 10.0.0.11',
+    { ch: 1, title: 'A third node joins', cmd: 'node join 10.0.0.11',
       text: 'No re-install, no hand-written configuration. Nodes find each other by mDNS, so the first-boot screen on a new machine already proposes: join.',
       run: function (s) { var n = node('h3'); allCeph(n); s.nodes.push(n); } },
-    { ch: 1, title: 'One step makes it resilient', cmd: 'frad_cli -c cluster set control h1,h2,h3',
+    { ch: 1, title: 'One step makes it resilient', cmd: 'cluster set control h1,h2,h3',
       text: 'Ceph monitors and the Pacemaker quorum are placed on three nodes at once, and the cluster virtual IP fails over between them. The last control node can never be demoted by accident.',
       run: function (s) { ['h1', 'h2', 'h3'].forEach(function (id) { findNode(s, id).control = true; }); s.vip = true; } },
-    { ch: 1, title: '… and so on to N', cmd: 'frad_cli -c node join 10.0.0.10    # on each new node',
+    { ch: 1, title: '… and so on to N', cmd: 'node join 10.0.0.10    # on each new node',
       text: 'Every further node is the same command. Capacity, CephFS and S3 grow with the disks that arrive. Control stays with three nodes; the rest just bring storage.',
       run: function (s) { ['h4', 'h5', 'h6'].forEach(function (id) { var n = node(id); n.disks = ['ceph', 'ceph', 'free', 'free']; s.nodes.push(n); }); } },
 
-    { ch: 2, title: 'Up: local disks join dpool (ZFS)', cmd: 'frad_cli -c node disks zfs_add dpool mirror /dev/sdc /dev/sdd',
+    { ch: 2, title: 'Up: local disks join dpool (ZFS)', cmd: 'node disks zfs_add dpool mirror /dev/sdc /dev/sdd',
       text: 'Local disks join a host-local ZFS pool one vdev at a time, as stripe, mirror or raidz. Which backend a disk serves is the operator’s per-disk choice, never inferred from the node’s role.',
       run: function (s) { var n = findNode(s, 'h4'); n.disks[2] = 'zfs'; n.disks[3] = 'zfs'; s.hot = 'h4:2,3'; } },
-    { ch: 2, title: 'Down: a disk leaves, data first', cmd: 'frad_cli -c node disks zfs_remove /dev/sdd',
+    { ch: 2, title: 'Down: a disk leaves, data first', cmd: 'node disks zfs_remove /dev/sdd',
       text: 'The disk is evacuated onto its siblings before it is released. FRAD refuses what OpenZFS cannot do and never drops the last vdev by accident.',
       run: function (s) { findNode(s, 'h4').disks[3] = 'free'; s.hot = 'h4:3'; } },
-    { ch: 2, title: 'Out: the same disk goes to Ceph', cmd: 'frad_cli -c node disks ceph_add /dev/sdd',
+    { ch: 2, title: 'Out: the same disk goes to Ceph', cmd: 'node disks ceph_add /dev/sdd',
       text: 'A released disk is a clean block device. The same disk can serve Ceph as an OSD today and come back to the local pool tomorrow. Capacity moves between the two backends disk by disk.',
       run: function (s) { findNode(s, 'h4').disks[3] = 'ceph'; s.hot = 'h4:3'; } },
-    { ch: 2, title: 'In: a node leaves the cluster', cmd: 'frad_cli -c cluster remove_node h6',
+    { ch: 2, title: 'In: a node leaves the cluster', cmd: 'cluster remove_node h6',
       text: 'Its OSDs drain onto the rest of the cluster, then the node is removed. Capacity goes out and in one node at a time, while the other nodes keep serving.',
       run: function (s) { s.hot = null; s.nodes = s.nodes.filter(function (n) { return n.id !== 'h6'; }); } },
 
-    { ch: 3, title: 'Three channels, three speeds', cmd: 'frad_cli -c node update security_list',
+    { ch: 3, title: 'Three channels, three speeds', cmd: 'node update security_list',
       text: 'Base-OS security fixes, FRAD’s own code and whole firmware images each travel on their own channel, so a kernel CVE never waits for a firmware release, and a FRAD fix never re-images the base OS.',
       run: function (s) { s.upd = 'channels'; } },
-    { ch: 3, title: 'Clone, validate, then switch', designed: true, cmd: 'frad_cli -c node update security_update all',
+    { ch: 3, title: 'Clone, validate, then switch', designed: true, cmd: 'node update security_update all',
       text: 'The upgrade is applied to a clone of the running boot environment and checked there. Only then does the clone become the boot target. The running system is never patched in place.',
       run: function (s) { s.upd = 'clone'; } },
     { ch: 3, title: 'Rollback is one menu away', designed: true, cmd: '# ZFSBootMenu: pick the previous boot environment',
@@ -684,7 +684,7 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
     st.cmd.split('\n').forEach(function (line, k) {
       if (k) cmd.appendChild(document.createTextNode('\n'));
       if (line.charAt(0) === '#') { var m = document.createElement('span'); m.className = 'prompt'; m.textContent = line; cmd.appendChild(m); }
-      else { var p = document.createElement('span'); p.className = 'prompt'; p.textContent = '# '; cmd.appendChild(p); cmd.appendChild(document.createTextNode(line)); }
+      else { var p = document.createElement('span'); p.className = 'prompt'; p.textContent = 'h1> '; cmd.appendChild(p); cmd.appendChild(document.createTextNode(line)); }
     });
     Array.prototype.forEach.call(tabs.children, function (b, k) { b.setAttribute('aria-selected', k === st.ch ? 'true' : 'false'); });
     document.getElementById('prev').disabled = cur === 0;
