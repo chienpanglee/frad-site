@@ -245,3 +245,24 @@ svg .tick.dead { stroke-dasharray: 3 3; opacity: 0.5; }
 @media (prefers-reduced-motion: reduce) {
   svg *, .progress i, .narr .fade { transition: none !important; animation: none !important; }
 }
+
+/* The booth page: the node's console and dashboard from the container on the visitor's machine. */
+.booth { margin-block: 18px 48px; }
+.booth .absent h2 { margin-bottom: 8px; }
+.booth .run { background: #0b0b0b; color: #e8e2c8; border: 1px solid #3a3828; border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 13px; margin: 10px 0; }
+.booth .run code { color: #ffd400; }
+.booth .note { color: var(--muted); font-size: 14px; margin-top: 8px; max-width: 90ch; }
+.booth .panes { display: grid; grid-template-columns: 1fr; gap: 14px; height: 72vh; min-height: 420px; }
+.booth .panes.split { grid-template-columns: 1fr 1fr; }
+.booth .pane { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; min-height: 0; background: var(--panel); }
+.booth .pane h2 { margin: 0; font: 600 12px/1 var(--body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.booth .pane h2 code { text-transform: none; letter-spacing: 0; color: var(--zfs); }
+.booth .pane h2 .right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.booth .pane h2 .err { color: var(--warn); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.booth .nodes { display: flex; gap: 6px; }
+.booth .nodes button { font: 600 11px/1 var(--body); letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 9px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
+.booth .nodes button.on { color: var(--zfs); border-color: var(--zfs); }
+.booth iframe { flex: 1; border: 0; background: #000; width: 100%; }
+.booth #dash { display: none; }
+.booth .panes.split #dash { display: flex; }
+@media (max-width: 900px) { .booth .panes, .booth .panes.split { grid-template-columns: 1fr; height: auto; } .booth iframe { height: 55vh; } }

@@ -37,6 +37,12 @@ waits for Play.
 forms, the usage, and a replay of the command's recorded runs when there are any.
 `term.js` is the terminal player both pages share, `site.css` the shared styles.
 
+`booth.html` is "Try it": it looks for a frad-booth container on the visitor's machine
+(`localhost:8080`, see frad's `booth/`) and, when one answers, shows the node's console, the
+nodes (a button each, "Add node") and the Ceph dashboard inline from it (`booth.js`); without
+one it shows the `docker run` line. The booth allows the site's origin (and `localhost` while
+the site is worked on) to call it.
+
 `tools/examples-from-logs.py` writes `examples-cli.js` from the logs of frad's generated CLI
 e2e suite (`tests/e2e/cli/<mode>/test_<command>.test`): every `frad_cli -c` a passing test ran,
 with what the CLI printed, becomes `h1> <command>` plus its output under the id

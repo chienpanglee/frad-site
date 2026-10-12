@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Try FRAD on your own machine: one command boots a node in a container, its console and dashboard appear on this page.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>FRAD booth</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+/* The manual: a rail with the command tree, a panel for one command */
+.manual { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 24px; margin-block: 18px 56px; align-items: start; }
+.rail { position: sticky; top: 72px; max-height: calc(100vh - 90px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 6px; font-family: var(--mono); font-size: 13px; }
+.rail ul { list-style: none; margin: 0; padding-left: 0; }
+.rail ul ul { padding-left: 14px; border-left: 1px solid var(--line); margin-left: 9px; }
+.rail li { margin: 1px 0; }
+.rail a { display: block; padding: 3px 8px; border-radius: 5px; text-decoration: none; color: var(--fg); }
+.rail li.mode > a { font-weight: 600; }
+.rail li.global > a { color: var(--muted); }
+.rail a.destructive::after { content: " !"; color: var(--warn); }
+.rail a:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.rail a.on { background: var(--fg); color: var(--bg); }
+.cmdpanel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: grid; gap: 14px; min-width: 0; }
+.cmdpanel h2 { font-family: var(--mono); font-size: 26px; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cmdpanel .chip { margin-left: 0; }
+.chip.mode { border-color: var(--ctl); color: var(--ctl); }
+.chip.readonly { border-color: var(--ok); color: var(--ok); }
+.chip.mutating { border-color: var(--zfs); color: var(--zfs); }
+.chip.destructive { border-color: var(--warn); color: var(--warn); }
+.forms { display: grid; gap: 8px; }
+.form { font-family: var(--mono); font-size: 13.5px; white-space: pre-wrap; background: color-mix(in srgb, var(--fg) 5%, var(--panel)); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.form .ps { color: var(--muted); }
+.usage code { font-size: 13px; color: var(--muted); }
+.cmeta { color: var(--muted); max-width: 70ch; }
+.subs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.subs li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--line); padding: 6px 2px; }
+.subs a { text-decoration: none; }
+.subs a:hover code { text-decoration: underline; }
+.subs code { font-size: 13px; }
+.subs .muted { font-size: 12px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+.muted { color: var(--muted); }
+.cmdpanel .term { margin-top: 0; height: auto; min-height: 14em; max-height: 75vh; overflow: auto; justify-content: flex-start; }   /* grows with the run, every line kept */
+.replayrow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.replayrow button { font: 500 14px var(--body); padding: 9px 14px; border-radius: 6px; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; }
+.cprov { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.cseen { font-size: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+.cseen a { color: var(--fg); }
+.source { font-size: 13px; color: var(--muted); }
+@media (max-width: 860px) {
+  .manual { grid-template-columns: 1fr; }
+  .rail { position: static; max-height: 40vh; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="wordmark" href="index.html" aria-label="FRAD, Fünftes Rad: the main page"><svg class="mark-svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><g transform="translate(0 0) scale(1)"><circle cx="50" cy="50" r="47.5" fill="none" stroke="#ffd400" stroke-width="2"/><circle cx="50" cy="50" r="46" fill="#0b0b0b"/><circle cx="50" cy="50" r="40.5" fill="none" stroke="#ffd400" stroke-width="5.5" stroke-dasharray="4.4 6.2" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="31" fill="#ffd400"/><circle cx="50" cy="50" r="31" fill="none" stroke="#0b0b0b" stroke-width="1.6"/><path d="M37.5 31V69M37.5 31H65M37.5 49.5H59.5" fill="none" stroke="#0b0b0b" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter"/></g></svg>FRAD <small>(Fünftes Rad)</small></a>
+  <div class="right">
+    <nav>
+      <a href="index.html#story">The story</a>
+      <a href="cli.html">CLI manual</a>
+      <a href="booth.html" aria-current="page">Try it</a>
+      <a href="index.html#status">What is built</a>
+      <a href="index.html#run">How it is run</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Try it · a FRAD node on your own machine</div>
+  <h1>One command. A node boots here, in a container.</h1>
+  <p class="lead">The booth is a container with everything a node needs: qemu, the installed disk, a sealed first-boot state with its storage in place. Run it, and this page finds it: the console of the node, the nodes you add, and the Ceph dashboard, all right here. Nothing leaves your machine.</p>
+</div>
+
+<section class="booth" id="booth">
+  <div class="absent" id="absent">
+    <h2>Start the booth</h2>
+    <p>On Linux with Docker (or Windows 11 with WSL2), with KVM available:</p>
+    <pre class="run" id="runline"><code>docker run --rm --device /dev/kvm --device /dev/net/tun --cap-add NET_ADMIN -p 8080:8080 ghcr.io/chienpanglee/frad-booth</code></pre>
+    <p class="note">The image is a few GB; the first node is at its prompt about a minute after the pull. h1 takes 6 GB of memory, each node you add 4 GB. This page looks for the booth at <code>localhost:8080</code> every few seconds; while it is not there, the story and the manual replay recorded runs instead.</p>
+    <p class="note" id="absentState">looking for a booth on this machine…</p>
+  </div>
+  <div class="present" id="present" hidden>
+    <div class="panes" id="panes">
+      <div class="pane">
+        <h2>Console <span class="nodes" id="nodes"></span><span class="muted">log in as <code>admin</code>, password <code>Frad@0.1</code></span><span class="err" id="err"></span>
+          <span class="right"><span class="muted" id="state"></span><button class="btn small primary" id="open" hidden>Ceph dashboard</button></span></h2>
+        <iframe id="console" title="Node console"></iframe>
+      </div>
+      <div class="pane" id="dash">
+        <h2>Dashboard <span class="muted">on the virtual IP: user <code>admin</code>, password <code>admin</code></span>
+          <span class="right"><button class="btn small" id="close">Close</button></span></h2>
+        <iframe id="dashframe" title="Ceph dashboard"></iframe>
+      </div>
+    </div>
+    <p class="note">A new node comes up at its banner a few minutes after Add node: F2, the factory login <code>admin</code> / <code>admin</code>, and its setup screen proposes joining h1's cluster; set its host name (2) before accepting with <code>a</code>. A node that joins is a storage member; promoting it to control is one command in the console.</p>
+  </div>
+</section>
+
+<footer class="foot">
+  <span>FRAD · the storage OS that scales in all directions</span>
+  <span><a href="index.html">The story</a> · <a href="cli.html">CLI manual</a> · <a href="https://github.com/chienpanglee/frad-site">this site</a></span>
+</footer>
+
+<script src="wheel.js"></script>
+<script src="booth.js"></script>
+</body>
+</html>
