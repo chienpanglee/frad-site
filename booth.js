@@ -2,10 +2,18 @@
    it answers, shows the node's console, the nodes and the Ceph dashboard from it. */
 (function () {
   var BASE = 'http://localhost:8080';
-  var absent = document.getElementById('absent'), present = document.getElementById('present'), absentState = document.getElementById('absentState');
+  var absent = document.getElementById('absent');
   var panes = document.getElementById('panes'), con = document.getElementById('console'), frame = document.getElementById('dashframe');
   var open = document.getElementById('open'), state = document.getElementById('state'), nodesEl = document.getElementById('nodes'), err = document.getElementById('err');
   var booth = false, ready = false, misses = 0, current = 'h1';
+  var CMD = 'docker run --rm --device /dev/kvm --device /dev/net/tun --cap-add NET_ADMIN -p 8080:8080 ghcr.io/chienpanglee/frad-booth';
+  var boot = document.getElementById('boot'), T = window.FRADTerm(boot, { keep: 20 }), copy = document.getElementById('copy');
+  var login = document.getElementById('login'), paneTitle = document.getElementById('paneTitle');
+  function waiting(text) { T.clear(); T.play([{ k: 'type', prompt: '$ ', s: CMD }, { k: 'note', s: '# ' + text }], null, true); }
+  waiting('paste this into a terminal on this machine; this box becomes the console once the booth answers');
+  copy.addEventListener('click', function () {
+    navigator.clipboard.writeText(CMD).then(function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy the command'; }, 2000); }, function () { copy.textContent = 'Select it and copy'; });
+  });
 
   function timed(url, opts) {                   // a request that hangs is a failure too
     var ac = new AbortController(), t = setTimeout(function () { ac.abort(); }, 4000);
@@ -20,13 +28,15 @@
     if (on && !frame.getAttribute('src')) frame.src = BASE + '/ceph/';
     if (!on) frame.removeAttribute('src');
   }
-  function setBooth(on) {
+  function setBooth(on) {                     // the one box: the command to run, then the console it starts
     if (on === booth) return;
     booth = on;
-    absent.hidden = on; present.hidden = !on;
-    if (on) { con.src = BASE + '/console/'; }
-    else { con.removeAttribute('src'); split(false); ready = false; open.hidden = true; }
-    absentState.textContent = on ? '' : 'no booth answered at localhost:8080 yet; this page keeps looking';
+    absent.hidden = on;
+    boot.hidden = on; con.hidden = !on; copy.hidden = on; login.hidden = !on;
+    ['reset', 'stop'].forEach(function (id) { document.getElementById(id).hidden = !on; });
+    paneTitle.textContent = on ? 'Console' : 'Start the booth';
+    if (on) { T.cancel(); con.src = BASE + '/console/'; }
+    else { con.removeAttribute('src'); split(false); ready = false; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); }
   }
   function setReady(up) {
     if (up === ready) return;

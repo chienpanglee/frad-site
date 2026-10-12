@@ -77,18 +77,15 @@
 
 <section class="booth" id="booth">
   <div class="absent" id="absent">
-    <h2>Start the booth</h2>
-    <p>On Linux with Docker (or Windows 11 with WSL2), with KVM available:</p>
-    <pre class="run" id="runline"><code>docker run --rm --device /dev/kvm --device /dev/net/tun --cap-add NET_ADMIN -p 8080:8080 ghcr.io/chienpanglee/frad-booth</code></pre>
-    <p class="note">The image is a few GB; the first node is at its prompt about a minute after the pull. h1 takes 6 GB of memory, each node you add 4 GB. This page looks for the booth at <code>localhost:8080</code> every few seconds; while it is not there, the story and the manual replay recorded runs instead.</p>
-    <p class="note" id="absentState">looking for a booth on this machine…</p>
+    <p class="note">One terminal. Paste the line into a terminal on this machine (Linux with Docker, or Windows 11 with WSL2, with KVM); the moment the booth answers, this box becomes the node's console. The image is a few GB; the first node is at its prompt about a minute after the pull. h1 takes 6 GB of memory, each node you add 4 GB.</p>
   </div>
-  <div class="present" id="present" hidden>
+  <div class="present" id="present">
     <div class="panes" id="panes">
       <div class="pane">
-        <h2>Console <span class="nodes" id="nodes"></span><span class="muted">log in as <code>admin</code>, password <code>Frad@0.1</code></span><span class="err" id="err"></span>
-          <span class="right"><span class="muted" id="state"></span><button class="btn small primary" id="open" hidden>Ceph dashboard</button><button class="btn small" id="remove" hidden>Remove node</button><button class="btn small" id="reset">Reset</button><button class="btn small" id="stop">Stop the booth</button></span></h2>
-        <iframe id="console" title="Node console"></iframe>
+        <h2><span id="paneTitle">Start the booth</span><span class="nodes" id="nodes"></span><span class="muted" id="login" hidden>log in as <code>admin</code>, password <code>Frad@0.1</code></span><span class="err" id="err"></span>
+          <span class="right"><span class="muted" id="state">looking for a booth on this machine…</span><button class="btn small" id="copy">Copy the command</button><button class="btn small primary" id="open" hidden>Ceph dashboard</button><button class="btn small" id="remove" hidden>Remove node</button><button class="btn small" id="reset" hidden>Reset</button><button class="btn small" id="stop" hidden>Stop the booth</button></span></h2>
+        <div class="term boot" id="boot"></div>
+        <iframe id="console" title="Node console" hidden></iframe>
       </div>
       <div class="pane" id="dash">
         <h2>Dashboard <span class="muted">on the virtual IP: user <code>admin</code>, password <code>admin</code></span>
@@ -106,6 +103,7 @@
 </footer>
 
 <script src="wheel.js"></script>
+<script src="term.js"></script>
 <script src="booth.js"></script>
 </body>
 </html>
