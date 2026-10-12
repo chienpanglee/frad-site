@@ -69,6 +69,7 @@ nav a:hover { color: var(--fg); }
 .tabs button:hover { color: var(--fg); border-color: var(--fg); }
 .tabs button[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .tabs button[aria-selected="true"] i { background: color-mix(in srgb, var(--bg) 22%, transparent); }
+#wheel { position: fixed; left: 0; top: 0; width: 28px; height: 28px; transform-origin: 14px 14px; z-index: 6; pointer-events: none; }
 .narr .stepno { font-family: var(--mono); font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
 .chip { display: inline-block; font: 600 10.5px/1 var(--body); letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 7px; border-radius: 4px; border: 1px solid var(--warn); color: var(--warn); margin-left: 8px; vertical-align: middle; white-space: nowrap; }
 .chip.built { border-color: var(--ok); color: var(--ok); }

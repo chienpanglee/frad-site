@@ -365,6 +365,26 @@
     tabs.appendChild(b);
   });
 
+  // The tire of the logo: it rolls from the header to the chapter tab that is open, and back for the tour.
+  var wheel = (function () {
+    var home = document.querySelector('header.top .mark-svg');
+    if (!home) return null;
+    var w = home.cloneNode(true), target = home, rot = 0, last = null;
+    w.removeAttribute('class'); w.id = 'wheel'; w.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(w); home.style.visibility = 'hidden';
+    function place(animate) {
+      var r = target.getBoundingClientRect(), sc = Math.max(r.width, 20) / 28, cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      if (last && animate) { var d = (cx - last.x) / (Math.PI * 28 * sc); rot += (d < 0 ? -1 : 1) * Math.max(1, Math.min(2, Math.round(Math.abs(d)))) * 360; }   // one or two turns the way it travels, the F upright at rest
+      last = { x: cx, y: cy };
+      w.style.transition = animate && !reduced ? 'transform 0.8s cubic-bezier(.45, 0, .2, 1)' : 'none';
+      w.style.transform = 'translate(' + (cx - 14).toFixed(1) + 'px,' + (cy - 14).toFixed(1) + 'px) scale(' + sc.toFixed(3) + ') rotate(' + rot.toFixed(1) + 'deg)';
+    }
+    window.addEventListener('scroll', function () { place(false); }, { passive: true });
+    window.addEventListener('resize', function () { place(false); });
+    place(false);
+    return { to: function (el) { if (el !== target) { target = el; place(true); } }, home: home };
+  })();
+
   function chip(status) { var c = document.createElement('span'); c.className = 'chip ' + status; c.textContent = status; return c; }
   function fade(e) { e.classList.remove('fade'); void e.offsetWidth; e.classList.add('fade'); }
 
@@ -410,6 +430,7 @@
     fade(E.title); fade(E.text);
     if (seq.kind === 'tour') document.getElementById('story').style.setProperty('--accent', ACCENT[C.chapters[st.c].accent] || 'var(--ctl)');
     Array.prototype.forEach.call(tabs.children, function (b, c) { b.setAttribute('aria-selected', c === st.c ? 'true' : 'false'); });
+    if (wheel) wheel.to(seq.kind === 'tour' ? wheel.home : tabs.children[st.c].querySelector('i'));
     E.prev.disabled = cur === 0 && !seq.loop;
     E.next.disabled = cur === seq.steps.length - 1 && !seq.loop;
     termClear();                                  // the transcript is rebuilt from the steps before this one, so jumps are exact
