@@ -17,7 +17,8 @@ drawn as strokes, so no font is needed. `favicon.svg` at the root is the mark.
 renders the PNG through headless Chrome). The site's colors follow: `site.css` is black on
 warm paper, or warm white on black, with the brand yellow for buttons, the prompt and the
 header rule. The header's tire (`wheel.js`, both pages) rolls to the left of the link you click,
-then the link is followed; a page whose link is current starts with the tire there.
+then the link is followed; a page whose link is current starts with the tire there. The wordmark,
+FRAD (Fünftes Rad), leads back to the top of the main page and the tire rolls home.
 
 ## Pages
 

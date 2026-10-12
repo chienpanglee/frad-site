@@ -463,7 +463,7 @@
     if (h && h !== 'tour' && !m && !initial) return;                      // a prose anchor (#ideas, #run): the browser scrolls there, the stage stays
     var k = m ? Math.max(0, Math.min(tour.length - 1, parseInt(m[1], 10) - 1)) : (seq && seq.kind !== 'tour' && seq.c !== undefined ? chStart[seq.c] : 0);
     enter(seqTour(), k, !initial || !!m);
-    if (!initial || m) scrollTo();
+    if ((!initial && h) || m) scrollTo();                                 // the bare page (the wordmark) stays where it is
   }
   var stage = document.getElementById('story');
   function scrollTo() { setTimeout(function () { stage.scrollIntoView({ block: 'start' }); }, 0); }

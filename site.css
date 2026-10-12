@@ -43,6 +43,8 @@ header.top { display: flex; align-items: center; justify-content: space-between;
 header.top .right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .wordmark { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: 0.04em; display: flex; align-items: center; gap: 10px; }
 .wordmark .mark-svg { display: block; flex: none; }
+a.wordmark { text-decoration: none; color: inherit; }
+.wordmark small { font: 500 13px var(--body); letter-spacing: 0; color: var(--muted); margin-left: 2px; }
 nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; align-items: center; min-height: 28px; }
 nav a { text-decoration: none; color: var(--muted); }
 .btn { display: inline-flex; align-items: center; gap: 8px; font: 600 15px var(--body); padding: 11px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; cursor: pointer; transition: transform 0.15s, border-color 0.2s, background 0.2s; }

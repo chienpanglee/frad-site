@@ -46,6 +46,21 @@
       busy = setTimeout(function () { busy = null; location.href = href; }, reduced ? 0 : ROLL + 80);
     });
   });
+  var mark = home.closest('a');                        // the wordmark: back to the main page, the tire back to its place
+  if (mark) mark.addEventListener('click', function (ev) {
+    if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button) return;
+    ev.preventDefault();
+    var href = mark.href, same = new URL(href).pathname === location.pathname;
+    if (busy) clearTimeout(busy);
+    to(home, true);
+    busy = setTimeout(function () {
+      busy = null;
+      if (!same) { location.href = href; return; }
+      history.replaceState(null, '', location.pathname);
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+      window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    }, reduced ? 0 : ROLL + 80);
+  });
   window.addEventListener('hashchange', function () { if (!busy) to(slotFor(location), true); });
   window.addEventListener('scroll', function () { place(false); }, { passive: true });
   window.addEventListener('resize', function () { place(false); });
