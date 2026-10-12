@@ -51,7 +51,18 @@
         .catch(function (e) { err.textContent = e.message; add.disabled = false; });
     });
     nodesEl.appendChild(add);
+    document.getElementById('remove').hidden = current === 'h1';
   }
+  // Clean-up: a node away, the session over from the gold, or the booth gone. Each asks twice.
+  function twice(b, label, go) {
+    b.addEventListener('click', function () {
+      if (b.dataset.armed) { delete b.dataset.armed; b.textContent = label; go(); return; }
+      b.dataset.armed = '1'; b.textContent = label + '?'; setTimeout(function () { delete b.dataset.armed; b.textContent = label; }, 5000);
+    });
+  }
+  twice(document.getElementById('remove'), 'Remove node', function () { api('DELETE', '/api/nodes/' + current).then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
+  twice(document.getElementById('reset'), 'Reset', function () { split(false); api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
+  twice(document.getElementById('stop'), 'Stop the booth', function () { split(false); api('POST', '/api/stop').catch(function () {}); state.textContent = 'the booth is stopping'; });
   (function poll() {
     timed(BASE + '/health').then(function (r) { if (!r.ok) throw new Error(r.status); setBooth(true); misses = 0; })
       .catch(function () { if (++misses >= 2) setBooth(false); })
