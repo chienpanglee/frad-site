@@ -77,9 +77,13 @@ Reserved for the next engine release (the validator rejects them until then): `e
 
 `examples.js` sets `window.FRAD_EXAMPLES`: `{ <id>: { source, date, build?, lines: [..] } }`. An example
 is what the operator typed at the prompt and what the CLI or a screen printed back, cut from a
-passing e2e `.test` log by the frad extractor; harness lines (markers, return-code checks,
-verification) never appear. `source` is the test's path in the repo, `date` the run. Recipes use an
-example by id: `["screen", "h1", "fts-menu"]`, `["out", "@cluster-status"]`.
+passing e2e `.test` log; harness lines (markers, return-code checks, verification) never appear.
+`source` is the test's path in the repo, `date` the run, `build` the commit the node ran. Recipes use
+an example by id: `["screen", "h1", "fts-menu"]`, `["out", "@cli-cluster-status"]`.
+`examples-cli.js` adds the recorded CLI runs under `cli-<command path with dashes>`
+(`cli-node-disks-show`), one example per command, every run of it the suite logged:
+`tools/examples-from-logs.py` cuts them from `tests/e2e/cli` logs. The manual replays the
+example of the page's path; `cli-login` is the root page.
 
 ## Public text rules
 
