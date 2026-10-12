@@ -1,8 +1,7 @@
 # FRAD Storage OS: public site
 
-The public face of FRAD, an appliance operating system for storage. One static page
-(`index.html`, no build step) served by GitHub Pages at
-https://chienpanglee.github.io/frad-site/.
+The public face of FRAD, an appliance operating system for storage. Static pages, no build
+step, served by GitHub Pages at https://chienpanglee.github.io/frad-site/.
 
 FRAD itself is closed-source; this repository holds only the website.
 
@@ -14,11 +13,11 @@ the cluster (Ceph), the hub is the node you start with (local ZFS). `frad-logo.s
 `frad-mark*.svg` the mark alone, `frad-social.png` the 1200x630 link preview. The letters are
 drawn as strokes, so no font is needed. `favicon.svg` at the root is the mark.
 
-## v2 (the next page, replaces the root when ready)
+## Pages
 
-`v2/index.html` is the shell, `v2/stage.js` the stage engine, `v2/examples.js` real outputs cut from e2e test logs (screens and command output the recipes reference by id), `v2/content.js` the content:
+`index.html` is the shell, `stage.js` the stage engine, `examples.js` real outputs cut from e2e test logs (screens and command output the recipes reference by id), `content.js` the content:
 eleven chapters in recipe form, each with a short tour, a feature list and feature recipes.
-`v2/VOCABULARY.md` is the contract between the two: the closed set of recipe verbs and the
+`VOCABULARY.md` is the contract between the two: the closed set of recipe verbs and the
 shape of `content.js`. Content is meant to come from the frad repository's kb (a generator
 there validates recipes against the vocabulary and emits `content.js`); until then it is
 hand-written here. Three levels: the tour loops; a chapter tab opens the chapter, looping its
@@ -26,7 +25,7 @@ own steps beside its feature list; a feature plays once with its details. Deep l
 `#<chapter>`, `#<chapter>/<feature>`, `#step-N`. Only the tour autoplays; a chapter or a feature
 waits for Play.
 
-`v2/cli.html` is the CLI manual: the command tree from frad's `cli_tree.lst` baseline
-(`v2/cli-tree.js`, generated), one page per path (`cli.html#node/disks/zfs_add`) with the prompt
+`cli.html` is the CLI manual: the command tree from frad's `cli_tree.lst` baseline
+(`cli-tree.js`, generated), one page per path (`cli.html#node/disks/zfs_add`) with the prompt
 forms, the usage, and a replay of a recorded session from `examples.js` when one exists.
-`v2/term.js` is the terminal player both pages share, `v2/site.css` the shared styles.
+`term.js` is the terminal player both pages share, `site.css` the shared styles.
