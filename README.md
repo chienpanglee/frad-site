@@ -7,11 +7,16 @@ FRAD itself is closed-source; this repository holds only the website.
 
 ## Logo
 
-`logo/` holds the mark and wordmark as SVG: the fifth wheel. The rim and its five nodes are
-the cluster (Ceph), the hub is the node you start with (local ZFS). `frad-logo.svg` and
-`frad-logo-dark.svg` are the horizontal lockups, `frad-logo-stacked.svg` the square one,
+`logo/` holds the mark and wordmark as SVG: the spare tire, yellow and black. A black tire
+with a yellow tread, a yellow rim, and the F of Fuentes Rad cut in black on the rim: the
+backup you carry so the drive goes on. `frad-logo.svg` and `frad-logo-dark.svg` are the
+horizontal lockups (black or yellow letters), `frad-logo-stacked.svg` the square one,
 `frad-mark*.svg` the mark alone, `frad-social.png` the 1200x630 link preview. The letters are
 drawn as strokes, so no font is needed. `favicon.svg` at the root is the mark.
+`tools/make-logo.py` draws them all and swaps the inline mark in both pages (`--social`
+renders the PNG through headless Chrome). The site's colors follow: `site.css` is black on
+warm paper, or warm white on black, with the brand yellow for buttons, the prompt and the
+header rule.
 
 ## Pages
 

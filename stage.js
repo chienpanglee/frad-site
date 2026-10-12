@@ -100,15 +100,12 @@
   function settle(g, cls) { void g.getBoundingClientRect(); g.classList.remove(cls); }   // a style flush, rAF does not run in hidden tabs
   function retire(g, ms) { g.classList.add('leaving'); setTimeout(function () { if (g.parentNode) g.parentNode.removeChild(g); }, reduced ? 0 : ms); }
 
-  function miniMark(parent, x, y, sc) {
+  function miniMark(parent, x, y, sc) {   // the spare tire of the logo, 100x100 before scaling
     var g = el('g', { transform: 'translate(' + x + ' ' + y + ') scale(' + sc + ')' }, parent);
-    el('circle', { cx: 50, cy: 50, r: 37, fill: 'none', stroke: 'var(--ceph)', 'stroke-width': 9 }, g);
-    for (var k = 0; k < 5; k++) {
-      var a = (-90 + k * 72) * Math.PI / 180, px = 50 + 37 * Math.cos(a), py = 50 + 37 * Math.sin(a);
-      el('line', { x1: 50, y1: 50, x2: px.toFixed(1), y2: py.toFixed(1), stroke: 'var(--ceph)', 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
-      el('circle', { cx: px.toFixed(1), cy: py.toFixed(1), r: 9, fill: 'var(--ceph)' }, g);
-    }
-    el('circle', { cx: 50, cy: 50, r: 14, fill: 'var(--zfs)' }, g);
+    el('circle', { cx: 50, cy: 50, r: 46, fill: '#0b0b0b' }, g);
+    el('circle', { cx: 50, cy: 50, r: 40, fill: 'none', stroke: '#ffd400', 'stroke-width': 7, 'stroke-dasharray': '4.4 6.1' }, g);
+    el('circle', { cx: 50, cy: 50, r: 30, fill: '#ffd400' }, g);
+    el('path', { d: 'M37.5 31V69M37.5 31H65M37.5 49.5H59.5', fill: 'none', stroke: '#0b0b0b', 'stroke-width': 12 }, g);
   }
   function buildNode(n) {
     var g = el('g', { 'class': 'node enter', 'data-id': n.id }, gNodes);
