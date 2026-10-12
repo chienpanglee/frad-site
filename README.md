@@ -16,8 +16,8 @@ drawn as strokes, so no font is needed. `favicon.svg` at the root is the mark.
 `tools/make-logo.py` draws them all and swaps the inline mark in both pages (`--social`
 renders the PNG through headless Chrome). The site's colors follow: `site.css` is black on
 warm paper, or warm white on black, with the brand yellow for buttons, the prompt and the
-header rule. The header's tire (`wheel.js`, both pages) rolls along that rule to the link you
-click, then the link is followed; a page whose link is current starts with the tire there.
+header rule. The header's tire (`wheel.js`, both pages) rolls to the left of the link you click,
+then the link is followed; a page whose link is current starts with the tire there.
 
 ## Pages
 

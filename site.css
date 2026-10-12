@@ -39,11 +39,11 @@ code, .cmd { font-family: var(--mono); font-size: 0.92em; }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 
-header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px 22px; border-bottom: 3px solid var(--yellow); flex-wrap: wrap; position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; border-bottom: 3px solid var(--yellow); flex-wrap: wrap; position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 header.top .right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .wordmark { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: 0.04em; display: flex; align-items: center; gap: 10px; }
 .wordmark .mark-svg { display: block; flex: none; }
-nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; }
+nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; align-items: center; min-height: 28px; }
 nav a { text-decoration: none; color: var(--muted); }
 .btn { display: inline-flex; align-items: center; gap: 8px; font: 600 15px var(--body); padding: 11px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; cursor: pointer; transition: transform 0.15s, border-color 0.2s, background 0.2s; }
 .btn:hover { border-color: var(--fg); transform: translateY(-1px); }
@@ -53,7 +53,7 @@ nav a { text-decoration: none; color: var(--muted); }
 .cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
 .cta .note { align-self: center; font-size: 13px; color: var(--muted); }
 nav a:hover, nav a.docked { color: var(--fg); }
-/* The tire of the logo (wheel.js): it rides the yellow rule under the header link that is current. */
+nav a.docked { padding-left: 34px; }   /* room for the tire (wheel.js) at the left of the link that is current */
 #wheel { position: fixed; left: 0; top: 0; width: 28px; height: 28px; transform-origin: 14px 14px; z-index: 6; pointer-events: none; }
 
 .hero { padding-block: 26px 6px; display: grid; gap: 12px; max-width: 980px; }

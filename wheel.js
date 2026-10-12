@@ -1,23 +1,22 @@
-/* The tire of the logo rolls along the header: from its place at the top left to the link that is
-   clicked (riding the yellow rule under it), then the link is followed. On a page whose link is
-   current, the tire starts there. */
+/* The tire of the logo rolls along the header: from its place at the top left to the left of the
+   link that is clicked, then the link is followed. On a page whose link is current, the tire starts
+   there. */
 (function () {
-  var home = document.querySelector('header.top .mark-svg'), head = document.querySelector('header.top');
+  var home = document.querySelector('header.top .mark-svg');
   var links = Array.prototype.slice.call(document.querySelectorAll('header.top nav a'));
-  if (!home || !head) return;
+  if (!home) return;
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var ROLL = 900, SIZE = 18;
+  var ROLL = 900, SIZE = 28;
   var w = home.cloneNode(true), target = home, rot = 0, lastX = null, busy = null;
   w.removeAttribute('class'); w.id = 'wheel'; w.setAttribute('aria-hidden', 'true');
   document.body.appendChild(w); home.style.visibility = 'hidden';
 
-  function spot(el) {                                   // where the tire sits for a slot
+  function spot(el) {                                   // where the tire sits: the mark's place, or the room a docked link makes at its left
     var r = el.getBoundingClientRect();
-    if (el === home) return { x: r.left + r.width / 2, y: r.top + r.height / 2, sc: 1 };
-    var h = head.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: h.bottom - 3 - SIZE / 2, sc: SIZE / 28 };   // on the rule under the link
+    return { x: r.left + SIZE / 2, y: r.top + r.height / 2 };
   }
   function place(animate) {
+    links.forEach(function (a) { a.classList.toggle('docked', a === target); });   // the room first, then the measure
     var s = spot(target);
     if (lastX !== null && animate) {                   // one or two turns the way it travels, the F upright at rest
       var d = (s.x - lastX) / (Math.PI * SIZE);
@@ -25,8 +24,7 @@
     }
     lastX = s.x;
     w.style.transition = animate && !reduced ? 'transform ' + ROLL + 'ms cubic-bezier(.45, 0, .2, 1)' : 'none';
-    w.style.transform = 'translate(' + (s.x - 14).toFixed(1) + 'px,' + (s.y - 14).toFixed(1) + 'px) scale(' + s.sc.toFixed(3) + ') rotate(' + rot + 'deg)';
-    links.forEach(function (a) { a.classList.toggle('docked', a === target); });
+    w.style.transform = 'translate(' + (s.x - 14).toFixed(1) + 'px,' + (s.y - 14).toFixed(1) + 'px) rotate(' + rot + 'deg)';
   }
   function to(el, animate) { if (el !== target) { target = el; place(animate); } }
   function slotFor(url) {                             // the link whose target is this page and hash
