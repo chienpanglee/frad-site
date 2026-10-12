@@ -4,7 +4,7 @@
   'use strict';
   var CLI = window.FRAD_CLI, X = window.FRAD_EXAMPLES || {}, C = window.FRAD_CONTENT || { chapters: [] };
   if (!CLI) { console.error('FRAD_CLI missing'); return; }
-  var T = window.FRADTerm(document.getElementById('term'));
+  var T = window.FRADTerm(document.getElementById('term'), { keep: 2000 });   // a run is read whole, nothing scrolls off
   var byPath = {}, children = { '': [] };
   CLI.commands.forEach(function (c) {
     byPath[c.path] = c;
