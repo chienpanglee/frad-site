@@ -39,8 +39,8 @@ forms, the usage, and a replay of the command's recorded runs when there are any
 
 `booth.html` is "Try it": it looks for a frad-booth container on the visitor's machine
 (`localhost:8080`, see frad's `booth/`) and, when one answers, shows the node's console, the
-nodes (a button each, "Add node") and opens the Ceph dashboard in a tab (`booth.js`; inline it is
-cross-site and its SameSite cookies are dropped after the login, frad #423); without
+nodes (a button each, "Add node") and the Ceph dashboard from it: inline when the booth's cookie
+probe shows this browser keeps a cross-site cookie in a frame, else in a tab (`booth.js`, frad #423); without
 one it shows the `docker run` line. The booth allows the site's origin (and `localhost` while
 the site is worked on) to call it.
 

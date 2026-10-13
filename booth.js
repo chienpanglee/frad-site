@@ -3,9 +3,10 @@
 (function () {
   var BASE = 'http://localhost:8080';
   var absent = document.getElementById('absent');
-  var con = document.getElementById('console');
+  var panes = document.getElementById('panes'), con = document.getElementById('console'), frame = document.getElementById('dashframe');
   var open = document.getElementById('open'), state = document.getElementById('state'), nodesEl = document.getElementById('nodes'), err = document.getElementById('err');
   var booth = false, ready = false, misses = 0, current = 'h1';
+  var embed = false, probeFrame = null, probeTimer = null;   // can the dashboard live in a frame here? (frad #423)
   var CMD = 'docker run --rm --device /dev/kvm --device /dev/net/tun --cap-add NET_ADMIN -p 8080:8080 ghcr.io/chienpanglee/frad-booth';
   var boot = document.getElementById('boot'), T = window.FRADTerm(boot, { keep: 20 }), copy = document.getElementById('copy');
   var login = document.getElementById('login'), paneTitle = document.getElementById('paneTitle');
@@ -23,6 +24,26 @@
   function api(method, path) {
     return timed(BASE + path, { method: method }).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); });
   }
+  function split(on) {
+    panes.classList.toggle('split', on);
+    if (on && !frame.getAttribute('src')) frame.src = BASE + '/ceph/';
+    if (!on) frame.removeAttribute('src');
+  }
+  // The dashboard's cookies are cross-site from this page. The booth's probe sets one with the
+  // same attributes in a hidden frame and says whether the browser sent it back; no answer
+  // (an older booth has no probe) means a tab.
+  function setEmbed(v) { embed = v; open.title = v ? '' : 'Opens in a new tab: user admin, password admin'; }
+  function unprobe() { if (probeTimer) clearTimeout(probeTimer); probeTimer = null; if (probeFrame) probeFrame.remove(); probeFrame = null; }
+  function probe() {
+    unprobe(); setEmbed(false);
+    probeFrame = document.createElement('iframe'); probeFrame.hidden = true; probeFrame.title = 'cookie probe'; probeFrame.src = BASE + '/probe.html';
+    document.body.appendChild(probeFrame);
+    probeTimer = setTimeout(unprobe, 5000);
+  }
+  window.addEventListener('message', function (ev) {
+    if (ev.origin !== BASE || !ev.data || ev.data.fradBooth !== 'probe') return;
+    setEmbed(!!ev.data.cookies); unprobe();
+  });
   function setBooth(on) {                     // the one box: the command to run, then the console it starts
     if (on === booth) return;
     booth = on;
@@ -30,14 +51,15 @@
     boot.hidden = on; con.hidden = !on; copy.hidden = on; login.hidden = !on;
     ['reset', 'stop'].forEach(function (id) { document.getElementById(id).hidden = !on; });
     paneTitle.textContent = on ? 'Console' : 'Start the booth';
-    if (on) { T.cancel(); con.src = BASE + '/console/'; }
-    else { con.removeAttribute('src'); ready = false; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); }
+    if (on) { T.cancel(); con.src = BASE + '/console/'; probe(); }
+    else { con.removeAttribute('src'); split(false); unprobe(); setEmbed(false); ready = false; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); }
   }
   function setReady(up) {
     if (up === ready) return;
     ready = up;
     open.hidden = !up;
     state.textContent = up ? 'the node is up' : 'the node is not reachable';
+    if (!up) split(false);
   }
   function drawNodes(j) {
     if (j.current) current = j.current;          // the console is shared: what it shows is what the booth says
@@ -65,8 +87,8 @@
     });
   }
   twice(document.getElementById('remove'), 'Remove node', function () { api('DELETE', '/api/nodes/' + current).then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
-  twice(document.getElementById('reset'), 'Reset', function () { api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
-  twice(document.getElementById('stop'), 'Stop the booth', function () { api('POST', '/api/stop').catch(function () {}); state.textContent = 'the booth is stopping'; });
+  twice(document.getElementById('reset'), 'Reset', function () { split(false); api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
+  twice(document.getElementById('stop'), 'Stop the booth', function () { split(false); api('POST', '/api/stop').catch(function () {}); state.textContent = 'the booth is stopping'; });
   (function poll() {
     timed(BASE + '/health').then(function (r) { if (!r.ok) throw new Error(r.status); setBooth(true); misses = 0; })
       .catch(function () { if (++misses >= 2) setBooth(false); })
@@ -77,7 +99,6 @@
       })
       .then(function () { setTimeout(poll, 3000); }, function () { setTimeout(poll, 3000); });
   })();
-  // Its own tab, not a pane: from this site an iframe is cross-site and the dashboard's SameSite
-  // cookies are not sent after the login (frad #423).
-  open.addEventListener('click', function () { window.open(BASE + '/ceph/', '_blank', 'noopener'); });
+  open.addEventListener('click', function () { if (embed) split(true); else window.open(BASE + '/ceph/', '_blank', 'noopener'); });
+  document.getElementById('close').addEventListener('click', function () { split(false); });
 })();
