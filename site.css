@@ -253,7 +253,6 @@ svg .tick.dead { stroke-dasharray: 3 3; opacity: 0.5; }
 .booth .run code { color: #ffd400; }
 .booth .note { color: var(--muted); font-size: 14px; margin-top: 8px; max-width: 90ch; }
 .booth .panes { display: grid; grid-template-columns: 1fr; gap: 14px; height: 72vh; min-height: 420px; }
-.booth .panes.split { grid-template-columns: 1fr 1fr; }
 .booth .pane { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; min-height: 0; background: var(--panel); }
 .booth .pane h2 { margin: 0; font: 600 12px/1 var(--body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .booth .pane h2 code { text-transform: none; letter-spacing: 0; color: var(--zfs); }
@@ -265,6 +264,4 @@ svg .tick.dead { stroke-dasharray: 3 3; opacity: 0.5; }
 .booth iframe { flex: 1; border: 0; background: #000; width: 100%; }
 .booth .term.boot { flex: 1; height: auto; margin: 0; border: 0; border-radius: 0; justify-content: flex-start; font-size: 14px; padding: 14px 16px; }
 .booth .pane [hidden] { display: none; }
-.booth #dash { display: none; }
-.booth .panes.split #dash { display: flex; }
-@media (max-width: 900px) { .booth .panes, .booth .panes.split { grid-template-columns: 1fr; height: auto; } .booth iframe { height: 55vh; } }
+@media (max-width: 900px) { .booth .panes { grid-template-columns: 1fr; height: auto; } .booth iframe { height: 55vh; } }
