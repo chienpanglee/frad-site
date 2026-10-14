@@ -202,7 +202,8 @@ footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var
 .stage { align-items: start; }
 .narr[data-mode="tour"] .chapter-only, .narr[data-mode="tour"] .feature-only,
 .narr[data-mode="chapter"] .tour-only, .narr[data-mode="chapter"] .feature-only,
-.narr[data-mode="feature"] .tour-only, .narr[data-mode="feature"] .chapter-only { display: none; }
+.narr[data-mode="feature"] .tour-only, .narr[data-mode="feature"] .chapter-only,
+.narr[data-mode="tour"] .not-tour { display: none; }
 .narr h3 { font-size: 22px; }
 .narr .step h3 { font-size: 22px; }
 .narr[data-mode="chapter"] .step h3, .narr[data-mode="feature"] .step h3 { font-size: 16px; font-family: var(--body); font-weight: 600; }

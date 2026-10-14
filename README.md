@@ -29,7 +29,7 @@ shape of `content.js`. Content is meant to come from the frad repository's kb (a
 there validates recipes against the vocabulary and emits `content.js`); until then it is
 hand-written here. Three levels: the tour loops; a chapter tab opens the chapter, looping its
 own steps beside its feature list; a feature plays once with its details. Deep links:
-`#<chapter>`, `#<chapter>/<feature>`, `#step-N`. Only the tour autoplays; a chapter or a feature
+`#<chapter>`, `#<chapter>/<feature>`, `#step-N`. One control row at every level: Play or Pause, Prev, Next, Up (no Up on the tour). Only the tour autoplays; a chapter or a feature
 waits for Play.
 
 `cli.html` is the CLI manual: the command tree from frad's `cli_tree.lst` baseline

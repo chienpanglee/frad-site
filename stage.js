@@ -607,7 +607,7 @@
   var narr = document.getElementById('narr'), tabs = document.getElementById('tabs');
   var seq = null, cur = 0, playing = false, timer = null, barTimer = null;
   var E = {};
-  ['stepno', 'chapname', 'title', 'text', 'chno', 'chtitle', 'chintro', 'ftitle', 'fsummary', 'features', 'details', 'evidence', 'bar', 'play', 'prev', 'next', 'open', 'totour', 'upchapter', 'legendDown'].forEach(function (id) { E[id] = document.getElementById(id); });
+  ['stepno', 'chapname', 'title', 'text', 'chno', 'chtitle', 'chintro', 'ftitle', 'fsummary', 'features', 'details', 'evidence', 'bar', 'play', 'prev', 'next', 'up', 'upchapter', 'legendDown'].forEach(function (id) { E[id] = document.getElementById(id); });
 
   C.chapters.forEach(function (ch, c) {
     var b = document.createElement('button');
@@ -665,12 +665,10 @@
     fade(E.title); fade(E.text);
     if (seq.kind === 'tour') document.getElementById('story').style.setProperty('--accent', ACCENT[C.chapters[st.c].accent] || 'var(--ctl)');
     Array.prototype.forEach.call(tabs.children, function (b, c) { b.setAttribute('aria-selected', c === st.c ? 'true' : 'false'); });
-    var still = seq.kind === 'feature' && seq.steps.length === 1;   // a one-frame feature: the buttons lead on instead of going dead
-    E.prev.textContent = still ? 'Up to the chapter' : 'Back';
-    E.next.textContent = still ? (nextFeature() ? 'Next feature' : 'Next chapter') : 'Next';
-    E.prev.disabled = !still && cur === 0 && !seq.loop;
-    E.next.disabled = still ? !nextFeature() : cur === seq.steps.length - 1 && !seq.loop;
-    E.play.disabled = still;
+    // one control row at every level: Play/Pause, Prev, Next, Up. A feature's Prev and Next lead on to its neighbours.
+    E.prev.disabled = seq.kind === 'feature' && cur === 0 && !prevFeature();
+    E.next.disabled = seq.kind === 'feature' && cur === seq.steps.length - 1 && !nextFeature();
+    E.play.disabled = seq.steps.length === 1;
     termClear();                                  // the transcript is rebuilt from the steps before this one, so jumps are exact
     for (var j = segStart(seq, cur); j < cur; j++) flushItems(seq.steps[j].term);
     var typeMs = playTerminal(seq, cur, function () { render(s, hot); });
@@ -688,7 +686,7 @@
     if (cur >= seq.steps.length - 1) { if (seq.loop) { termClear(); go(0); } else stop(); }
     else go(cur + 1);
   }
-  function playLabel() { E.play.textContent = playing ? 'Pause' : (!seq.loop && cur >= seq.steps.length - 1 ? 'Replay' : 'Play'); }
+  function playLabel() { E.play.textContent = playing ? 'Pause' : 'Play'; }
   function play() {
     playing = true; playLabel();
     if (cur >= seq.steps.length - 1 && !seq.loop) { termClear(); go(0); return; }
@@ -705,8 +703,17 @@
     seq = newSeq; buildNarr();
     playing = !!autoplayIt; go(k);
   }
-  function prevStep() { if (cur > 0) go(cur - 1); else if (seq.loop) go(seq.steps.length - 1); }
-  function nextStep() { if (cur < seq.steps.length - 1) go(cur + 1); else if (seq.loop) { termClear(); go(0); } }
+  function prevStep() {
+    if (cur > 0) go(cur - 1);
+    else if (seq.loop) go(seq.steps.length - 1);
+    else { var h = prevFeature(); if (h) location.hash = h; }
+  }
+  function nextStep() {
+    if (cur < seq.steps.length - 1) go(cur + 1);
+    else if (seq.loop) { termClear(); go(0); }
+    else { var h = nextFeature(); if (h) location.hash = h; }
+  }
+  function up() { if (seq.kind === 'feature') location.hash = C.chapters[seq.c].slug; else if (seq.kind === 'chapter') location.hash = 'tour'; }
 
   // ---------- routing: #tour, #step-N, #<chapter>, #<chapter>/<feature>
   var touched = false, suspended = false, autoDone = false;
@@ -736,22 +743,25 @@
   function scrollTo() { setTimeout(function () { stage.scrollIntoView({ block: 'start' }); }, 0); }
 
   E.play.addEventListener('click', function () { touched = true; suspended = false; playing ? stop() : play(); });
-  function nextFeature() {                         // after a one-frame feature: the chapter's next feature, else the next chapter
+  function nextFeature() {                         // past a feature's last step: the chapter's next feature, else the next chapter
     var ch = C.chapters[seq.c];
     if (seq.f + 1 < ch.features.length) return ch.slug + '/' + ch.features[seq.f + 1].slug;
     return seq.c + 1 < C.chapters.length ? C.chapters[seq.c + 1].slug : null;
   }
-  E.prev.addEventListener('click', function () { touched = true; stop(); if (seq.kind === 'feature' && seq.steps.length === 1) location.hash = C.chapters[seq.c].slug; else prevStep(); });
-  E.next.addEventListener('click', function () { touched = true; stop(); if (seq.kind === 'feature' && seq.steps.length === 1) { var h = nextFeature(); if (h) location.hash = h; } else nextStep(); });
-  E.open.addEventListener('click', function () { touched = true; location.hash = C.chapters[seq.steps[cur].c].slug; });
-  E.totour.addEventListener('click', function () { location.hash = 'tour'; });
+  function prevFeature() {                         // before a feature's first step: the chapter's previous feature
+    var ch = C.chapters[seq.c];
+    return seq.f > 0 ? ch.slug + '/' + ch.features[seq.f - 1].slug : null;
+  }
+  E.prev.addEventListener('click', function () { touched = true; stop(); prevStep(); });
+  E.next.addEventListener('click', function () { touched = true; stop(); nextStep(); });
+  E.up.addEventListener('click', function () { touched = true; up(); });
   E.upchapter.addEventListener('click', function () { location.hash = C.chapters[seq.c].slug; });
   document.addEventListener('keydown', function (e) {
     if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
     if (e.key === 'ArrowRight') { touched = true; stop(); nextStep(); }
     if (e.key === 'ArrowLeft') { touched = true; stop(); prevStep(); }
     if (e.key === ' ' && seq && !(e.target && e.target.tagName === 'BUTTON')) { e.preventDefault(); touched = true; playing ? stop() : play(); }
-    if (e.key === 'Escape') { if (seq.kind === 'feature') location.hash = C.chapters[seq.c].slug; else if (seq.kind === 'chapter') location.hash = 'tour'; }
+    if (e.key === 'Escape') up();
   });
   function suspend() { if (playing) { suspended = true; stop(); } }
   function resume() { if (suspended && !document.hidden) { suspended = false; play(); } }
