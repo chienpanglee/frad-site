@@ -15,6 +15,8 @@ unknown verb or a wrong argument fails the frad build, never the site.
 - `slug` is the URL part (`#zfs-scale`, `#zfs-scale/evacuate`). Lower case, dashes.
 - `label` is the tab text (one or two words); `title` the chapter heading; `intro` one paragraph.
 - `accent` is one of `zfs`, `ceph`, `ctl`, `ok`, `warn`.
+- `layout` is optional: `diagram` hides the terminal strip and the legend while the chapter plays and widens the
+  stage, for chapters whose verbs fill the whole stage (`pipe`, `chain`).
 - `status` is `built` or `designed`. The generator derives it: every test in `tests` exists
   in the repo -> built, else an ADR -> designed. `tests` is a count on the site, never a path.
 - `details` is a list of plain-text paragraphs. No HTML.

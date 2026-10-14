@@ -657,6 +657,7 @@
     var st = seq.steps[cur], s = stateAt(seq, cur), prev = cur ? stateAt(seq, cur - 1) : seq.base();
     var hot = diskDiff(prev, s);
     E.stepno.textContent = (cur + 1) + ' / ' + seq.steps.length;
+    stage.setAttribute('data-layout', C.chapters[st.c].layout || 'scene');   // a diagram chapter drops the terminal and the legend for room
     E.chapname.textContent = st.f !== undefined ? C.chapters[st.c].features[st.f].title : C.chapters[st.c].title;
     Array.prototype.forEach.call(E.features.children, function (li, f) { li.classList.toggle('current', st.f === f); });
     E.title.textContent = st.title;

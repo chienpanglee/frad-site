@@ -354,3 +354,7 @@ svg .pipe .lane .fill { transform-box: fill-box; transform-origin: left; }
 svg .pipe .now { stroke: var(--ctl); stroke-width: 1.5; stroke-dasharray: 2 2; animation: sweep linear both; }
 @keyframes sweep { from { transform: translateX(0); opacity: 1; } 96% { opacity: 1; } to { transform: translateX(var(--sweep)); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { svg .pipe .now { display: none; } }
+.stage { transition: grid-template-columns 0.45s cubic-bezier(.2,.8,.2,1); }
+.stage[data-layout="diagram"] { grid-template-columns: minmax(0, 2.1fr) minmax(280px, 1fr); }
+.stage[data-layout="diagram"] .term, .stage[data-layout="diagram"] .legend { display: none; }
+@media (max-width: 860px) { .stage[data-layout="diagram"] { grid-template-columns: 1fr; } }

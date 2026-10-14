@@ -2,7 +2,7 @@
    Status chips are an editorial reading until the generator derives them from the repository. */
 window.FRAD_CONTENT = { chapters: [
 
-{ slug: 'release', label: 'Release', title: 'From a commit to a release', accent: 'ok',
+{ slug: 'release', label: 'Release', title: 'From a commit to a release', accent: 'ok', layout: 'diagram',
   intro: 'One tree, one make, ten stages. The build is tested from unit tests to clusters in QEMU, each stage sealing a gold disk for the next and running its suites side by side where it can; then the release is described, scanned and signed.',
   tour: [
     ['step', 'Build, then every tier of tests', 'A production build makes every medium from one tree. Unit tests, static checks of each image, installs in QEMU, first boots and clusters follow, each stage starting from what the one before sealed.'],
@@ -55,7 +55,7 @@ window.FRAD_CONTENT = { chapters: [
       recipe: [['step', 'Signed on the way out', 'The last stage: the release key signs the artifacts and the reports; the bundles and the public key go with them.', 'designed'], ['note', '# cosign: bundles beside every artifact; the public key with the release'], ['pipe', 10], ['step', 'Ready to ship', 'Ten stages green: built, tested from code to clusters, described, scanned and signed.', 'designed'], ['note', '# release: every stage passed'], ['pipe', 'done']] }
   ] },
 
-{ slug: 'sign', label: 'Sign', title: 'A signed release', accent: 'ctl',
+{ slug: 'sign', label: 'Sign', title: 'A signed release', accent: 'ctl', layout: 'diagram',
   intro: 'What a node runs is decided on the release host, never on the node. Every build is scanned, signed with a key that never enters the build, recorded in a transparency log, and verified on the node before a byte is unpacked.',
   tour: [
     ['step', 'Built and scanned', 'A production build produces the image in every medium, a bill of materials of the operating system and one of the bundled Ceph image, and a vulnerability report against each. The tools are pinned and vendored; the build fetches nothing.'],
