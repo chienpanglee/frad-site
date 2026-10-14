@@ -63,23 +63,39 @@
     var st = compile(ch.tour, c);
     chStart[c] = tour.length; tour = tour.concat(st); chEnd[c] = tour.length - 1;
   });
-  function replay(s, steps, upto) {
-    for (var j = 0; j <= upto && j < steps.length; j++) steps[j].scene.forEach(function (op) { SCENE[op[0]](s, op); });
+  function replay(s, steps, upto, from) {
+    for (var j = from || 0; j <= upto && j < steps.length; j++) steps[j].scene.forEach(function (op) { SCENE[op[0]](s, op); });
     return s;
   }
-  function tourState(upto) { return replay(blank(), tour, upto); }
-  function seqTour() { return { kind: 'tour', steps: tour, base: blank, loop: true }; }
-  function seqChapter(c) {
-    return { kind: 'chapter', c: c, steps: tour.slice(chStart[c], chEnd[c] + 1), base: function () { return tourState(chStart[c] - 1); }, loop: true };
+  function clearOverlays(b) { b.verify = null; b.screen = null; b.inside = null; b.media = null; b.chain = null; b.pipe = null; return b; }
+  function withSeg(st, seg0, base, f) {   // a step copy that knows the segment it replays from
+    var o = {}; for (var k in st) if (st.hasOwnProperty(k)) o[k] = st[k];
+    o.seg0 = seg0; o.base = base; if (f !== undefined) o.f = f; return o;
   }
-  function seqFeature(c, f) {
+  function featureSteps(c, f) {
     var ft = C.chapters[c].features[f];
     var steps = ft.recipe ? compile(ft.recipe, c) : [];
     if (!steps.length) steps = [{ title: ft.title, text: ft.summary, flag: null, term: [], scene: [], hold: 0, c: c }];
-    // a feature starts from the chapter's start state with the transient overlays cleared
-    return { kind: 'feature', c: c, f: f, steps: steps, base: function () { var b = tourState(chStart[c] - 1); b.verify = null; b.screen = null; b.inside = null; b.media = null; b.chain = null; b.pipe = null; return b; }, loop: false };
+    return steps;
   }
-  function stateAt(seq, k) { return replay(seq.base(), seq.steps, k); }
+  function tourState(upto) { return replay(blank(), tour, upto); }
+  function seqTour() { return { kind: 'tour', steps: tour, base: blank, loop: true }; }
+  // A chapter plays its tour steps, then every feature in order; each feature replays from the chapter's
+  // start state with the overlays cleared, so it stands alone as it does when opened by itself.
+  function seqChapter(c) {
+    var base0 = function () { return tourState(chStart[c] - 1); }, baseF = function () { return clearOverlays(base0()); };
+    var steps = tour.slice(chStart[c], chEnd[c] + 1).map(function (st) { return withSeg(st, 0, base0); });
+    C.chapters[c].features.forEach(function (ft, f) {
+      var seg0 = steps.length;
+      featureSteps(c, f).forEach(function (st) { steps.push(withSeg(st, seg0, baseF, f)); });
+    });
+    return { kind: 'chapter', c: c, steps: steps, base: base0, loop: true };
+  }
+  function seqFeature(c, f) {
+    return { kind: 'feature', c: c, f: f, steps: featureSteps(c, f), base: function () { return clearOverlays(tourState(chStart[c] - 1)); }, loop: false };
+  }
+  function stateAt(seq, k) { var st = seq.steps[k]; return replay(st.base ? st.base() : seq.base(), seq.steps, k, st.seg0 || 0); }
+  function segStart(seq, k) { return seq.steps[k].seg0 || 0; }
   function diskDiff(a, b) {
     var hot = {};
     b.nodes.forEach(function (n) {
@@ -612,7 +628,8 @@
     var st = seq.steps[cur], s = stateAt(seq, cur), prev = cur ? stateAt(seq, cur - 1) : seq.base();
     var hot = diskDiff(prev, s);
     E.stepno.textContent = (cur + 1) + ' / ' + seq.steps.length;
-    E.chapname.textContent = C.chapters[st.c].title;
+    E.chapname.textContent = st.f !== undefined ? C.chapters[st.c].features[st.f].title : C.chapters[st.c].title;
+    Array.prototype.forEach.call(E.features.children, function (li, f) { li.classList.toggle('current', st.f === f); });
     E.title.textContent = st.title;
     if (st.flag === 'designed') E.title.appendChild(chip('designed'));
     E.text.textContent = st.text;
@@ -626,7 +643,7 @@
     E.next.disabled = still ? !nextFeature() : cur === seq.steps.length - 1 && !seq.loop;
     E.play.disabled = still;
     termClear();                                  // the transcript is rebuilt from the steps before this one, so jumps are exact
-    for (var j = 0; j < cur; j++) flushItems(seq.steps[j].term);
+    for (var j = segStart(seq, cur); j < cur; j++) flushItems(seq.steps[j].term);
     var typeMs = playTerminal(seq, cur, function () { render(s, hot); });
     if (playing) arm(typeMs + PERIOD + st.hold); else showBar(0);
     playLabel();
@@ -650,7 +667,7 @@
   }
   function stop() {   // a paused step shows its command, its output and its picture complete
     playing = false; clearTimeout(timer); showBar(0); T.cancel();
-    termClear(); for (var j = 0; j <= cur; j++) flushItems(seq.steps[j].term);
+    termClear(); for (var j = segStart(seq, cur); j <= cur; j++) flushItems(seq.steps[j].term);
     render(stateAt(seq, cur), diskDiff(cur ? stateAt(seq, cur - 1) : seq.base(), stateAt(seq, cur)));
     playLabel();
   }

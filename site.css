@@ -345,3 +345,4 @@ svg .pipe .detail .tag.designed { stroke: var(--warn); }
 svg .pipe .detail .tagtext { fill: var(--ok); letter-spacing: 0.06em; text-transform: uppercase; }
 svg .pipe .detail .tagtext.designed { fill: var(--warn); }
 svg .pipe .detail .leaves { fill: var(--ok); }
+.features li.current button { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }

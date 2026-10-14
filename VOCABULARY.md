@@ -23,9 +23,10 @@ unknown verb or a wrong argument fails the frad build, never the site.
 ## The tour and the three levels
 
 The tour is the concatenation of every chapter's `tour` recipe, played in a loop. A chapter
-view loops the chapter's own steps from the state the previous chapters left. A feature
-view plays the feature recipe once from that same starting state with the overlays (`screen`,
-`verify`, `inside`) cleared, so a feature recipe stands alone: it sets up what it needs (a silent step without `type` is enough) and then
+view plays the chapter's own steps from the state the previous chapters left, then every
+feature of the chapter in order, and loops. A feature view plays the feature recipe once. In
+both, a feature starts from that same starting state with the overlays (`screen`, `verify`,
+`inside`, `media`, `chain`, `pipe`) cleared, so a feature recipe stands alone: it sets up what it needs (a silent step without `type` is enough) and then
 shows the feature.
 
 State is replayed, never stored: the picture at step k is the result of applying every
