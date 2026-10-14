@@ -74,7 +74,7 @@
     if (up === ready) return;
     ready = up;
     open.hidden = !up;
-    if (!stale && !resetting) state.textContent = up ? 'the node is up' : 'the node is not reachable';
+    if (!stale && !resetting) state.textContent = up ? '' : 'the node is not reachable';
     if (!up) split(false);
   }
   function drawNodes(j) {
@@ -107,7 +107,7 @@
   twice(document.getElementById('reset'), 'Reset', function () {
     split(false); con.removeAttribute('src'); con.hidden = true; boot.hidden = false; resetting = Date.now(); gone = false;
     state.textContent = 'the booth is resetting'; waiting('every node goes, h1 comes back fresh from the gold; this box is its console again');
-    api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; showConsole('the node is up'); });
+    api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; showConsole(''); });
   });
   function showConsole(text) { resetting = 0; ready = false; open.hidden = true; T.cancel(); boot.hidden = true; con.hidden = false; con.src = BASE + '/console/'; probe(); state.textContent = text; }
   function resetDone(j) {                       // the old h1 was seen gone (or 90 s passed) and an h1 is alive again
