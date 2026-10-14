@@ -7,11 +7,20 @@
   var open = document.getElementById('open'), state = document.getElementById('state'), nodesEl = document.getElementById('nodes'), err = document.getElementById('err');
   var booth = false, ready = false, misses = 0, current = 'h1';
   var embed = false, probeFrame = null, probeTimer = null;   // can the dashboard live in a frame here? (frad #423)
-  var CMD = 'docker run --rm --pull always --device /dev/kvm --device /dev/net/tun --cap-add NET_ADMIN -p 8080:8080 ghcr.io/chienpanglee/frad-booth';
+  var IMAGE = 'ghcr.io/chienpanglee/frad-booth', TAG = '', CMD = '';   // booth.json names the current image; the run line pins its tag
+  function setImage(image, tag) {
+    IMAGE = image || IMAGE; TAG = tag || '';
+    CMD = 'docker run --rm --pull always --device /dev/kvm --device /dev/net/tun --cap-add NET_ADMIN -p 8080:8080 ' + IMAGE + (TAG ? ':' + TAG : '');
+  }
+  setImage(IMAGE, '');
   var boot = document.getElementById('boot'), T = window.FRADTerm(boot, { keep: 20 }), copy = document.getElementById('copy');
   var login = document.getElementById('login'), paneTitle = document.getElementById('paneTitle');
   function waiting(text) { T.clear(); T.play([{ k: 'type', prompt: '$ ', s: CMD }, { k: 'note', s: '# ' + text }], null, true); }
   waiting('paste this into a terminal on this machine; this box becomes the console once the booth answers');
+  timed('booth.json').then(function (r) { return r.json(); }).then(function (j) {
+    setImage(j.image, j.tag);
+    if (!booth) waiting('paste this into a terminal on this machine; this box becomes the console once the booth answers');
+  }).catch(function () {});
   copy.addEventListener('click', function () {
     navigator.clipboard.writeText(CMD).then(function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy the command'; }, 2000); }, function () { copy.textContent = 'Select it and copy'; });
   });
@@ -48,17 +57,24 @@
     if (on === booth) return;
     booth = on;
     absent.hidden = on;
-    boot.hidden = on; con.hidden = !on; copy.hidden = on; login.hidden = !on;
+    boot.hidden = on; con.hidden = !on; copy.hidden = on && !stale; login.hidden = !on;
     ['reset', 'stop'].forEach(function (id) { document.getElementById(id).hidden = !on; });
     paneTitle.textContent = on ? 'Console' : 'Start the booth';
     if (on) { T.cancel(); con.src = BASE + '/console/'; probe(); }
-    else { con.removeAttribute('src'); split(false); unprobe(); setEmbed(false); ready = false; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); }
+    else { con.removeAttribute('src'); split(false); unprobe(); setEmbed(false); ready = false; stale = ''; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); }
+  }
+  var stale = '';                               // the running booth's image when it is not the one the site names
+  function setStale(version) {                 // an image that reports no version predates this check: no verdict on it
+    var v = version && TAG && version !== TAG ? version : '';
+    if (v === stale) return;
+    stale = v; copy.hidden = !v && booth;
+    if (v) state.textContent = 'this booth runs an older image (' + v + '); Stop the booth, then paste the line again';
   }
   function setReady(up) {
     if (up === ready) return;
     ready = up;
     open.hidden = !up;
-    state.textContent = up ? 'the node is up' : 'the node is not reachable';
+    if (!stale) state.textContent = up ? 'the node is up' : 'the node is not reachable';
     if (!up) split(false);
   }
   function drawNodes(j) {
@@ -90,7 +106,8 @@
   twice(document.getElementById('reset'), 'Reset', function () { split(false); api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
   twice(document.getElementById('stop'), 'Stop the booth', function () { split(false); api('POST', '/api/stop').catch(function () {}); state.textContent = 'the booth is stopping'; });
   (function poll() {
-    timed(BASE + '/health').then(function (r) { if (!r.ok) throw new Error(r.status); setBooth(true); misses = 0; })
+    timed(BASE + '/health').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json().catch(function () { return {}; }); })
+      .then(function (h) { setBooth(true); misses = 0; setStale(h.version); })
       .catch(function () { if (++misses >= 2) setBooth(false); })
       .then(function () {
         if (!booth) return;
