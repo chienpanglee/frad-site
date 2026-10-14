@@ -137,4 +137,5 @@
   })();
   open.addEventListener('click', function () { if (embed) split(true); else window.open(BASE + '/ceph/', '_blank', 'noopener'); });
   document.getElementById('close').addEventListener('click', function () { split(false); });
+  document.getElementById('tab').addEventListener('click', function () { window.open(BASE + '/ceph/', '_blank', 'noopener'); split(false); });
 })();
