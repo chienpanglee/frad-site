@@ -96,7 +96,7 @@
         .catch(function (e) { err.textContent = e.message; add.disabled = false; });
     });
     nodesEl.appendChild(add);
-    document.getElementById('remove').hidden = current === 'h1';
+    document.getElementById('remove').hidden = !cur;
   }
   // Clean-up: a node away, the session over from the gold, or the booth gone. Each asks twice.
   function twice(b, label, go) {
