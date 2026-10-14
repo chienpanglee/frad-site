@@ -11,7 +11,7 @@
   var ACCENT = { zfs: 'var(--zfs)', ceph: 'var(--ceph)', ctl: 'var(--ctl)', ok: 'var(--ok)', warn: 'var(--warn)' };
 
   // ---------- state and scene verbs
-  function blank() { return { nodes: [], screen: null, svc: false, bus: false, vip: false, inside: null, verify: null, media: null, chain: null }; }
+  function blank() { return { nodes: [], screen: null, svc: false, bus: false, vip: false, inside: null, verify: null, media: null, chain: null, pipe: null }; }
   function mkNode(id) { return { id: id, control: false, disks: ['free', 'free', 'free', 'free'], installing: false, down: false }; }
   function findNode(s, id) { for (var i = 0; i < s.nodes.length; i++) if (s.nodes[i].id === id) return s.nodes[i]; return null; }
   function withNode(s, id, fn) { var n = findNode(s, id); if (n) fn(n); else console.warn('recipe: no node ' + id); }
@@ -28,6 +28,7 @@
     screen: function (s, op) { s.screen = op[1] ? { node: op[1], ex: op[2] || null } : null; },
     inside: function (s, op) { s.inside = op[1] || null; },
     verify: function (s, op) { s.verify = op[1] ? { subject: op[1], mode: op[2] || 'online' } : null; },
+    pipe: function (s, op) { s.pipe = op[1] === null || op[1] === undefined ? null : op[1] === 'done' ? 99 : op[1] | 0; },
     chain: function (s, op) { s.chain = op[1] === null || op[1] === undefined ? null : op[1] === 'done' ? 99 : op[1] | 0; },
     media: function (s, op) { s.media = op[1] ? { node: op[1], kind: op[2] || 'iso', phase: op[3] === undefined ? 99 : op[3] | 0 } : null; },
     down: function (s, op) { withNode(s, op[1], function (n) { n.down = true; }); },
@@ -76,7 +77,7 @@
     var steps = ft.recipe ? compile(ft.recipe, c) : [];
     if (!steps.length) steps = [{ title: ft.title, text: ft.summary, flag: null, term: [], scene: [], hold: 0, c: c }];
     // a feature starts from the chapter's start state with the transient overlays cleared
-    return { kind: 'feature', c: c, f: f, steps: steps, base: function () { var b = tourState(chStart[c] - 1); b.verify = null; b.screen = null; b.inside = null; b.media = null; b.chain = null; return b; }, loop: false };
+    return { kind: 'feature', c: c, f: f, steps: steps, base: function () { var b = tourState(chStart[c] - 1); b.verify = null; b.screen = null; b.inside = null; b.media = null; b.chain = null; b.pipe = null; return b; }, loop: false };
   }
   function stateAt(seq, k) { return replay(seq.base(), seq.steps, k); }
   function diskDiff(a, b) {
@@ -90,7 +91,7 @@
 
   // ---------- SVG helpers
   var gNodes = document.getElementById('nodes'), gTicks = document.getElementById('ticks');
-  var gVip = document.getElementById('vip'), gFb = document.getElementById('fb'), gUpd = document.getElementById('upd'), gVer = document.getElementById('ver'), gMed = document.getElementById('med'), gChain = document.getElementById('chain');
+  var gVip = document.getElementById('vip'), gFb = document.getElementById('fb'), gUpd = document.getElementById('upd'), gVer = document.getElementById('ver'), gMed = document.getElementById('med'), gChain = document.getElementById('chain'), gPipe = document.getElementById('pipe');
   function el(tag, attrs, parent) {
     var e = document.createElementNS(NS, tag);
     for (var k in attrs) if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]);
@@ -136,7 +137,7 @@
   var curInside = null, curVerify = '', curScreen = '', curMedia = '';
   function render(s, hot) {
     var inUpdate = !!s.inside;
-    document.getElementById('empty').style.opacity = s.nodes.length || s.chain ? 0 : 1;
+    document.getElementById('empty').style.opacity = s.nodes.length || s.chain || s.pipe ? 0 : 1;
 
     var want = {};
     s.nodes.forEach(function (n, idx) { want[n.id] = idx; });
@@ -262,6 +263,75 @@
       });
       if (cOn) { var cg = el('g', { 'class': 'pane-g enter' }, gChain); drawChain(cg); chainPhase(cg, s.chain); settle(cg, 'enter'); }
     } else if (cOn) chainPhase(cLive, s.chain);
+
+    // the release pipeline: ten stages in a row, the active one explained below
+    var pOn = s.pipe !== null && s.pipe !== undefined;
+    var pLive = gPipe.querySelector('.pane-g:not(.out)');
+    if (pOn !== !!pLive) {
+      Array.prototype.slice.call(gPipe.children).forEach(function (pg) {
+        pg.classList.add('out');
+        setTimeout(function () { if (pg.parentNode) pg.parentNode.removeChild(pg); }, reduced ? 0 : 500);
+      });
+      if (pOn) { var pg2 = el('g', { 'class': 'pane-g enter' }, gPipe); drawPipe(pg2); pipePhase(pg2, s.pipe); settle(pg2, 'enter'); }
+    } else if (pOn) pipePhase(pLive, s.pipe);
+  }
+
+  // The release pipeline: stage, where it runs, what it leaves for the next stage, two lines about it.
+  var PIPE = [
+    ['Build', 'make full, in the build jail', 'iso, usb, pxe kit, pxe server, ppu', ['one tree: the base OS, FRAD’s code and the bundled Ceph image, into every medium', 'nothing fetched at build time; tools and artifacts vendored at pinned versions'], 'built'],
+    ['Unit', 'make test: src, core modules', 'tested code', ['library, configuration modules, translation, the CLI tree and its usage', 'every CLI change ships its unit tests; minutes, no machine'], 'built'],
+    ['frad', 'tests/frad', 'checked images', ['filesystem and content checks against the build output', 'base rootfs, full rootfs, installer, initramfs, the PXE ramdisks'], 'built'],
+    ['sys', 'tests/sys, in QEMU', 'the installed disk', ['install from iso, usb, pxe and uefi http boot; the result boots', 'every medium installs the same system: the manifests are compared'], 'built'],
+    ['fts', 'tests/fts, on the installed disk', 'the fts gold', ['first boot: the menu and zero touch, on overlays of the installed disk', 'the configured node is shut down cleanly and sealed as a gold'], 'built'],
+    ['cluster', 'tests/cluster, on the fts gold', 'a cluster gold per topology', ['1h, 3h, 3h_1s, 3h_3s: joined, shut down together, sealed', 'the topology tests run on an overlay so they cannot dirty the gold'], 'built'],
+    ['e2e', 'tests/e2e, on a cluster gold', 'results per feature and topology', ['disk, readdress, rename, discovery, usb, cli: one suite, one jail, one lane', 'each lane ends with the journal check'], 'built'],
+    ['SBOM', 'make sbom: syft', 'two bills of materials', ['the unpacked rootfs: the OS and FRAD’s code', 'the bundled Ceph image, scanned on its own'], 'built'],
+    ['Scan', 'grype', 'a vulnerability report per sbom', ['each bill of materials matched against the database', 'one line per finding: severity and the database date; reported, never hidden'], 'built'],
+    ['Sign', 'cosign, with the release key', 'bundles and the public key', ['the signing key, injected only for a production signing', 'recorded in a transparency log; verified on the node'], 'designed']
+  ];
+  var PIPE_W = 82, PIPE_GAP = 10, PIPE_X0 = 25, PIPE_Y = 90;
+  function drawPipe(P) {
+    el('rect', { 'class': 'pane', x: 20, y: 40, width: 920, height: 420, rx: 8 }, P);
+    txt(P, 38, 66, 'One make, ten stages', { 'font-size': 13, 'font-weight': 600 });
+    txt(P, 922, 66, 'each stage starts from what the one before sealed', { 'class': 'muted', 'font-size': 10.5, 'text-anchor': 'end' });
+    el('line', { 'class': 'rail', x1: PIPE_X0, y1: PIPE_Y + 17, x2: PIPE_X0 + PIPE.length * (PIPE_W + PIPE_GAP) - PIPE_GAP, y2: PIPE_Y + 17 }, P);
+    el('line', { 'class': 'railflow', x1: PIPE_X0, y1: PIPE_Y + 17, x2: PIPE_X0, y2: PIPE_Y + 17 }, P);
+    PIPE.forEach(function (st, k) {
+      var x = PIPE_X0 + k * (PIPE_W + PIPE_GAP);
+      var S = el('g', { 'class': 'stage pending', 'data-k': k + 1 }, P);
+      el('rect', { 'class': 'halo', x: x, y: PIPE_Y, width: PIPE_W, height: 34, rx: 8 }, S);
+      el('rect', { 'class': 'chip', x: x, y: PIPE_Y, width: PIPE_W, height: 34, rx: 8 }, S);
+      txt(S, x + PIPE_W / 2, PIPE_Y + 22, st[0], { 'class': 'name', 'font-size': 12.5, 'font-weight': 600, 'text-anchor': 'middle' });
+      txt(S, x + PIPE_W / 2, PIPE_Y - 8, String(k + 1), { 'class': 'mono no', 'font-size': 9.5, 'text-anchor': 'middle' });
+    });
+    el('g', { 'class': 'detail' }, P);
+  }
+  function pipePhase(P, phase) {   // stages below the phase are done, the phase itself runs, the rest wait
+    var k0 = Math.min(phase, PIPE.length);
+    Array.prototype.forEach.call(P.querySelectorAll('.stage'), function (S, k) {
+      S.setAttribute('class', 'stage ' + (k + 1 < phase ? 'done' : k + 1 === phase ? 'active' : 'pending'));
+    });
+    var flow = P.querySelector('.railflow'), xEnd = PIPE_X0 + Math.max(0, k0 - 1) * (PIPE_W + PIPE_GAP) + (phase > PIPE.length ? PIPE_W : 0);
+    flow.setAttribute('x2', xEnd);
+    var D = P.querySelector('.detail'), key = String(phase);
+    if (D.getAttribute('data-phase') === key) return;
+    D.setAttribute('data-phase', key);
+    while (D.firstChild) D.removeChild(D.firstChild);
+    var done = phase > PIPE.length, st = PIPE[Math.max(0, k0 - 1)];
+    var x = 60, y = 170, w = 840, h = 190;
+    var cx = PIPE_X0 + (k0 - 1) * (PIPE_W + PIPE_GAP) + PIPE_W / 2;
+    var G = el('g', { 'class': 'row' }, D);
+    if (!done) el('line', { 'class': 'lead', x1: cx, y1: PIPE_Y + 34, x2: cx, y2: y }, G);
+    el('rect', { 'class': 'card' + (done ? ' done' : ''), x: x, y: y, width: w, height: h, rx: 8 }, G);
+    txt(G, x + 20, y + 32, done ? 'Ready to ship' : k0 + '. ' + st[0], { 'font-size': 15, 'font-weight': 600 });
+    txt(G, x + 20, y + 54, done ? 'ten stages passed' : st[1], { 'class': 'mono muted', 'font-size': 11 });
+    if (!done) {
+      el('rect', { 'class': 'tag ' + st[4], x: x + w - 86, y: y + 18, width: 66, height: 18, rx: 3 }, G);
+      txt(G, x + w - 53, y + 31, st[4], { 'class': 'tagtext ' + st[4], 'font-size': 9, 'font-weight': 700, 'text-anchor': 'middle' });
+    }
+    var lines = done ? ['built from one tree, tested from code to clusters in QEMU', 'described by its bills of materials, scanned, and signed on the way out'] : st[3];
+    lines.forEach(function (l, i) { txt(G, x + 20, y + 90 + i * 24, l, { 'font-size': 12.5 }); });
+    txt(G, x + 20, y + h - 22, done ? 'the next chapter follows the signature to the node' : 'leaves for the next stage: ' + st[2], { 'class': 'leaves', 'font-size': 11.5, 'font-weight': 600 });
   }
 
   // The release chain, after the Sigstore component picture: boxes are the parties, numbered arrows the steps.
