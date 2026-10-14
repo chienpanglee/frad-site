@@ -68,10 +68,11 @@ Nodes are `h1`..`h9`. Disk indexes are 0..3 (`sda`..`sdd`). Backends are `free`,
 | `inside` | mode or null | the "inside h1" inlay: `channels`, `clone`, `rollback`, `frbe` |
 | `verify` | subject, mode? | a verification card beside the subject: `image` with `online` or `offline`, or a node id with `peers`; `null` clears it |
 | `down` | id | the node loses power; control and VIP recompute |
+| `media` | id, kind, phase? | the boot medium feeding node `id`, a card with its stages: `iso`, `usb`, `pxe` or `http`; `phase` = stages done so far (default: all); `null` clears it |
 | `up` | id | the node is back |
 
 Reserved for the next engine release (the validator rejects them until then): `evacuate`,
-`vdev`, `pool`, `lock`, `replica`, `media`, `pulse`, `client`.
+`vdev`, `pool`, `lock`, `replica`, `pulse`, `client`.
 
 ## Examples
 

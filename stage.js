@@ -11,7 +11,7 @@
   var ACCENT = { zfs: 'var(--zfs)', ceph: 'var(--ceph)', ctl: 'var(--ctl)', ok: 'var(--ok)', warn: 'var(--warn)' };
 
   // ---------- state and scene verbs
-  function blank() { return { nodes: [], screen: null, svc: false, bus: false, vip: false, inside: null, verify: null }; }
+  function blank() { return { nodes: [], screen: null, svc: false, bus: false, vip: false, inside: null, verify: null, media: null }; }
   function mkNode(id) { return { id: id, control: false, disks: ['free', 'free', 'free', 'free'], installing: false, down: false }; }
   function findNode(s, id) { for (var i = 0; i < s.nodes.length; i++) if (s.nodes[i].id === id) return s.nodes[i]; return null; }
   function withNode(s, id, fn) { var n = findNode(s, id); if (n) fn(n); else console.warn('recipe: no node ' + id); }
@@ -28,6 +28,7 @@
     screen: function (s, op) { s.screen = op[1] ? { node: op[1], ex: op[2] || null } : null; },
     inside: function (s, op) { s.inside = op[1] || null; },
     verify: function (s, op) { s.verify = op[1] ? { subject: op[1], mode: op[2] || 'online' } : null; },
+    media: function (s, op) { s.media = op[1] ? { node: op[1], kind: op[2] || 'iso', phase: op[3] === undefined ? 99 : op[3] | 0 } : null; },
     down: function (s, op) { withNode(s, op[1], function (n) { n.down = true; }); },
     up: function (s, op) { withNode(s, op[1], function (n) { n.down = false; }); }
   };
@@ -74,7 +75,7 @@
     var steps = ft.recipe ? compile(ft.recipe, c) : [];
     if (!steps.length) steps = [{ title: ft.title, text: ft.summary, flag: null, term: [], scene: [], hold: 0, c: c }];
     // a feature starts from the chapter's start state with the transient overlays cleared
-    return { kind: 'feature', c: c, f: f, steps: steps, base: function () { var b = tourState(chStart[c] - 1); b.verify = null; b.screen = null; b.inside = null; return b; }, loop: false };
+    return { kind: 'feature', c: c, f: f, steps: steps, base: function () { var b = tourState(chStart[c] - 1); b.verify = null; b.screen = null; b.inside = null; b.media = null; return b; }, loop: false };
   }
   function stateAt(seq, k) { return replay(seq.base(), seq.steps, k); }
   function diskDiff(a, b) {
@@ -88,7 +89,7 @@
 
   // ---------- SVG helpers
   var gNodes = document.getElementById('nodes'), gTicks = document.getElementById('ticks');
-  var gVip = document.getElementById('vip'), gFb = document.getElementById('fb'), gUpd = document.getElementById('upd'), gVer = document.getElementById('ver');
+  var gVip = document.getElementById('vip'), gFb = document.getElementById('fb'), gUpd = document.getElementById('upd'), gVer = document.getElementById('ver'), gMed = document.getElementById('med');
   function el(tag, attrs, parent) {
     var e = document.createElementNS(NS, tag);
     for (var k in attrs) if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]);
@@ -131,7 +132,7 @@
     return g;
   }
 
-  var curInside = null, curVerify = '', curScreen = '';
+  var curInside = null, curVerify = '', curScreen = '', curMedia = '';
   function render(s, hot) {
     var inUpdate = !!s.inside;
     document.getElementById('empty').style.opacity = s.nodes.length ? 0 : 1;
@@ -235,6 +236,75 @@
       if (s.verify) { var vg = el('g', { 'class': 'pane-g enter' }, gVer); drawVerify(s, vg); settle(vg, 'enter'); }
       curVerify = vkey;
     }
+
+    // the boot medium feeding a node: the card is built once per medium, its stages advance in place
+    var mkey = s.media ? s.media.node + '/' + s.media.kind : '';
+    if (mkey !== curMedia) {
+      Array.prototype.slice.call(gMed.children).forEach(function (pg) {
+        pg.classList.add('out');
+        setTimeout(function () { if (pg.parentNode) pg.parentNode.removeChild(pg); }, reduced ? 0 : 500);
+      });
+      if (s.media) { var mg = el('g', { 'class': 'pane-g enter' }, gMed); drawMedia(s, mg); settle(mg, 'enter'); }
+      curMedia = mkey;
+    } else if (s.media) {
+      var live = gMed.querySelector('.pane-g:not(.out)');
+      if (live) mediaPhase(live, s.media);
+    }
+  }
+
+  var MEDIA = {
+    iso: { name: 'ISO', src: 'frad.iso', glyph: 'disc', rows: [['UEFI', 'the firmware boots the disc'], ['grub', 'kernel, installer ramdisk, image package'], ['install', 'rpool, boot environment, image']] },
+    usb: { name: 'USB stick', src: 'frad.img, written to a stick', glyph: 'stick', rows: [['UEFI', 'the firmware boots the stick'], ['grub', 'kernel, installer ramdisk, image package'], ['install', 'rpool, boot environment, image']] },
+    pxe: { name: 'PXE', src: 'PXE server appliance', glyph: 'server', rows: [['DHCP', 'an address, the boot server, the boot file'], ['TFTP', 'grub, kernel, a small boot ramdisk'], ['HTTP', 'installer ramdisk, image package'], ['install', 'rpool, boot environment, image']] },
+    http: { name: 'UEFI HTTP boot', src: 'PXE server appliance', glyph: 'server', rows: [['DHCP', 'an address and a boot URL'], ['HTTP', 'grub, kernel, a small boot ramdisk'], ['HTTP', 'installer ramdisk, image package'], ['install', 'rpool, boot environment, image']] }
+  };
+  function mediaGlyph(P, kind, x, y) {   // a 60x60 glyph: the medium the node boots from
+    var G = el('g', { 'class': 'glyph' }, P);
+    if (kind === 'disc') {
+      el('circle', { 'class': 'shape', cx: x + 30, cy: y + 30, r: 26 }, G);
+      el('circle', { 'class': 'ring', cx: x + 30, cy: y + 30, r: 17 }, G);
+      el('circle', { 'class': 'solid', cx: x + 30, cy: y + 30, r: 6 }, G);
+    } else if (kind === 'stick') {
+      el('rect', { 'class': 'shape', x: x + 4, y: y + 20, width: 42, height: 20, rx: 4 }, G);
+      el('rect', { 'class': 'solid', x: x + 46, y: y + 25, width: 10, height: 10, rx: 1 }, G);
+      el('rect', { 'class': 'solid', x: x + 12, y: y + 27, width: 10, height: 6, rx: 1 }, G);
+    } else {
+      el('rect', { 'class': 'shape', x: x + 10, y: y + 4, width: 40, height: 52, rx: 4 }, G);
+      [0, 1, 2].forEach(function (k) { el('line', { 'class': 'slot', x1: x + 16, y1: y + 14 + k * 12, x2: x + 44, y2: y + 14 + k * 12 }, G); });
+      el('circle', { 'class': 'led', cx: x + 44, cy: y + 50, r: 2.5 }, G);
+    }
+  }
+  function mediaPhase(P, m) {   // stage k is done below the phase, active at it, pending above it
+    var M = MEDIA[m.kind] || MEDIA.iso, done = m.phase >= M.rows.length;
+    Array.prototype.forEach.call(P.querySelectorAll('.row'), function (R, k) {
+      R.classList.toggle('done', k < m.phase); R.classList.toggle('active', k === m.phase); R.classList.toggle('pending', k > m.phase);
+    });
+    P.querySelector('.lead').classList.toggle('done', done);
+    P.querySelector('.foot').textContent = done ? 'installed from ' + M.name + ': ' + m.node + ' boots from its own disks' : m.node + ' is installing from ' + M.name + '…';
+    P.querySelector('.foot').classList.toggle('verdict', done);
+  }
+  function drawMedia(s, P) {
+    var m = s.media, M = MEDIA[m.kind] || MEDIA.iso;
+    var idx = 0; s.nodes.forEach(function (n, i) { if (n.id === m.node) idx = i; });
+    var w = 372, h = 72 + M.rows.length * 26, x = nodeX(idx) + NODE_W + 24, y = NODE_Y + 8;
+    if (x + w > 950) x = nodeX(idx) - 24 - w;
+    var left = x < nodeX(idx);
+    el('path', { 'class': 'lead', d: 'M' + (left ? x + w : x) + ' ' + (NODE_Y + 40) + ' H ' + (left ? nodeX(idx) : nodeX(idx) + NODE_W) }, P);
+    el('rect', { 'class': 'card', x: x, y: y, width: w, height: h, rx: 8 }, P);
+    txt(P, x + 16, y + 26, 'Booting ' + m.node + ' from ' + M.name, { 'font-size': 13, 'font-weight': 600 });
+    txt(P, x + w - 16, y + 26, M.src, { 'class': 'muted', 'font-size': 10.5, 'text-anchor': 'end' });
+    mediaGlyph(P, M.glyph, x + 16, y + 44);
+    M.rows.forEach(function (r, k) {
+      var ry = y + 62 + k * 26;
+      var R = el('g', { 'class': 'row', style: 'animation-delay: ' + (200 + k * 160) + 'ms' }, P);
+      el('circle', { 'class': 'tick', cx: x + 100, cy: ry - 4, r: 7 }, R);
+      el('circle', { 'class': 'pulse', cx: x + 100, cy: ry - 4, r: 7 }, R);
+      el('path', { 'class': 'tickmark', d: 'M' + (x + 96.5) + ' ' + (ry - 4) + ' l2.5 2.5 l4.5 -5' }, R);
+      txt(R, x + 116, ry, r[0], { 'class': 'mono', 'font-size': 11.5, 'font-weight': 600 });
+      txt(R, x + 172, ry, r[1], { 'font-size': 11.5 });
+    });
+    txt(P, x + 16, y + h - 14, '', { 'class': 'foot', 'font-size': 11.5, 'font-weight': 600 });
+    mediaPhase(P, m);
   }
 
   function drawVerify(s, P) {
