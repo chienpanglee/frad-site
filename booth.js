@@ -68,7 +68,7 @@
     var v = version && TAG && version !== TAG ? version : '';
     if (v === stale) return;
     stale = v; copy.hidden = !v && booth;
-    if (v) state.textContent = 'this booth runs an older image (' + v + '); Stop the booth, then paste the line again';
+    if (v) state.textContent = 'this booth runs an older image (' + v + '); End booth, then paste the line again';
   }
   function setReady(up) {
     if (up === ready) return;
@@ -116,7 +116,7 @@
     if ((gone && h1) || Date.now() - resetting > 90000) showConsole('the node is booting');
   }
   var stopping = 0;                            // after Stop: the console goes at once, the booth is ignored until it is gone
-  twice(document.getElementById('stop'), 'Stop the booth', function () {
+  twice(document.getElementById('stop'), 'End booth', function () {
     api('POST', '/api/stop').catch(function () {});
     stopping = Date.now(); setBooth(false);
     state.textContent = 'the booth is stopping'; waiting('the booth is stopping; run it again and this box is its console');

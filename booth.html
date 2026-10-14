@@ -85,7 +85,7 @@
     <div class="panes" id="panes">
       <div class="pane">
         <h2><span id="paneTitle">Start the booth</span><span class="nodes" id="nodes"></span><span class="muted" id="login" hidden>log in as <code>admin</code>, password <code>Frad@0.1</code></span><span class="err" id="err"></span>
-          <span class="right"><span class="muted" id="state">looking for a booth on this machine…</span><button class="btn small" id="copy">Copy the command</button><button class="btn small primary" id="open" hidden>Ceph dashboard</button><button class="btn small" id="remove" hidden>Remove node</button><button class="btn small" id="reset" hidden>Reset</button><button class="btn small" id="stop" hidden>Stop the booth</button></span></h2>
+          <span class="right"><span class="muted" id="state">looking for a booth on this machine…</span><button class="btn small" id="copy">Copy the command</button><button class="btn small primary" id="open" hidden>Ceph dashboard</button><button class="btn small" id="remove" hidden>Remove node</button><button class="btn small" id="reset" hidden>Reset</button><button class="btn small" id="stop" hidden>End booth</button></span></h2>
         <div class="term boot" id="boot"></div>
         <iframe id="console" title="Node console" hidden></iframe>
       </div>
@@ -95,7 +95,7 @@
         <iframe id="dashframe" title="Ceph dashboard"></iframe>
       </div>
     </div>
-    <p class="note">A new node comes up at its banner a few minutes after Add node: F2, the factory login <code>admin</code> / <code>admin</code>, and its setup screen proposes joining h1's cluster; set its host name (2) before accepting with <code>a</code>. A node that joins is a storage member; promoting it to control is one command in the console. Remove node takes the node on screen away, Reset starts the session over from the sealed state, Stop the booth ends the container; each asks twice. What stays on your machine is the image: <code>docker rmi ghcr.io/chienpanglee/frad-booth</code>.</p>
+    <p class="note">A new node comes up at its banner a few minutes after Add node: F2, the factory login <code>admin</code> / <code>admin</code>, and its setup screen proposes joining h1's cluster; set its host name (2) before accepting with <code>a</code>. A node that joins is a storage member; promoting it to control is one command in the console. Remove node takes the node on screen away, Reset starts the session over from the sealed state, End booth ends the container; each asks twice. What stays on your machine is the image: <code>docker rmi ghcr.io/chienpanglee/frad-booth</code>.</p>
   </div>
 </section>
 
