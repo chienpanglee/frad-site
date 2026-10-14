@@ -104,11 +104,19 @@
   }
   twice(document.getElementById('remove'), 'Remove node', function () { api('DELETE', '/api/nodes/' + current).then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
   twice(document.getElementById('reset'), 'Reset', function () { split(false); api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
-  twice(document.getElementById('stop'), 'Stop the booth', function () { split(false); api('POST', '/api/stop').catch(function () {}); state.textContent = 'the booth is stopping'; });
+  var stopping = 0;                            // after Stop: the console goes at once, the booth is ignored until it is gone
+  twice(document.getElementById('stop'), 'Stop the booth', function () {
+    api('POST', '/api/stop').catch(function () {});
+    stopping = Date.now(); setBooth(false);
+    state.textContent = 'the booth is stopping'; waiting('the booth is stopping; run it again and this box is its console');
+  });
   (function poll() {
     timed(BASE + '/health').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json().catch(function () { return {}; }); })
-      .then(function (h) { setBooth(true); misses = 0; setStale(h.version); })
-      .catch(function () { if (++misses >= 2) setBooth(false); })
+      .then(function (h) {
+        if (stopping && Date.now() - stopping < 90000) return;   // still the booth being stopped (or one that would not stop: 90 s)
+        stopping = 0; setBooth(true); misses = 0; setStale(h.version);
+      })
+      .catch(function () { stopping = 0; if (++misses >= 2) setBooth(false); })
       .then(function () {
         if (!booth) return;
         return timed(BASE + '/ready', { method: 'HEAD' }).then(function (r) { setReady(r.ok); }, function () { setReady(false); })
