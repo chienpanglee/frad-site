@@ -317,21 +317,21 @@
     ['Sign', 'cosign, with the release key', 'bundles and the public key', ['the signing key, injected only for a production signing', 'recorded in a transparency log; verified on the node'], 'designed',
       'one signing, every artifact and report', [['artifacts and reports', 0, 1]]]
   ];
-  var LANE_MS = 3600, LANE_H = 10.5;
-  var PIPE_W = 82, PIPE_GAP = 10, PIPE_X0 = 25, PIPE_Y = 90;
+  var LANE_MS = 3600, LANE_H = 22;
+  var PIPE_W = 82, PIPE_GAP = 10, PIPE_X0 = 25, PIPE_Y = 112, PIPE_CH = 44;
   function drawPipe(P) {
-    el('rect', { 'class': 'pane', x: 20, y: 40, width: 920, height: 420, rx: 8 }, P);
-    txt(P, 38, 66, 'One make, ten stages', { 'font-size': 13, 'font-weight': 600 });
-    txt(P, 922, 66, 'each stage starts from what the one before sealed', { 'class': 'muted', 'font-size': 10.5, 'text-anchor': 'end' });
-    el('line', { 'class': 'rail', x1: PIPE_X0, y1: PIPE_Y + 17, x2: PIPE_X0 + PIPE.length * (PIPE_W + PIPE_GAP) - PIPE_GAP, y2: PIPE_Y + 17 }, P);
-    el('line', { 'class': 'railflow', x1: PIPE_X0, y1: PIPE_Y + 17, x2: PIPE_X0, y2: PIPE_Y + 17 }, P);
+    el('rect', { 'class': 'pane', x: 20, y: 40, width: 920, height: DIAG_H - 60, rx: 8 }, P);
+    txt(P, 40, 74, 'One make, ten stages', { 'font-size': 16, 'font-weight': 600 });
+    txt(P, 920, 74, 'each stage starts from what the one before sealed', { 'class': 'muted', 'font-size': 12, 'text-anchor': 'end' });
+    el('line', { 'class': 'rail', x1: PIPE_X0, y1: PIPE_Y + PIPE_CH / 2, x2: PIPE_X0 + PIPE.length * (PIPE_W + PIPE_GAP) - PIPE_GAP, y2: PIPE_Y + PIPE_CH / 2 }, P);
+    el('line', { 'class': 'railflow', x1: PIPE_X0, y1: PIPE_Y + PIPE_CH / 2, x2: PIPE_X0, y2: PIPE_Y + PIPE_CH / 2 }, P);
     PIPE.forEach(function (st, k) {
       var x = PIPE_X0 + k * (PIPE_W + PIPE_GAP);
       var S = el('g', { 'class': 'stage pending', 'data-k': k + 1 }, P);
-      el('rect', { 'class': 'halo', x: x, y: PIPE_Y, width: PIPE_W, height: 34, rx: 8 }, S);
-      el('rect', { 'class': 'chip', x: x, y: PIPE_Y, width: PIPE_W, height: 34, rx: 8 }, S);
-      txt(S, x + PIPE_W / 2, PIPE_Y + 22, st[0], { 'class': 'name', 'font-size': 12.5, 'font-weight': 600, 'text-anchor': 'middle' });
-      txt(S, x + PIPE_W / 2, PIPE_Y - 8, String(k + 1), { 'class': 'mono no', 'font-size': 9.5, 'text-anchor': 'middle' });
+      el('rect', { 'class': 'halo', x: x, y: PIPE_Y, width: PIPE_W, height: PIPE_CH, rx: 9 }, S);
+      el('rect', { 'class': 'chip', x: x, y: PIPE_Y, width: PIPE_W, height: PIPE_CH, rx: 9 }, S);
+      txt(S, x + PIPE_W / 2, PIPE_Y + 27, st[0], { 'class': 'name', 'font-size': 14, 'font-weight': 600, 'text-anchor': 'middle' });
+      txt(S, x + PIPE_W / 2, PIPE_Y - 9, String(k + 1), { 'class': 'mono no', 'font-size': 10.5, 'text-anchor': 'middle' });
     });
     el('g', { 'class': 'detail' }, P);
   }
@@ -347,61 +347,60 @@
     D.setAttribute('data-phase', key);
     while (D.firstChild) D.removeChild(D.firstChild);
     var done = phase > PIPE.length, st = PIPE[Math.max(0, k0 - 1)];
-    var lanes = done ? [] : st[6], x = 60, y = 160, w = 840, h = done ? 190 : 150 + lanes.length * LANE_H + 34;
+    var lanes = done ? [] : st[6], x = 40, y = 206, w = 880, h = done ? 300 : 184 + lanes.length * LANE_H + 48;
     var cx = PIPE_X0 + (k0 - 1) * (PIPE_W + PIPE_GAP) + PIPE_W / 2;
     var G = el('g', { 'class': 'row' }, D);
-    if (!done) el('line', { 'class': 'lead', x1: cx, y1: PIPE_Y + 34, x2: cx, y2: y }, G);
-    el('rect', { 'class': 'card' + (done ? ' done' : ''), x: x, y: y, width: w, height: h, rx: 8 }, G);
-    txt(G, x + 20, y + 30, done ? 'Ready to ship' : k0 + '. ' + st[0], { 'font-size': 15, 'font-weight': 600 });
-    txt(G, x + 20, y + 50, done ? 'ten stages passed' : st[1], { 'class': 'mono muted', 'font-size': 11 });
+    if (!done) el('line', { 'class': 'lead', x1: cx, y1: PIPE_Y + PIPE_CH, x2: cx, y2: y }, G);
+    el('rect', { 'class': 'card' + (done ? ' done' : ''), x: x, y: y, width: w, height: h, rx: 10 }, G);
+    txt(G, x + 24, y + 40, done ? 'Ready to ship' : k0 + '. ' + st[0], { 'font-size': 21, 'font-weight': 600 });
+    txt(G, x + 24, y + 64, done ? 'ten stages passed' : st[1], { 'class': 'mono muted', 'font-size': 13 });
     if (!done) {
-      el('rect', { 'class': 'tag ' + st[4], x: x + w - 86, y: y + 16, width: 66, height: 18, rx: 3 }, G);
-      txt(G, x + w - 53, y + 29, st[4], { 'class': 'tagtext ' + st[4], 'font-size': 9, 'font-weight': 700, 'text-anchor': 'middle' });
+      el('rect', { 'class': 'tag ' + st[4], x: x + w - 108, y: y + 24, width: 84, height: 24, rx: 4 }, G);
+      txt(G, x + w - 66, y + 41, st[4], { 'class': 'tagtext ' + st[4], 'font-size': 11, 'font-weight': 700, 'text-anchor': 'middle' });
     }
     var lines = done ? ['built from one tree, tested from code to clusters in QEMU', 'described by its bills of materials, scanned, and signed on the way out'] : st[3];
-    lines.forEach(function (l, i) { txt(G, x + 20, y + 78 + i * 20, l, { 'font-size': 12 }); });
-    if (!done) {   // the lanes: what runs side by side in this stage, each bar filling over the stage's time
-      txt(G, x + 20, y + 124, st[5], { 'class': 'muted', 'font-size': 10.5 });
-      var bx = x + 150, bw = w - 170, ly0 = y + 134, lh = lanes.length * LANE_H;   // a time chart: the bar spans when the lane ran
+    lines.forEach(function (l, i) { txt(G, x + 24, y + 104 + i * 26, l, { 'font-size': 14.5 }); });
+    if (!done) {   // the lanes: a time chart of what ran side by side in this stage, filling in as the cursor sweeps
+      txt(G, x + 24, y + 166, st[5], { 'class': 'muted', 'font-size': 12.5 });
+      var bx = x + 200, bw = w - 228, ly0 = y + 184, lh = lanes.length * LANE_H;
       lanes.forEach(function (ln, i) {
         var ly = ly0 + i * LANE_H;
         var L = el('g', { 'class': 'lane' }, G);
-        txt(L, bx - 10, ly + 7.5, ln[0], { 'class': 'mono', 'font-size': 8.5, 'text-anchor': 'end' });
-        el('rect', { 'class': 'track', x: bx, y: ly + 1.5, width: bw, height: 6, rx: 3 }, L);
-        var f = el('rect', { 'class': 'fill', x: bx + ln[1] * bw, y: ly + 1.5, width: (ln[2] - ln[1]) * bw, height: 6, rx: 3 }, L);
+        txt(L, bx - 12, ly + 14, ln[0], { 'class': 'mono', 'font-size': 11.5, 'text-anchor': 'end' });
+        el('rect', { 'class': 'track', x: bx, y: ly + 4, width: bw, height: 11, rx: 5.5 }, L);
+        var f = el('rect', { 'class': 'fill', x: bx + ln[1] * bw, y: ly + 4, width: (ln[2] - ln[1]) * bw, height: 11, rx: 5.5 }, L);
         f.style.animationDuration = Math.round((ln[2] - ln[1]) * LANE_MS) + 'ms';
         f.style.animationDelay = Math.round(ln[1] * LANE_MS + 350) + 'ms';
       });
-      var now = el('line', { 'class': 'now', x1: bx, y1: ly0 - 2, x2: bx, y2: ly0 + lh + 1 }, G);
+      var now = el('line', { 'class': 'now', x1: bx, y1: ly0 - 2, x2: bx, y2: ly0 + lh + 2 }, G);
       now.style.setProperty('--sweep', bw + 'px');
       now.style.animationDuration = LANE_MS + 'ms'; now.style.animationDelay = '350ms';
     }
-    txt(G, x + 20, y + h - 16, done ? 'the next chapter follows the signature to the node' : 'leaves for the next stage: ' + st[2], { 'class': 'leaves', 'font-size': 11.5, 'font-weight': 600 });
+    txt(G, x + 24, y + h - 22, done ? 'the next chapter follows the signature to the node' : 'leaves for the next stage: ' + st[2], { 'class': 'leaves', 'font-size': 13.5, 'font-weight': 600 });
   }
 
-  // The release chain, after the Sigstore component picture: boxes are the parties, numbered arrows the steps.
   var CHAIN_BOX = {
-    src: { x: 40, y: 60, title: 'Source tree', sub: 'pinned, vendored tools', status: 'built' },
-    build: { x: 390, y: 150, title: 'Production build', sub: 'image, sbom, vulnerability report', status: 'built' },
-    key: { x: 720, y: 60, title: 'Release key', sub: 'root offline, signing key injected', status: 'designed' },
-    log: { x: 720, y: 230, title: 'Transparency log', sub: 'inclusion proof, signing time', status: 'designed' },
-    store: { x: 40, y: 240, title: 'Release store', sub: 'iso, usb, pxe, ppu + bundles', status: 'designed' },
-    node: { x: 390, y: 360, title: 'Node', sub: 'verifies before a byte is unpacked', status: 'designed' },
-    trust: { x: 720, y: 360, title: 'Trust root on the node', sub: 'the release public key, read-only', status: 'designed' }
+    src: { x: 40, y: 90, title: 'Source tree', sub: 'pinned, vendored tools', status: 'built' },
+    build: { x: 380, y: 270, title: 'Production build', sub: 'image, sbom, vulnerability report', status: 'built' },
+    key: { x: 720, y: 90, title: 'Release key', sub: 'root offline, signing key injected', status: 'designed' },
+    log: { x: 720, y: 330, title: 'Transparency log', sub: 'inclusion proof, signing time', status: 'designed' },
+    store: { x: 40, y: 330, title: 'Release store', sub: 'iso, usb, pxe, ppu + bundles', status: 'designed' },
+    node: { x: 380, y: 560, title: 'Node', sub: 'verifies before a byte is unpacked', status: 'designed' },
+    trust: { x: 720, y: 560, title: 'Trust root on the node', sub: 'the release public key, read-only', status: 'designed' }
   };
-  var CHAIN_BW = 180, CHAIN_BH = 58;
-  var CHAIN_ARROW = [   // d, label, badge (on the path), label anchor, the boxes it lights
-    ['M220 89 Q 305 89 390 165', 'image, sbom, vulnerability report', 305, 108, 324, 94, ['src', 'build']],
-    ['M720 89 Q 645 89 570 165', 'signing key, only for a production signing', 645, 108, 645, 136, ['key']],
-    ['M570 185 Q 645 185 720 255', 'signature and digest in, proof and time back', 645, 202, 645, 224, ['log']],
-    ['M390 195 Q 305 195 220 265', 'artifacts with their bundles and the public key', 305, 212, 305, 234, ['store']],
-    ['M720 389 H 570', 'the public key, rotated by a signed fixpack', 645, 389, 645, 352, ['trust', 'node']],
-    ['M125 298 Q 125 389 390 389', 'fetch, verify online or offline, refuse a downgrade', 191, 366, 191, 350, ['store', 'node']]
+  var CHAIN_BW = 200, CHAIN_BH = 72;
+  var CHAIN_ARROW = [   // d, label, badge (on the path), label anchor, the boxes it lights, text-anchor
+    ['M240 126 Q 310 126 380 290', 'image, sbom, vulnerability report', 310, 167, 345, 150, ['src', 'build'], 'middle'],
+    ['M720 126 Q 650 126 580 290', 'signing key, only for a production signing', 650, 167, 650, 194, ['key'], 'middle'],
+    ['M580 332 Q 650 332 720 366', 'signature and digest in, proof and time back', 650, 341, 592, 322, ['log'], 'start'],
+    ['M380 332 Q 310 332 240 366', 'artifacts with their bundles and the public key', 310, 341, 368, 322, ['store'], 'end'],
+    ['M720 596 H 580', 'the public key, rotated by a signed fixpack', 650, 596, 650, 548, ['trust', 'node'], 'middle'],
+    ['M140 402 Q 140 596 380 596', 'fetch, verify online or offline, refuse a downgrade', 200, 548, 200, 526, ['store', 'node'], 'middle']
   ];
   function drawChain(P) {
-    el('rect', { 'class': 'pane', x: 20, y: 40, width: 920, height: 420, rx: 8 }, P);
-    txt(P, 38, 450, 'From the release host to the node', { 'font-size': 12.5, 'font-weight': 600 });
-    txt(P, 922, 450, 'after the Sigstore component picture', { 'class': 'muted', 'font-size': 10.5, 'text-anchor': 'end' });
+    el('rect', { 'class': 'pane', x: 20, y: 40, width: 920, height: DIAG_H - 60, rx: 8 }, P);
+    txt(P, 40, 722, 'From the release host to the node', { 'font-size': 14, 'font-weight': 600 });
+    txt(P, 920, 722, 'after the Sigstore component picture', { 'class': 'muted', 'font-size': 12, 'text-anchor': 'end' });
     var defs = el('defs', {}, P);
     ['pending', 'active', 'done'].forEach(function (k) {
       var m = el('marker', { id: 'chainArrow-' + k, 'class': 'arrow ' + k, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs);
@@ -411,17 +410,17 @@
       var A = el('g', { 'class': 'step pending', 'data-k': k + 1 }, P);
       el('path', { 'class': 'line', d: a[0], 'marker-end': 'url(#chainArrow-pending)' }, A);
       el('path', { 'class': 'flow', d: a[0] }, A);
-      el('circle', { 'class': 'badge', cx: a[2], cy: a[3], r: 9 }, A);
-      txt(A, a[2], a[3] + 4, String(k + 1), { 'class': 'mono no', 'font-size': 10.5, 'font-weight': 700, 'text-anchor': 'middle' });
-      txt(A, a[4], a[5], a[1], { 'class': 'lbl', 'font-size': 11, 'text-anchor': 'middle' });
+      el('circle', { 'class': 'badge', cx: a[2], cy: a[3], r: 11 }, A);
+      txt(A, a[2], a[3] + 4.5, String(k + 1), { 'class': 'mono no', 'font-size': 12, 'font-weight': 700, 'text-anchor': 'middle' });
+      txt(A, a[4], a[5], a[1], { 'class': 'lbl', 'font-size': 12.5, 'text-anchor': a[7] });
     });
     Object.keys(CHAIN_BOX).forEach(function (id) {
       var b = CHAIN_BOX[id], B = el('g', { 'class': 'box dim', 'data-id': id }, P);
-      el('rect', { 'class': 'shape', x: b.x, y: b.y, width: CHAIN_BW, height: CHAIN_BH, rx: 7 }, B);
-      txt(B, b.x + 12, b.y + 24, b.title, { 'font-size': 12.5, 'font-weight': 600 });
-      txt(B, b.x + 12, b.y + 44, b.sub, { 'class': 'muted', 'font-size': 10 });
-      el('rect', { 'class': 'tag ' + b.status, x: b.x + CHAIN_BW - 58, y: b.y - 8, width: 52, height: 15, rx: 3 }, B);
-      txt(B, b.x + CHAIN_BW - 32, b.y + 3, b.status, { 'class': 'tagtext ' + b.status, 'font-size': 8.5, 'font-weight': 700, 'text-anchor': 'middle' });
+      el('rect', { 'class': 'shape', x: b.x, y: b.y, width: CHAIN_BW, height: CHAIN_BH, rx: 8 }, B);
+      txt(B, b.x + 14, b.y + 30, b.title, { 'font-size': 15, 'font-weight': 600 });
+      txt(B, b.x + 14, b.y + 54, b.sub, { 'class': 'muted', 'font-size': 12 });
+      el('rect', { 'class': 'tag ' + b.status, x: b.x + CHAIN_BW - 70, y: b.y - 10, width: 64, height: 19, rx: 4 }, B);
+      txt(B, b.x + CHAIN_BW - 38, b.y + 4, b.status, { 'class': 'tagtext ' + b.status, 'font-size': 10, 'font-weight': 700, 'text-anchor': 'middle' });
     });
   }
   function chainPhase(P, phase) {   // steps below the phase are done, the phase itself is in flight, the rest pending
@@ -657,7 +656,7 @@
     var st = seq.steps[cur], s = stateAt(seq, cur), prev = cur ? stateAt(seq, cur - 1) : seq.base();
     var hot = diskDiff(prev, s);
     E.stepno.textContent = (cur + 1) + ' / ' + seq.steps.length;
-    stage.setAttribute('data-layout', C.chapters[st.c].layout || 'scene');   // a diagram chapter drops the terminal and the legend for room
+    setLayout(C.chapters[st.c].layout || 'scene');   // a diagram chapter drops the terminal and the legend and gets a taller stage
     E.chapname.textContent = st.f !== undefined ? C.chapters[st.c].features[st.f].title : C.chapters[st.c].title;
     Array.prototype.forEach.call(E.features.children, function (li, f) { li.classList.toggle('current', st.f === f); });
     E.title.textContent = st.title;
@@ -725,7 +724,15 @@
     enter(seqTour(), k, !initial || !!m);
     if ((!initial && h) || m) scrollTo();                                 // the bare page (the wordmark) stays where it is
   }
-  var stage = document.getElementById('story');
+  var stage = document.getElementById('story'), svg = document.getElementById('svg');
+  var DIAG_H = 760;   // the taller stage of a diagram chapter
+  function setLayout(layout) {
+    if (stage.getAttribute('data-layout') === layout) return;
+    stage.setAttribute('data-layout', layout);
+    var h = layout === 'diagram' ? DIAG_H : 470;
+    svg.setAttribute('viewBox', '0 0 960 ' + h);
+    svg.querySelector('rect').setAttribute('height', h);
+  }
   function scrollTo() { setTimeout(function () { stage.scrollIntoView({ block: 'start' }); }, 0); }
 
   E.play.addEventListener('click', function () { touched = true; suspended = false; playing ? stop() : play(); });
