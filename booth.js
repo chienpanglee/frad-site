@@ -61,7 +61,7 @@
     ['reset', 'stop'].forEach(function (id) { document.getElementById(id).hidden = !on; });
     paneTitle.textContent = on ? 'Console' : 'Start the booth';
     if (on) { T.cancel(); con.src = BASE + '/console/'; probe(); }
-    else { con.removeAttribute('src'); split(false); unprobe(); setEmbed(false); ready = false; stale = ''; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); }
+    else { con.removeAttribute('src'); split(false); unprobe(); setEmbed(false); ready = false; stale = ''; resetting = 0; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); }
   }
   var stale = '';                               // the running booth's image when it is not the one the site names
   function setStale(version) {                 // an image that reports no version predates this check: no verdict on it
@@ -74,7 +74,7 @@
     if (up === ready) return;
     ready = up;
     open.hidden = !up;
-    if (!stale) state.textContent = up ? 'the node is up' : 'the node is not reachable';
+    if (!stale && !resetting) state.textContent = up ? 'the node is up' : 'the node is not reachable';
     if (!up) split(false);
   }
   function drawNodes(j) {
@@ -103,7 +103,18 @@
     });
   }
   twice(document.getElementById('remove'), 'Remove node', function () { api('DELETE', '/api/nodes/' + current).then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
-  twice(document.getElementById('reset'), 'Reset', function () { split(false); api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
+  var resetting = 0, gone = false;             // after Reset: the console goes until the old h1 is gone and a new one answers
+  twice(document.getElementById('reset'), 'Reset', function () {
+    split(false); con.removeAttribute('src'); con.hidden = true; boot.hidden = false; resetting = Date.now(); gone = false;
+    state.textContent = 'the booth is resetting'; waiting('every node goes, h1 comes back fresh from the gold; this box is its console again');
+    api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; showConsole('the node is up'); });
+  });
+  function showConsole(text) { resetting = 0; ready = false; open.hidden = true; T.cancel(); boot.hidden = true; con.hidden = false; con.src = BASE + '/console/'; probe(); state.textContent = text; }
+  function resetDone(j) {                       // the old h1 was seen gone (or 90 s passed) and an h1 is alive again
+    var h1 = j.nodes.filter(function (n) { return n.name === 'h1' && n.alive; }).length;
+    if (!h1) gone = true;
+    if ((gone && h1) || Date.now() - resetting > 90000) showConsole('the node is booting');
+  }
   var stopping = 0;                            // after Stop: the console goes at once, the booth is ignored until it is gone
   twice(document.getElementById('stop'), 'Stop the booth', function () {
     api('POST', '/api/stop').catch(function () {});
@@ -120,7 +131,7 @@
       .then(function () {
         if (!booth) return;
         return timed(BASE + '/ready', { method: 'HEAD' }).then(function (r) { setReady(r.ok); }, function () { setReady(false); })
-          .then(function () { return api('GET', '/api/nodes').then(drawNodes).catch(function () {}); });
+          .then(function () { return api('GET', '/api/nodes').then(function (j) { drawNodes(j); if (resetting) resetDone(j); }).catch(function () {}); });
       })
       .then(function () { setTimeout(poll, 3000); }, function () { setTimeout(poll, 3000); });
   })();
