@@ -79,6 +79,9 @@
   }
   function drawNodes(j) {
     if (j.current) current = j.current;          // the console is shared: what it shows is what the booth says
+    var cur = j.nodes.filter(function (n) { return n.name === current; })[0];
+    login.innerHTML = 'log in as <code>admin</code>, password <code>' + (cur && cur.kind === 'fresh' ? 'admin' : 'Frad@0.1') + '</code>'
+      + (cur && cur.kind === 'fresh' ? ' (the factory login, until its setup runs)' : '');
     nodesEl.textContent = '';
     j.nodes.forEach(function (n) {
       var b = document.createElement('button'); b.className = n.name === current ? 'on' : ''; b.textContent = n.name + (n.alive ? '' : ' (off)');
