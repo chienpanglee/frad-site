@@ -7,7 +7,7 @@
   var open = document.getElementById('open'), state = document.getElementById('state'), nodesEl = document.getElementById('nodes'), err = document.getElementById('err');
   var booth = false, ready = false, misses = 0, current = 'h1';
   var embed = false, probeFrame = null, probeTimer = null;   // can the dashboard live in a frame here? (frad #423)
-  var CMD = 'docker run --rm --device /dev/kvm --device /dev/net/tun --cap-add NET_ADMIN -p 8080:8080 ghcr.io/chienpanglee/frad-booth';
+  var CMD = 'docker run --rm --pull always --device /dev/kvm --device /dev/net/tun --cap-add NET_ADMIN -p 8080:8080 ghcr.io/chienpanglee/frad-booth';
   var boot = document.getElementById('boot'), T = window.FRADTerm(boot, { keep: 20 }), copy = document.getElementById('copy');
   var login = document.getElementById('login'), paneTitle = document.getElementById('paneTitle');
   function waiting(text) { T.clear(); T.play([{ k: 'type', prompt: '$ ', s: CMD }, { k: 'note', s: '# ' + text }], null, true); }
