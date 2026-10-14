@@ -293,18 +293,31 @@
   }
 
   // The release pipeline: stage, where it runs, what it leaves for the next stage, two lines about it.
+  // The release pipeline: stage, where it runs, what it leaves for the next stage, two lines about it, status,
+  // how it runs side by side, and its lanes as [name, start, end] fractions of the stage's time.
   var PIPE = [
-    ['Build', 'make full, in the build jail', 'iso, usb, pxe kit, pxe server, ppu', ['one tree: the base OS, FRAD’s code and the bundled Ceph image, into every medium', 'nothing fetched at build time; tools and artifacts vendored at pinned versions'], 'built'],
-    ['Unit', 'make test: src, core modules', 'tested code', ['library, configuration modules, translation, the CLI tree and its usage', 'every CLI change ships its unit tests; minutes, no machine'], 'built'],
-    ['frad', 'tests/frad', 'checked images', ['filesystem and content checks against the build output', 'base rootfs, full rootfs, installer, initramfs, the PXE ramdisks'], 'built'],
-    ['sys', 'tests/sys, in QEMU', 'the installed disk', ['install from iso, usb, pxe and uefi http boot; the result boots', 'every medium installs the same system: the manifests are compared'], 'built'],
-    ['fts', 'tests/fts, on the installed disk', 'the fts gold', ['first boot: the menu and zero touch, on overlays of the installed disk', 'the configured node is shut down cleanly and sealed as a gold'], 'built'],
-    ['cluster', 'tests/cluster, on the fts gold', 'a cluster gold per topology', ['1h, 3h, 3h_1s, 3h_3s: joined, shut down together, sealed', 'the topology tests run on an overlay so they cannot dirty the gold'], 'built'],
-    ['e2e', 'tests/e2e, on a cluster gold', 'results per feature and topology', ['disk, readdress, rename, discovery, usb, cli: one suite, one jail, one lane', 'each lane ends with the journal check'], 'built'],
-    ['SBOM', 'make sbom: syft', 'two bills of materials', ['the unpacked rootfs: the OS and FRAD’s code', 'the bundled Ceph image, scanned on its own'], 'built'],
-    ['Scan', 'grype', 'a vulnerability report per sbom', ['each bill of materials matched against the database', 'one line per finding: severity and the database date; reported, never hidden'], 'built'],
-    ['Sign', 'cosign, with the release key', 'bundles and the public key', ['the signing key, injected only for a production signing', 'recorded in a transparency log; verified on the node'], 'designed']
+    ['Build', 'make full, in the build jail', 'iso, usb, pxe kit, pxe server, ppu', ['one tree: the base OS, FRAD’s code and the bundled Ceph image, into every medium', 'nothing fetched at build time; tools and artifacts vendored at pinned versions'], 'built',
+      'make -j8: the tree orders itself, core main last', [['lockup', 0, 0.35], ['rootfs', 0, 0.5], ['src', 0.15, 0.6], ['installer, pxe ramdisks', 0.5, 0.7], ['core, main', 0.7, 1]]],
+    ['Unit', 'make test: src, core modules', 'tested code', ['library, configuration modules, translation, the CLI tree and its usage', 'every CLI change ships its unit tests; minutes, no machine'], 'built',
+      'make -j: every directory at once, a lock per directory', [['frad_config', 0, 0.65], ['frad_translate', 0, 0.3], ['frad_sdk_library', 0, 0.55], ['frad_cli', 0, 0.35], ['core modules', 0.1, 0.8]]],
+    ['frad', 'tests/frad', 'checked images', ['filesystem and content checks against the build output', 'base rootfs, full rootfs, installer, initramfs, the PXE ramdisks'], 'built',
+      'make -j8: six images checked at once', [['base_rootfs', 0, 0.5], ['full_rootfs', 0, 0.8], ['install', 0, 0.45], ['mini_initramfs', 0, 0.4], ['pxe_rd', 0, 0.55], ['pxe_server_rd', 0, 0.6]]],
+    ['sys', 'tests/sys, in QEMU', 'the installed disk', ['install from iso, usb, pxe and uefi http boot; the result boots', 'every medium installs the same system: the manifests are compared'], 'built',
+      'make -j8 in place: every install at once, the comparison after', [['initramfs', 0, 0.3], ['rootfs', 0, 0.4], ['iso', 0, 0.8], ['usb', 0, 0.85], ['pxe', 0, 0.9], ['pxe_http', 0, 0.92], ['media', 0.92, 1]]],
+    ['fts', 'tests/fts, on the installed disk', 'the fts gold', ['first boot: the menu and zero touch, on overlays of the installed disk', 'the configured node is shut down cleanly and sealed as a gold'], 'built',
+      'make -j2: a child jail per suite', [['menu', 0, 0.95], ['zerotouch', 0, 0.9]]],
+    ['cluster', 'tests/cluster, on the fts gold', 'a cluster gold per topology', ['1h, 3h, 3h_1s, 3h_3s: joined, shut down together, sealed', 'the topology tests run on an overlay so they cannot dirty the gold'], 'built',
+      'make -j2: a child jail per topology; RAM reserved host-wide, a lane waits for its share', [['1h', 0, 0.4], ['3h', 0, 0.55], ['3h_1s', 0.4, 1], ['3h_3s', 0.55, 1]]],
+    ['e2e', 'tests/e2e, on a cluster gold', 'results per feature and topology', ['disk, readdress, rename, discovery, usb, cli: one suite, one jail, one lane', 'each lane ends with the journal check'], 'built',
+      'make -j4: one jail per suite, four lanes at a time', [['1h', 0, 0.5], ['3h_1s', 0, 0.6], ['3h', 0, 0.3], ['3h_3s', 0, 0.4], ['disk', 0.3, 0.7], ['usb', 0.4, 0.75], ['rename', 0.5, 0.8], ['readdress', 0.6, 0.9], ['discovery', 0.7, 1], ['cli', 0.75, 1]]],
+    ['SBOM', 'make sbom: syft', 'two bills of materials', ['the unpacked rootfs: the OS and FRAD’s code', 'the bundled Ceph image, scanned on its own'], 'built',
+      'one after the other', [['rootfs', 0, 0.6], ['ceph image', 0.6, 1]]],
+    ['Scan', 'grype', 'a vulnerability report per sbom', ['each bill of materials matched against the database', 'one line per finding: severity and the database date; reported, never hidden'], 'built',
+      'one after the other', [['rootfs sbom', 0, 0.55], ['ceph image sbom', 0.55, 1]]],
+    ['Sign', 'cosign, with the release key', 'bundles and the public key', ['the signing key, injected only for a production signing', 'recorded in a transparency log; verified on the node'], 'designed',
+      'one signing, every artifact and report', [['artifacts and reports', 0, 1]]]
   ];
+  var LANE_MS = 3600, LANE_H = 10.5;
   var PIPE_W = 82, PIPE_GAP = 10, PIPE_X0 = 25, PIPE_Y = 90;
   function drawPipe(P) {
     el('rect', { 'class': 'pane', x: 20, y: 40, width: 920, height: 420, rx: 8 }, P);
@@ -334,20 +347,36 @@
     D.setAttribute('data-phase', key);
     while (D.firstChild) D.removeChild(D.firstChild);
     var done = phase > PIPE.length, st = PIPE[Math.max(0, k0 - 1)];
-    var x = 60, y = 170, w = 840, h = 190;
+    var lanes = done ? [] : st[6], x = 60, y = 160, w = 840, h = done ? 190 : 150 + lanes.length * LANE_H + 34;
     var cx = PIPE_X0 + (k0 - 1) * (PIPE_W + PIPE_GAP) + PIPE_W / 2;
     var G = el('g', { 'class': 'row' }, D);
     if (!done) el('line', { 'class': 'lead', x1: cx, y1: PIPE_Y + 34, x2: cx, y2: y }, G);
     el('rect', { 'class': 'card' + (done ? ' done' : ''), x: x, y: y, width: w, height: h, rx: 8 }, G);
-    txt(G, x + 20, y + 32, done ? 'Ready to ship' : k0 + '. ' + st[0], { 'font-size': 15, 'font-weight': 600 });
-    txt(G, x + 20, y + 54, done ? 'ten stages passed' : st[1], { 'class': 'mono muted', 'font-size': 11 });
+    txt(G, x + 20, y + 30, done ? 'Ready to ship' : k0 + '. ' + st[0], { 'font-size': 15, 'font-weight': 600 });
+    txt(G, x + 20, y + 50, done ? 'ten stages passed' : st[1], { 'class': 'mono muted', 'font-size': 11 });
     if (!done) {
-      el('rect', { 'class': 'tag ' + st[4], x: x + w - 86, y: y + 18, width: 66, height: 18, rx: 3 }, G);
-      txt(G, x + w - 53, y + 31, st[4], { 'class': 'tagtext ' + st[4], 'font-size': 9, 'font-weight': 700, 'text-anchor': 'middle' });
+      el('rect', { 'class': 'tag ' + st[4], x: x + w - 86, y: y + 16, width: 66, height: 18, rx: 3 }, G);
+      txt(G, x + w - 53, y + 29, st[4], { 'class': 'tagtext ' + st[4], 'font-size': 9, 'font-weight': 700, 'text-anchor': 'middle' });
     }
     var lines = done ? ['built from one tree, tested from code to clusters in QEMU', 'described by its bills of materials, scanned, and signed on the way out'] : st[3];
-    lines.forEach(function (l, i) { txt(G, x + 20, y + 90 + i * 24, l, { 'font-size': 12.5 }); });
-    txt(G, x + 20, y + h - 22, done ? 'the next chapter follows the signature to the node' : 'leaves for the next stage: ' + st[2], { 'class': 'leaves', 'font-size': 11.5, 'font-weight': 600 });
+    lines.forEach(function (l, i) { txt(G, x + 20, y + 78 + i * 20, l, { 'font-size': 12 }); });
+    if (!done) {   // the lanes: what runs side by side in this stage, each bar filling over the stage's time
+      txt(G, x + 20, y + 124, st[5], { 'class': 'muted', 'font-size': 10.5 });
+      var bx = x + 150, bw = w - 170, ly0 = y + 134, lh = lanes.length * LANE_H;   // a time chart: the bar spans when the lane ran
+      lanes.forEach(function (ln, i) {
+        var ly = ly0 + i * LANE_H;
+        var L = el('g', { 'class': 'lane' }, G);
+        txt(L, bx - 10, ly + 7.5, ln[0], { 'class': 'mono', 'font-size': 8.5, 'text-anchor': 'end' });
+        el('rect', { 'class': 'track', x: bx, y: ly + 1.5, width: bw, height: 6, rx: 3 }, L);
+        var f = el('rect', { 'class': 'fill', x: bx + ln[1] * bw, y: ly + 1.5, width: (ln[2] - ln[1]) * bw, height: 6, rx: 3 }, L);
+        f.style.animationDuration = Math.round((ln[2] - ln[1]) * LANE_MS) + 'ms';
+        f.style.animationDelay = Math.round(ln[1] * LANE_MS + 350) + 'ms';
+      });
+      var now = el('line', { 'class': 'now', x1: bx, y1: ly0 - 2, x2: bx, y2: ly0 + lh + 1 }, G);
+      now.style.setProperty('--sweep', bw + 'px');
+      now.style.animationDuration = LANE_MS + 'ms'; now.style.animationDelay = '350ms';
+    }
+    txt(G, x + 20, y + h - 16, done ? 'the next chapter follows the signature to the node' : 'leaves for the next stage: ' + st[2], { 'class': 'leaves', 'font-size': 11.5, 'font-weight': 600 });
   }
 
   // The release chain, after the Sigstore component picture: boxes are the parties, numbered arrows the steps.

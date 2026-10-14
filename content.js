@@ -3,7 +3,7 @@
 window.FRAD_CONTENT = { chapters: [
 
 { slug: 'release', label: 'Release', title: 'From a commit to a release', accent: 'ok',
-  intro: 'One tree, one make, ten stages. The build is tested from unit tests to clusters in QEMU, each stage sealing a gold disk for the next; then the release is described, scanned and signed.',
+  intro: 'One tree, one make, ten stages. The build is tested from unit tests to clusters in QEMU, each stage sealing a gold disk for the next and running its suites side by side where it can; then the release is described, scanned and signed.',
   tour: [
     ['step', 'Build, then every tier of tests', 'A production build makes every medium from one tree. Unit tests, static checks of each image, installs in QEMU, first boots and clusters follow, each stage starting from what the one before sealed.'],
     ['note', '# make full · unit · frad · sys · fts · cluster · e2e'],

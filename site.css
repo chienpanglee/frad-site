@@ -346,3 +346,11 @@ svg .pipe .detail .tagtext { fill: var(--ok); letter-spacing: 0.06em; text-trans
 svg .pipe .detail .tagtext.designed { fill: var(--warn); }
 svg .pipe .detail .leaves { fill: var(--ok); }
 .features li.current button { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+svg .pipe .lane .track { fill: color-mix(in srgb, var(--fg) 7%, transparent); }
+svg .pipe .lane .fill { fill: var(--ok); transform-box: fill-box; transform-origin: left; transform: scaleX(0); animation: lanefill linear both; }
+@keyframes lanefill { from { transform: scaleX(0); fill: var(--ctl); } 92% { fill: var(--ctl); } to { transform: scaleX(1); fill: var(--ok); } }
+@media (prefers-reduced-motion: reduce) { svg .pipe .lane .fill { animation: none; transform: none; } }
+svg .pipe .lane .fill { transform-box: fill-box; transform-origin: left; }
+svg .pipe .now { stroke: var(--ctl); stroke-width: 1.5; stroke-dasharray: 2 2; animation: sweep linear both; }
+@keyframes sweep { from { transform: translateX(0); opacity: 1; } 96% { opacity: 1; } to { transform: translateX(var(--sweep)); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { svg .pipe .now { display: none; } }
