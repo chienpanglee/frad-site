@@ -99,7 +99,7 @@
   function twice(b, label, go) {
     b.addEventListener('click', function () {
       if (b.dataset.armed) { delete b.dataset.armed; b.textContent = label; go(); return; }
-      b.dataset.armed = '1'; b.textContent = label + '?'; setTimeout(function () { delete b.dataset.armed; b.textContent = label; }, 5000);
+      b.dataset.armed = '1'; b.textContent = label + '? press again'; setTimeout(function () { delete b.dataset.armed; b.textContent = label; }, 5000);
     });
   }
   twice(document.getElementById('remove'), 'Remove node', function () { api('DELETE', '/api/nodes/' + current).then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
