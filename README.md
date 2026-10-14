@@ -23,7 +23,7 @@ FRAD (Fünftes Rad), leads back to the top of the main page and the tire rolls h
 ## Pages
 
 `index.html` is the shell, `stage.js` the stage engine, `examples.js` real outputs cut from e2e test logs (screens and command output the recipes reference by id), `examples-cli.js` the recorded CLI runs (generated), `content.js` the content:
-eleven chapters in recipe form, each with a short tour, a feature list and feature recipes.
+twelve chapters in recipe form, each with a short tour, a feature list and feature recipes.
 `VOCABULARY.md` is the contract between the two: the closed set of recipe verbs and the
 shape of `content.js`. Content is meant to come from the frad repository's kb (a generator
 there validates recipes against the vocabulary and emits `content.js`); until then it is

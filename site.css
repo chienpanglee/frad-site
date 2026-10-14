@@ -291,3 +291,32 @@ svg .med .row.active .pulse { animation: halo 1.6s ease-out infinite; }
 svg .med .row.pending text { fill: var(--muted); }
 svg .med .foot { fill: var(--muted); transition: fill 0.4s; }
 svg .med .foot.verdict { fill: var(--ok); }
+svg .chain { pointer-events: none; }
+svg .chain .pane-g { transition: opacity 0.45s, transform 0.5s cubic-bezier(.2,.8,.2,1); }
+svg .chain .pane-g.enter { opacity: 0; transform: translateY(12px); }
+svg .chain .pane-g.out { opacity: 0; transform: translateY(-12px); }
+svg .chain .pane { fill: var(--panel); stroke: var(--line); filter: drop-shadow(0 10px 24px color-mix(in srgb, var(--fg) 10%, transparent)); }
+svg .chain .box { transition: opacity 0.5s; }
+svg .chain .box.dim { opacity: 0.38; }
+svg .chain .box .shape { fill: color-mix(in srgb, var(--ctl) 6%, var(--panel)); stroke: var(--ctl); stroke-width: 1.5; }
+svg .chain .box .tag { fill: var(--panel); stroke: var(--ok); stroke-width: 1; }
+svg .chain .box .tag.designed { stroke: var(--warn); }
+svg .chain .box .tagtext { fill: var(--ok); letter-spacing: 0.06em; text-transform: uppercase; }
+svg .chain .box .tagtext.designed { fill: var(--warn); }
+svg .chain .step .line { fill: none; stroke: var(--line); stroke-width: 2; transition: stroke 0.4s; }
+svg .chain .step .flow { fill: none; stroke: var(--ctl); stroke-width: 2.5; stroke-dasharray: 5 11; stroke-linecap: round; opacity: 0; transition: opacity 0.4s; }
+svg .chain .step .badge { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; transition: fill 0.4s, stroke 0.4s; }
+svg .chain .step .no { fill: var(--muted); transition: fill 0.4s; }
+svg .chain .step .lbl { fill: var(--muted); transition: fill 0.4s, opacity 0.4s; opacity: 0.6; }
+svg .chain .step.active .line { stroke: var(--ctl); }
+svg .chain .step.active .flow { opacity: 1; animation: flow 1.1s linear infinite; }
+svg .chain .step.active .badge { fill: var(--ctl); stroke: var(--ctl); }
+svg .chain .step.active .no { fill: #fff; }
+svg .chain .step.active .lbl { fill: var(--fg); opacity: 1; font-weight: 600; }
+svg .chain .step.done .line { stroke: var(--ok); }
+svg .chain .step.done .badge { fill: var(--ok); stroke: var(--ok); }
+svg .chain .step.done .no { fill: #fff; }
+svg .chain .step.done .lbl { fill: var(--fg); opacity: 1; }
+svg .chain marker.arrow path { fill: var(--line); }
+svg .chain marker.arrow.active path { fill: var(--ctl); }
+svg .chain marker.arrow.done path { fill: var(--ok); }

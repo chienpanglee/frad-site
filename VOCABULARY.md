@@ -68,6 +68,7 @@ Nodes are `h1`..`h9`. Disk indexes are 0..3 (`sda`..`sdd`). Backends are `free`,
 | `inside` | mode or null | the "inside h1" inlay: `channels`, `clone`, `rollback`, `frbe` |
 | `verify` | subject, mode? | a verification card beside the subject: `image` with `online` or `offline`, or a node id with `peers`; `null` clears it |
 | `down` | id | the node loses power; control and VIP recompute |
+| `chain` | step or `done` | the release chain diagram over the whole stage (source, build, release key, log, store, trust root, node): steps below `step` are done, `step` is in flight; `done` lights all; `null` clears it |
 | `media` | id, kind, phase? | the boot medium feeding node `id`, a card with its stages: `iso`, `usb`, `pxe` or `http`; `phase` = stages done so far (default: all); `null` clears it |
 | `up` | id | the node is back |
 

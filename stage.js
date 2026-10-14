@@ -11,7 +11,7 @@
   var ACCENT = { zfs: 'var(--zfs)', ceph: 'var(--ceph)', ctl: 'var(--ctl)', ok: 'var(--ok)', warn: 'var(--warn)' };
 
   // ---------- state and scene verbs
-  function blank() { return { nodes: [], screen: null, svc: false, bus: false, vip: false, inside: null, verify: null, media: null }; }
+  function blank() { return { nodes: [], screen: null, svc: false, bus: false, vip: false, inside: null, verify: null, media: null, chain: null }; }
   function mkNode(id) { return { id: id, control: false, disks: ['free', 'free', 'free', 'free'], installing: false, down: false }; }
   function findNode(s, id) { for (var i = 0; i < s.nodes.length; i++) if (s.nodes[i].id === id) return s.nodes[i]; return null; }
   function withNode(s, id, fn) { var n = findNode(s, id); if (n) fn(n); else console.warn('recipe: no node ' + id); }
@@ -28,6 +28,7 @@
     screen: function (s, op) { s.screen = op[1] ? { node: op[1], ex: op[2] || null } : null; },
     inside: function (s, op) { s.inside = op[1] || null; },
     verify: function (s, op) { s.verify = op[1] ? { subject: op[1], mode: op[2] || 'online' } : null; },
+    chain: function (s, op) { s.chain = op[1] === null || op[1] === undefined ? null : op[1] === 'done' ? 99 : op[1] | 0; },
     media: function (s, op) { s.media = op[1] ? { node: op[1], kind: op[2] || 'iso', phase: op[3] === undefined ? 99 : op[3] | 0 } : null; },
     down: function (s, op) { withNode(s, op[1], function (n) { n.down = true; }); },
     up: function (s, op) { withNode(s, op[1], function (n) { n.down = false; }); }
@@ -75,7 +76,7 @@
     var steps = ft.recipe ? compile(ft.recipe, c) : [];
     if (!steps.length) steps = [{ title: ft.title, text: ft.summary, flag: null, term: [], scene: [], hold: 0, c: c }];
     // a feature starts from the chapter's start state with the transient overlays cleared
-    return { kind: 'feature', c: c, f: f, steps: steps, base: function () { var b = tourState(chStart[c] - 1); b.verify = null; b.screen = null; b.inside = null; b.media = null; return b; }, loop: false };
+    return { kind: 'feature', c: c, f: f, steps: steps, base: function () { var b = tourState(chStart[c] - 1); b.verify = null; b.screen = null; b.inside = null; b.media = null; b.chain = null; return b; }, loop: false };
   }
   function stateAt(seq, k) { return replay(seq.base(), seq.steps, k); }
   function diskDiff(a, b) {
@@ -89,7 +90,7 @@
 
   // ---------- SVG helpers
   var gNodes = document.getElementById('nodes'), gTicks = document.getElementById('ticks');
-  var gVip = document.getElementById('vip'), gFb = document.getElementById('fb'), gUpd = document.getElementById('upd'), gVer = document.getElementById('ver'), gMed = document.getElementById('med');
+  var gVip = document.getElementById('vip'), gFb = document.getElementById('fb'), gUpd = document.getElementById('upd'), gVer = document.getElementById('ver'), gMed = document.getElementById('med'), gChain = document.getElementById('chain');
   function el(tag, attrs, parent) {
     var e = document.createElementNS(NS, tag);
     for (var k in attrs) if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]);
@@ -135,7 +136,7 @@
   var curInside = null, curVerify = '', curScreen = '', curMedia = '';
   function render(s, hot) {
     var inUpdate = !!s.inside;
-    document.getElementById('empty').style.opacity = s.nodes.length ? 0 : 1;
+    document.getElementById('empty').style.opacity = s.nodes.length || s.chain ? 0 : 1;
 
     var want = {};
     s.nodes.forEach(function (n, idx) { want[n.id] = idx; });
@@ -250,6 +251,73 @@
       var live = gMed.querySelector('.pane-g:not(.out)');
       if (live) mediaPhase(live, s.media);
     }
+
+    // the release chain: one diagram, its arrows lit as the phase advances
+    var cOn = s.chain !== null && s.chain !== undefined;
+    var cLive = gChain.querySelector('.pane-g:not(.out)');
+    if (cOn !== !!cLive) {
+      Array.prototype.slice.call(gChain.children).forEach(function (pg) {
+        pg.classList.add('out');
+        setTimeout(function () { if (pg.parentNode) pg.parentNode.removeChild(pg); }, reduced ? 0 : 500);
+      });
+      if (cOn) { var cg = el('g', { 'class': 'pane-g enter' }, gChain); drawChain(cg); chainPhase(cg, s.chain); settle(cg, 'enter'); }
+    } else if (cOn) chainPhase(cLive, s.chain);
+  }
+
+  // The release chain, after the Sigstore component picture: boxes are the parties, numbered arrows the steps.
+  var CHAIN_BOX = {
+    src: { x: 40, y: 60, title: 'Source tree', sub: 'pinned, vendored tools', status: 'built' },
+    build: { x: 390, y: 150, title: 'Production build', sub: 'image, sbom, vulnerability report', status: 'built' },
+    key: { x: 720, y: 60, title: 'Release key', sub: 'root offline, signing key injected', status: 'designed' },
+    log: { x: 720, y: 230, title: 'Transparency log', sub: 'inclusion proof, signing time', status: 'designed' },
+    store: { x: 40, y: 240, title: 'Release store', sub: 'iso, usb, pxe, ppu + bundles', status: 'designed' },
+    node: { x: 390, y: 360, title: 'Node', sub: 'verifies before a byte is unpacked', status: 'designed' },
+    trust: { x: 720, y: 360, title: 'Trust root on the node', sub: 'the release public key, read-only', status: 'designed' }
+  };
+  var CHAIN_BW = 180, CHAIN_BH = 58;
+  var CHAIN_ARROW = [   // d, label, badge (on the path), label anchor, the boxes it lights
+    ['M220 89 Q 305 89 390 165', 'image, sbom, vulnerability report', 305, 108, 324, 94, ['src', 'build']],
+    ['M720 89 Q 645 89 570 165', 'signing key, only for a production signing', 645, 108, 645, 136, ['key']],
+    ['M570 185 Q 645 185 720 255', 'signature and digest in, proof and time back', 645, 202, 645, 224, ['log']],
+    ['M390 195 Q 305 195 220 265', 'artifacts with their bundles and the public key', 305, 212, 305, 234, ['store']],
+    ['M720 389 H 570', 'the public key, rotated by a signed fixpack', 645, 389, 645, 352, ['trust', 'node']],
+    ['M125 298 Q 125 389 390 389', 'fetch, verify online or offline, refuse a downgrade', 191, 366, 191, 350, ['store', 'node']]
+  ];
+  function drawChain(P) {
+    el('rect', { 'class': 'pane', x: 20, y: 40, width: 920, height: 420, rx: 8 }, P);
+    txt(P, 38, 450, 'From the release host to the node', { 'font-size': 12.5, 'font-weight': 600 });
+    txt(P, 922, 450, 'after the Sigstore component picture', { 'class': 'muted', 'font-size': 10.5, 'text-anchor': 'end' });
+    var defs = el('defs', {}, P);
+    ['pending', 'active', 'done'].forEach(function (k) {
+      var m = el('marker', { id: 'chainArrow-' + k, 'class': 'arrow ' + k, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs);
+      el('path', { d: 'M0 0 L10 5 L0 10 z' }, m);
+    });
+    CHAIN_ARROW.forEach(function (a, k) {
+      var A = el('g', { 'class': 'step pending', 'data-k': k + 1 }, P);
+      el('path', { 'class': 'line', d: a[0], 'marker-end': 'url(#chainArrow-pending)' }, A);
+      el('path', { 'class': 'flow', d: a[0] }, A);
+      el('circle', { 'class': 'badge', cx: a[2], cy: a[3], r: 9 }, A);
+      txt(A, a[2], a[3] + 4, String(k + 1), { 'class': 'mono no', 'font-size': 10.5, 'font-weight': 700, 'text-anchor': 'middle' });
+      txt(A, a[4], a[5], a[1], { 'class': 'lbl', 'font-size': 11, 'text-anchor': 'middle' });
+    });
+    Object.keys(CHAIN_BOX).forEach(function (id) {
+      var b = CHAIN_BOX[id], B = el('g', { 'class': 'box dim', 'data-id': id }, P);
+      el('rect', { 'class': 'shape', x: b.x, y: b.y, width: CHAIN_BW, height: CHAIN_BH, rx: 7 }, B);
+      txt(B, b.x + 12, b.y + 24, b.title, { 'font-size': 12.5, 'font-weight': 600 });
+      txt(B, b.x + 12, b.y + 44, b.sub, { 'class': 'muted', 'font-size': 10 });
+      el('rect', { 'class': 'tag ' + b.status, x: b.x + CHAIN_BW - 58, y: b.y - 8, width: 52, height: 15, rx: 3 }, B);
+      txt(B, b.x + CHAIN_BW - 32, b.y + 3, b.status, { 'class': 'tagtext ' + b.status, 'font-size': 8.5, 'font-weight': 700, 'text-anchor': 'middle' });
+    });
+  }
+  function chainPhase(P, phase) {   // steps below the phase are done, the phase itself is in flight, the rest pending
+    var lit = {};
+    Array.prototype.forEach.call(P.querySelectorAll('.step'), function (A, k) {
+      var st = k + 1 < phase ? 'done' : k + 1 === phase ? 'active' : 'pending';
+      A.setAttribute('class', 'step ' + st);
+      A.querySelector('.line').setAttribute('marker-end', 'url(#chainArrow-' + st + ')');
+      if (st !== 'pending') CHAIN_ARROW[k][6].forEach(function (id) { lit[id] = true; });
+    });
+    Array.prototype.forEach.call(P.querySelectorAll('.box'), function (B) { B.classList.toggle('dim', !lit[B.getAttribute('data-id')]); });
   }
 
   var MEDIA = {

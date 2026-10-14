@@ -2,12 +2,84 @@
    Status chips are an editorial reading until the generator derives them from the repository. */
 window.FRAD_CONTENT = { chapters: [
 
+{ slug: 'release', label: 'Release', title: 'A signed release', accent: 'ctl',
+  intro: 'What a node runs is decided on the release host, never on the node. Every build is scanned, signed with a key that never enters the build, recorded in a transparency log, and verified on the node before a byte is unpacked.',
+  tour: [
+    ['step', 'Built and scanned', 'A production build produces the image in every medium, a bill of materials of the operating system and one of the bundled Ceph image, and a vulnerability report against each. The tools are pinned and vendored; the build fetches nothing.'],
+    ['note', '# make full: image · sbom (os, ceph image) · vulnerability report'],
+    ['chain', 1],
+    ['step', 'Signed, logged, verified', 'The signing key is injected only for a production signing. The signature is recorded in a transparency log. The node checks a release against the trust root it carries before unpacking anything, online or offline.', 'designed'],
+    ['note', '# sign with the release key · record in the log · publish · verify on the node'],
+    ['chain', 'done']
+  ],
+  features: [
+    { slug: 'evidence', title: 'Bill of materials and vulnerability report', status: 'built', tests: 1,
+      summary: 'Every production build produces its bills of materials and a vulnerability scan of each; the build prints one line per finding with its severity and the scanner database date.',
+      details: ['Two bills of materials on purpose: one answers what is in the operating system and FRAD’s own code and moves with security updates and fixpacks; the other covers the bundled Ceph container image and moves when that image is bumped.', 'The scanning tools are vendored at pinned versions, part of the release’s provenance; a second build with nothing changed produces nothing new.'],
+      recipe: [
+        ['step', 'The build scans itself', 'The root filesystem is unpacked and scanned: one bill of materials for the operating system and FRAD’s code, one for the bundled Ceph container image, kept apart because they change on different cadences.'],
+        ['note', '# syft: sbom of the os and the code · sbom of the ceph image'],
+        ['chain', 1],
+        ['step', 'Findings, one line each', 'Each bill of materials is matched against the vulnerability database. Every finding is a line in the build log with its severity and the database date: reported, never hidden.'],
+        ['note', '# grype: one VULN line per report, counts by severity, database date'],
+        ['out', 'sbom: os + code, ceph image · vulnerabilities: reported by severity'],
+        ['chain', 2]
+      ] },
+    { slug: 'signing', title: 'Signed with a key that never enters the build', status: 'designed', adr: '0028',
+      summary: 'The release key has an offline root and an online signing key. The build jail never holds the signing key; it is injected only for a production signing, and a production build without it fails rather than shipping unsigned.',
+      details: ['Keyless signing against a public identity service needs the network at signing time, which the build jail does not have; FRAD signs with its own release key and records the signature in a transparency log instead.', 'The signature is the trust anchor. The md5 sidecars next to each artifact stay for transfer checks only.'],
+      recipe: [
+        ['step', 'A key that never enters the build', 'The signing key is injected only for a production signing and leaves with it. Without the key, a production build fails loudly instead of shipping unsigned artifacts.', 'designed'],
+        ['note', '# cosign sign: release key, root offline, signing key outside the jail'],
+        ['chain', 2],
+        ['step', 'Recorded in the transparency log', 'Signature, certificate and artifact digest are recorded in a transparency log, which returns an inclusion proof and the signing time. The bundle ships beside the artifact.', 'designed'],
+        ['note', '# log: inclusion proof · signing time · bundle beside the artifact'],
+        ['chain', 3]
+      ] },
+    { slug: 'publish', title: 'Every artifact leaves with its proof', status: 'designed', adr: '0028',
+      summary: 'ISO, USB stick image, PXE kit and firmware image leave the release host with their signature bundles and the public key, so any copy can be checked anywhere.',
+      details: ['The same bundle format covers the image in every medium and the bills of materials, so one verifier on the node checks everything a release carries.'],
+      recipe: [
+        ['step', 'Published with its proof', 'Each artifact goes out with its signature bundle; the public key goes with the release so that a site can verify a download before it reaches a node.', 'designed'],
+        ['note', '# ship: iso · usb · pxe · ppu, each with a bundle; the public key beside them'],
+        ['chain', 4]
+      ] },
+    { slug: 'trust-root', title: 'A trust root on every node', status: 'designed', adr: '0028',
+      summary: 'The release public key is part of the read-only system image, so a node verifies offline. A new key reaches installed nodes in a fixpack signed by the old one; a revoked key is refused.',
+      details: ['An air-gapped site has the same assurance as a connected one: the check against the bundled key is the same check, only the transparency log step is local.'],
+      recipe: [
+        ['step', 'The public key, read-only, on the node', 'The key lives in the read-only part of the system image that only a signed fixpack can change. Rotation is a fixpack signed by the old key that carries the new one.', 'designed'],
+        ['note', '# /frbe: release public key · rotation by a signed fixpack · revoked keys refused'],
+        ['chain', 5]
+      ] },
+    { slug: 'verify', title: 'Verified before a byte is unpacked', status: 'designed', adr: '0028',
+      summary: 'The installer and every update path verify the signature before unpacking, and again before a boot environment is activated. A downgrade is refused; a refusal is loud and logged.',
+      details: ['Install from any medium, a security update, a fixpack and a firmware image all pass the same verifier, so every channel into the node is checked the same way.', 'Online, the transparency log attests the signature; offline, the same check runs against the bundled key.'],
+      recipe: [
+        ['step', 'Before a byte is unpacked', 'The node fetches the release and verifies it against its trust root before the installer or the updater unpacks anything, and once more before a boot environment becomes the boot target.', 'designed'],
+        ['note', '# verify: install · update · fixpack · firmware image · boot environment switch'],
+        ['chain', 6],
+        ['step', 'Online: attested', 'The signature is checked against the release key and the inclusion proof is checked against the transparency log.', 'designed'],
+        ['chain', null], ['node', 'h1', 'installing'],
+        ['note', '# online: signature, attestation, bill of materials, vulnerability report'],
+        ['verify', 'image', 'online'],
+        ['out', 'signature: valid · attestation: recorded · sbom: present · vulnerabilities: no critical finding'],
+        ['step', 'Offline: the same check', 'An air-gapped site verifies against the key bundled with the image. The result is the same; only the attestation step is local.', 'designed'],
+        ['note', '# offline: signature checked against the bundled key'],
+        ['verify', 'image', 'offline'],
+        ['out', 'signature: valid (bundled key) · sbom: present · vulnerabilities: no critical finding']
+      ] },
+    { slug: 'bundle', title: 'The release evidence bundle', status: 'designed',
+      summary: 'Per release: the signed artifacts, the bills of materials, the vulnerability results, which test suites ran and passed, the threat model and the provenance, tied together by one signed manifest.',
+      details: ['The bundle follows what NIST’s Secure Software Development Framework and CISA’s supply-chain guidance expect to accompany software: integrity that a node can check offline, and evidence a site can read.'] }
+  ] },
+
 { slug: 'install', label: 'Install', title: 'Install media', accent: 'ctl',
   intro: 'One image, four ways to boot it. The installer lays out root on ZFS and copies the image; there is nothing to partition and nothing to assemble afterwards.',
   tour: [
     ['step', 'Boot from the image', 'ISO, USB, PXE or UEFI HTTP boot: the same image every time. One image carries the OS, the storage stack, clustering, HA and the CLI.'],
     ['note', '# UEFI only. Root on ZFS, rpool as a mirror when two disks are there.'],
-    ['node', 'h1', 'installing'],
+    ['chain', null], ['node', 'h1', 'installing'],
     ['step', 'Verified before it runs', 'Every build ships with its software bill of materials, a vulnerability report and a signature. Online the signature is attested; offline the same check runs against a bundled key.', 'designed'],
     ['note', '# sbom · vulnerability report · signature: checked before the image is written'],
     ['verify', 'image', 'online']
@@ -90,13 +162,6 @@ window.FRAD_CONTENT = { chapters: [
     { slug: 'rpool-mirror', title: 'rpool mirrored by default', status: 'built', tests: 1, adr: '0021',
       summary: 'With two system disks the installer mirrors the root pool; a single disk installs as a stripe that can be mirrored later.',
       details: ['The root pool scales like the data pool: a second disk can be attached after the install, and a failed one replaced, without reinstalling.'] },
-    { slug: 'sbom', title: 'Bill of materials and vulnerability report', status: 'built', tests: 1,
-      summary: 'Every build produces its SBOM and a vulnerability scan; the build prints one line per finding with its severity and the scanner database date.',
-      details: ['The report is part of the build output, not an afterthought: a release with a new critical finding is visible before it ships.'] },
-    { slug: 'signature', title: 'Signed image, online attestation or offline check', status: 'designed', adr: '0028',
-      summary: 'The image is signed at build time. A connected site attests the signature online; an air-gapped site checks it against a key bundled with the appliance.',
-      details: ['The same check runs before a fixpack or a firmware image is applied, so every channel is verified the same way.'],
-      recipe: [['step', 'Online: attested', 'The signature is checked against the release key and the check is recorded with a transparency log.', 'designed'], ['node', 'h1', 'installing'], ['note', '# online: signature, attestation, bill of materials, vulnerability report'], ['verify', 'image', 'online'], ['out', 'signature: valid · attestation: recorded · sbom: present · vulnerabilities: no critical finding'], ['step', 'Offline: the same check', 'An air-gapped site verifies against the key bundled with the appliance. The result is the same; only the attestation step is local.', 'designed'], ['note', '# offline: signature checked against the bundled key'], ['verify', 'image', 'offline'], ['out', 'signature: valid (bundled key) · sbom: present · vulnerabilities: no critical finding']] }
   ] },
 
 { slug: 'first-boot', label: 'First boot', title: 'Zero-touch first boot', accent: 'ok',
