@@ -116,6 +116,7 @@
   function drawNodes(j) {
     if (j.current) current = j.current;          // the console is shared: what it shows is what the booth says
     var st = (j.install || {}).state || 'installed', cur = j.nodes.filter(function (n) { return n.name === current; })[0];
+    nodeNames = j.nodes.map(function (n) { return n.name; });
     installed = st === 'installed';
     login.hidden = !cur;
     nodesEl.textContent = '';
@@ -148,13 +149,22 @@
     if (!stale && !resetting) state.textContent = '';   // installed: the install and boot notes go
   }
   // Clean-up: a node away, the session over from the gold, or the booth gone. Each asks twice.
-  function twice(b, label, go) {
+  function twice(b, label, go, warn) {
     b.addEventListener('click', function () {
-      if (b.dataset.armed) { delete b.dataset.armed; b.textContent = label; go(); return; }
-      b.dataset.armed = '1'; b.textContent = label + '? press again'; setTimeout(function () { delete b.dataset.armed; b.textContent = label; }, 5000);
+      if (b.dataset.armed) { delete b.dataset.armed; b.textContent = label; err.textContent = ''; go(); return; }
+      var w = warn ? warn() : '';
+      b.dataset.armed = '1'; b.textContent = label + '? press again'; err.textContent = w;
+      setTimeout(function () { delete b.dataset.armed; b.textContent = label; if (w && err.textContent === w) err.textContent = ''; }, 5000);
     });
   }
-  twice(document.getElementById('remove'), 'Remove node', function () { api('DELETE', '/api/nodes/' + current).then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); });
+  // h1 started the cluster: its only control node, monitor and VIP. Removing it while others run
+  // leaves them without a cluster (no monitor, no dashboard); say so before the second press.
+  var nodeNames = [];
+  function removeWarning() {
+    var others = nodeNames.filter(function (n) { return n !== current; });
+    return current === 'h1' && others.length ? 'h1 holds the cluster (monitor, VIP, dashboard): ' + others.join(', ') + ' lose it; Reset starts over' : '';
+  }
+  twice(document.getElementById('remove'), 'Remove node', function () { api('DELETE', '/api/nodes/' + current).then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); }, removeWarning);
   var resetting = 0, gone = false;             // after Reset: the console goes until the old h1 is gone and a new one answers
   twice(document.getElementById('reset'), 'Reset', function () {
     split(false); con.removeAttribute('src'); con.hidden = true; boot.hidden = false; resetting = Date.now(); gone = false;
