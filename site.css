@@ -266,6 +266,15 @@ svg .tick.dead { stroke-dasharray: 3 3; opacity: 0.5; }
 .booth iframe { flex: 1; border: 0; background: #000; width: 100%; }
 .booth .term.boot { flex: 1; height: auto; margin: 0; border: 0; border-radius: 0; justify-content: flex-start; font-size: 14px; padding: 14px 16px; }
 .booth .pane [hidden] { display: none; }
+.booth .downloads { margin-top: 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 14px 18px; }
+.booth .downloads h2 { margin: 0 0 8px; font: 600 12px/1 var(--body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: flex; gap: 12px; align-items: baseline; }
+.booth .downloads h2 .muted { text-transform: none; letter-spacing: 0; font-family: var(--mono); }
+.booth .downloads ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.booth .downloads li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--line); padding: 6px 2px; font-family: var(--mono); font-size: 13px; }
+.booth .downloads li a { color: var(--fg); }
+.booth .downloads li .muted { white-space: nowrap; font-size: 12px; }
+.booth .downloads .note { margin-top: 10px; }
+.booth .downloads code { font-size: 12px; }
 .booth #dash { display: none; }
 .booth .panes.split #dash { display: flex; }
 @media (max-width: 900px) { .booth .panes, .booth .panes.split { grid-template-columns: 1fr; height: auto; } .booth iframe { height: 55vh; } }

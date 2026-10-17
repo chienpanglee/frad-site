@@ -37,11 +37,17 @@ waits for Play.
 forms, the usage, and a replay of the command's recorded runs when there are any.
 `term.js` is the terminal player both pages share, `site.css` the shared styles.
 
-`booth.html` is "Try it": it looks for a frad-booth container on the visitor's machine
-(`localhost:8080`, see frad's `booth/`) and, when one answers, shows the node's console, the
-nodes (a button each, "Add node") and the Ceph dashboard from it: inline when the booth's cookie
-probe shows this browser keeps a cross-site cookie in a frame, else in a tab (`booth.js`, frad #423); without
-one it shows the `docker run` line, built from `booth.json` (the image and the tag of the
+`booth.html` is "Try it" and the downloads (frad ADR 0033): it looks for a frad-booth container on
+the visitor's machine (`localhost:8080`, see frad's `booth/`), the image that carries the release
+ISO. When one answers, the page lists the files it serves (`/api/media`, links to `/dl/<file>`:
+the ISO, and the SHA256SUMS, cosign bundles, public key, SBOM and HOW_TO_VERIFY when the build was
+signed; an unsigned development image is called so, with its commit), and offers "Install via
+CDROM" / "Install via USB" (`POST /api/install`), which the booth runs unattended in the console;
+once the installed disk boots as h1 (`/api/nodes` `install.state` `installed`) the buttons become
+the nodes (a button each, "Add node") and the Ceph dashboard from it: inline when the booth's
+cookie probe shows this browser keeps a cross-site cookie in a frame, else in a tab (`booth.js`,
+frad #423). A booth without KVM (`/health` `kvm:false`) shows the downloads only. Without a booth
+the page shows the `docker run` line, built from `booth.json` (the image and the tag of the
 current build: update it when a new image is pushed; the line pins that tag and pulls). A booth
 whose `/health` reports another version is called older on the page. The booth allows the
 site's origin (and `localhost` while the site is worked on) to call it.

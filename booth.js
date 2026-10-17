@@ -5,7 +5,8 @@
   var absent = document.getElementById('absent');
   var panes = document.getElementById('panes'), con = document.getElementById('console'), frame = document.getElementById('dashframe');
   var open = document.getElementById('open'), state = document.getElementById('state'), nodesEl = document.getElementById('nodes'), err = document.getElementById('err');
-  var booth = false, ready = false, misses = 0, current = 'h1';
+  var booth = false, ready = false, misses = 0, current = 'h1', kvm = true, installed = false;
+  var dl = document.getElementById('downloads'), dlist = document.getElementById('dlist'), dlnote = document.getElementById('dlnote'), dlrel = document.getElementById('dlrel');
   var embed = false, probeFrame = null, probeTimer = null;   // can the dashboard live in a frame here? (frad #423)
   var IMAGE = 'ghcr.io/chienpanglee/frad-booth', TAG = '', CMD = '';   // booth.json names the current image; the run line pins its tag
   function setImage(image, tag) {
@@ -30,8 +31,10 @@
     opts = opts || {}; opts.signal = ac.signal; opts.cache = 'no-store';
     return fetch(url, opts).then(function (r) { clearTimeout(t); return r; }, function (e) { clearTimeout(t); throw e; });
   }
-  function api(method, path) {
-    return timed(BASE + path, { method: method }).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); });
+  function api(method, path, body) {
+    var o = { method: method };
+    if (body) { o.headers = { 'Content-Type': 'application/json' }; o.body = JSON.stringify(body); }
+    return timed(BASE + path, o).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); });
   }
   function split(on) {
     panes.classList.toggle('split', on);
@@ -60,8 +63,33 @@
     boot.hidden = on; con.hidden = !on; copy.hidden = on && !stale; login.hidden = !on;
     ['reset', 'stop'].forEach(function (id) { document.getElementById(id).hidden = !on; });
     paneTitle.textContent = on ? 'Console' : 'Start the booth';
-    if (on) { T.cancel(); con.src = BASE + '/console/'; probe(); }
-    else { con.removeAttribute('src'); split(false); unprobe(); setEmbed(false); ready = false; stale = ''; resetting = 0; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); }
+    if (on) { T.cancel(); con.src = BASE + '/console/'; probe(); loadMedia(); }
+    else { con.removeAttribute('src'); split(false); unprobe(); setEmbed(false); ready = false; stale = ''; resetting = 0; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); dl.hidden = true; dlist.textContent = ''; }
+  }
+  // Without KVM the booth is a download server: the console pane goes, the downloads stay.
+  function setKvm(on) {
+    if (on === kvm) return;
+    kvm = on; panes.hidden = !on;
+    if (!on) state.textContent = '';
+  }
+  // What the image carries (/api/media): the ISO and, on a signed build, its evidence, as links to /dl/.
+  function mb(n) { return n >= 1 << 30 ? (n / (1 << 30)).toFixed(2) + ' GB' : n >= 1 << 20 ? (n / (1 << 20)).toFixed(1) + ' MB' : (n / 1024).toFixed(0) + ' kB'; }
+  function loadMedia() {
+    api('GET', '/api/media').then(function (m) {
+      dlist.textContent = '';
+      m.files.forEach(function (f) {
+        var li = document.createElement('li'), a = document.createElement('a'), s = document.createElement('span');
+        a.href = BASE + '/dl/' + encodeURIComponent(f.name); a.textContent = f.name; a.setAttribute('download', f.name);
+        s.className = 'muted'; s.textContent = mb(f.size) + (f.sha256 ? '  sha256 ' + f.sha256.slice(0, 12) + '…' : '');
+        if (f.sha256) s.title = f.sha256;
+        li.appendChild(a); li.appendChild(s); dlist.appendChild(li);
+      });
+      dlrel.textContent = m.release + (m.version ? ' (' + m.version + ')' : '');
+      dlnote.innerHTML = m.signed
+        ? 'The image is signed: check the ISO with <code>cosign verify-blob --key ' + m.release + '.cosign.pub --insecure-ignore-tlog --bundle ' + m.iso + '.bundle ' + m.iso + '</code>' + (m.howto ? ', or follow <a href="' + BASE + '/dl/' + m.howto + '">' + m.howto + '</a>' : '') + '. The same ISO installs from a CD or a USB stick.'
+        : 'An unsigned development build (' + (m.version || m.release) + '): no bundle, no SBOM; the sha256 is what the image says it is. The same ISO installs from a CD or a USB stick.';
+      dl.hidden = false;
+    }).catch(function () { dl.hidden = true; });
   }
   var stale = '';                               // the running booth's image when it is not the one the site names
   function setStale(version) {                 // an image that reports no version predates this check: no verdict on it
@@ -74,29 +102,47 @@
     if (up === ready) return;
     ready = up;
     open.hidden = !up;
-    if (!stale && !resetting) state.textContent = up ? '' : 'the node is not reachable';
+    if (!stale && !resetting && installed) state.textContent = up ? '' : 'the node is not reachable';
     if (!up) split(false);
   }
+  function button(label, on, go) {
+    var b = document.createElement('button'); b.className = on ? 'on' : ''; b.textContent = label; b.addEventListener('click', go); nodesEl.appendChild(b); return b;
+  }
+  // Before the install: two buttons boot the image's ISO as a CD or a USB stick and the install runs
+  // unattended in the console; the disk it writes is then booted by h1. After it: the nodes.
   function drawNodes(j) {
     if (j.current) current = j.current;          // the console is shared: what it shows is what the booth says
-    var cur = j.nodes.filter(function (n) { return n.name === current; })[0];
-    login.innerHTML = 'log in as <code>admin</code>, password <code>' + (cur && cur.kind === 'fresh' ? 'admin' : 'Frad@0.1') + '</code>'
-      + (cur && cur.kind === 'fresh' ? ' (the factory login, until its setup runs)' : '');
+    var st = (j.install || {}).state || 'installed', cur = j.nodes.filter(function (n) { return n.name === current; })[0];
+    installed = st === 'installed';
+    login.hidden = !cur;
     nodesEl.textContent = '';
+    document.getElementById('remove').hidden = !cur;
+    if (st !== 'installed') {
+      if (st === 'installing' || st === 'booting') {
+        if (!stale && !resetting) state.textContent = st === 'installing' ? 'installing from the ' + (j.install.media === 'usb' ? 'USB stick' : 'CD') + '; the node powers off when done' : 'h1 boots the installed disk for the first time';
+      } else {
+        ['iso', 'usb'].forEach(function (m) {
+          button(m === 'iso' ? 'Install via CDROM' : 'Install via USB', false, function () {
+            err.textContent = '';
+            api('POST', '/api/install', { media: m }).then(function () { return api('GET', '/api/nodes'); }).then(drawNodes).catch(function (e) { err.textContent = e.message; });
+          });
+        });
+        if (!stale && !resetting) state.textContent = st === 'failed' ? 'the install failed: ' + j.install.error : 'no node yet: install one from the image (' + (j.h1_mb || 6144) + ' MB of memory, a few minutes)';
+      }
+      return;
+    }
     j.nodes.forEach(function (n) {
       var b = document.createElement('button'); b.className = n.name === current ? 'on' : ''; b.textContent = n.name + (n.alive ? '' : ' (off)');
       b.addEventListener('click', function () { api('POST', '/api/console/' + n.name).then(function () { current = n.name; drawNodes(j); }); });
       nodesEl.appendChild(b);
     });
-    var add = document.createElement('button'); add.textContent = 'Add node';
-    add.title = j.free_mb + ' MB free on this machine; a node takes ' + j.node_mb + ' MB';
-    add.addEventListener('click', function () {
+    var add = button('Add node', false, function () {
       add.disabled = true; err.textContent = '';
       api('POST', '/api/nodes').then(function (r) { current = r.name; return api('GET', '/api/nodes'); }).then(drawNodes)
         .catch(function (e) { err.textContent = e.message; add.disabled = false; });
     });
-    nodesEl.appendChild(add);
-    document.getElementById('remove').hidden = !cur;
+    add.title = j.free_mb + ' MB free on this machine; a node takes ' + j.node_mb + ' MB';
+    if (!stale && !resetting && ready) state.textContent = '';
   }
   // Clean-up: a node away, the session over from the gold, or the booth gone. Each asks twice.
   function twice(b, label, go) {
@@ -109,11 +155,12 @@
   var resetting = 0, gone = false;             // after Reset: the console goes until the old h1 is gone and a new one answers
   twice(document.getElementById('reset'), 'Reset', function () {
     split(false); con.removeAttribute('src'); con.hidden = true; boot.hidden = false; resetting = Date.now(); gone = false;
-    state.textContent = 'the booth is resetting'; waiting('every node goes, h1 comes back fresh from the gold; this box is its console again');
+    state.textContent = 'the booth is resetting'; waiting('every node goes, h1 comes back fresh from the installed disk; this box is its console again');
     api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; showConsole(''); });
   });
   function showConsole(text) { resetting = 0; ready = false; open.hidden = true; T.cancel(); boot.hidden = true; con.hidden = false; con.src = BASE + '/console/'; probe(); state.textContent = text; }
   function resetDone(j) {                       // the old h1 was seen gone (or 90 s passed) and an h1 is alive again
+    if (j.install && j.install.state !== 'installed') return showConsole('');   // no disk: the install buttons are back
     var h1 = j.nodes.filter(function (n) { return n.name === 'h1' && n.alive; }).length;
     if (!h1) gone = true;
     if ((gone && h1) || Date.now() - resetting > 90000) showConsole('the node is booting');
@@ -128,11 +175,11 @@
     timed(BASE + '/health').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json().catch(function () { return {}; }); })
       .then(function (h) {
         if (stopping && Date.now() - stopping < 90000) return;   // still the booth being stopped (or one that would not stop: 90 s)
-        stopping = 0; setBooth(true); misses = 0; setStale(h.version);
+        stopping = 0; setBooth(true); misses = 0; setStale(h.version); setKvm(h.kvm !== false);
       })
       .catch(function () { stopping = 0; if (++misses >= 2) setBooth(false); })
       .then(function () {
-        if (!booth) return;
+        if (!booth || !kvm) return;
         return timed(BASE + '/ready', { method: 'HEAD' }).then(function (r) { setReady(r.ok); }, function () { setReady(false); })
           .then(function () { return api('GET', '/api/nodes').then(function (j) { drawNodes(j); if (resetting) resetDone(j); }).catch(function () {}); });
       })
