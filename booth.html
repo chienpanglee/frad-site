@@ -84,14 +84,10 @@
   <div class="present" id="present">
     <div class="panes" id="panes">
       <div class="pane">
-        <h2><span id="paneTitle">Start the booth</span><span class="nodes" id="nodes"></span><span class="muted" id="login" hidden>log in as <code>admin</code>, password <code>admin</code> (the factory login; the setup screen sets a new one)</span><span class="err" id="err"></span>
-          <span class="right"><span class="muted" id="state">looking for a booth on this machine…</span><button class="btn small" id="copy">Copy the command</button><button class="btn small primary" id="open" hidden>Ceph dashboard</button><button class="btn small" id="remove" hidden>Remove node</button><button class="btn small" id="reset" hidden>Reset</button><button class="btn small" id="stop" hidden>End booth</button></span></h2>
+        <h2><span id="paneTitle">Start the booth</span><span class="nodes" id="nodes"></span><span class="muted" id="login" hidden>log in as <code>admin</code>, password <code>admin</code> (the factory login; the setup screen sets a new one)</span><span class="muted" id="dashnote">on the virtual IP: user <code>admin</code>, the node's admin password</span><span class="err" id="err"></span>
+          <span class="right"><span class="muted" id="state">looking for a booth on this machine…</span><button class="btn small" id="copy">Copy the command</button><button class="btn small primary" id="open" hidden>Ceph dashboard</button><button class="btn small primary" id="back">Console</button><button class="btn small" id="tab">Open in a tab</button><button class="btn small" id="remove" hidden>Remove node</button><button class="btn small" id="reset" hidden>Reset</button><button class="btn small" id="stop" hidden>End booth</button></span></h2>
         <div class="term boot" id="boot"></div>
         <iframe id="console" title="Node console" hidden></iframe>
-      </div>
-      <div class="pane" id="dash">
-        <h2>Dashboard <span class="muted">on the virtual IP: user <code>admin</code>, the node's admin password</span>
-          <span class="right"><button class="btn small" id="tab">Open in a tab</button><button class="btn small" id="close">Close</button></span></h2>
         <iframe id="dashframe" title="Ceph dashboard"></iframe>
       </div>
     </div>

@@ -36,10 +36,13 @@
     if (body) o.body = JSON.stringify(body);   // text/plain: a simple request, no preflight (booths up to 6de500a allow no Content-Type)
     return timed(BASE + path, o).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); });
   }
-  function split(on) {
+  // The flip: the dashboard fills the frame, or the console does. Flipping back keeps the
+  // dashboard loaded (its login stays); a node going down or the booth going away unloads it.
+  function split(on, keep) {
     panes.classList.toggle('split', on);
     if (on && !frame.getAttribute('src')) frame.src = BASE + '/ceph/';
-    if (!on) frame.removeAttribute('src');
+    if (!on && !keep) frame.removeAttribute('src');
+    paneTitle.textContent = on ? 'Dashboard' : booth ? 'Console' : 'Start the booth';
   }
   // The dashboard's cookies are cross-site from this page. The booth's probe sets one with the
   // same attributes in a hidden frame and says whether the browser sent it back; no answer
@@ -142,7 +145,7 @@
         .catch(function (e) { err.textContent = e.message; add.disabled = false; });
     });
     add.title = j.free_mb + ' MB free on this machine; a node takes ' + j.node_mb + ' MB';
-    if (!stale && !resetting && ready) state.textContent = '';
+    if (!stale && !resetting) state.textContent = '';   // installed: the install and boot notes go
   }
   // Clean-up: a node away, the session over from the gold, or the booth gone. Each asks twice.
   function twice(b, label, go) {
@@ -186,6 +189,6 @@
       .then(function () { setTimeout(poll, 3000); }, function () { setTimeout(poll, 3000); });
   })();
   open.addEventListener('click', function () { if (embed) split(true); else window.open(BASE + '/ceph/', '_blank', 'noopener'); });
-  document.getElementById('close').addEventListener('click', function () { split(false); });
+  document.getElementById('back').addEventListener('click', function () { split(false, true); });
   document.getElementById('tab').addEventListener('click', function () { window.open(BASE + '/ceph/', '_blank', 'noopener'); split(false); });
 })();
