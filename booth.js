@@ -33,7 +33,7 @@
   }
   function api(method, path, body) {
     var o = { method: method };
-    if (body) { o.headers = { 'Content-Type': 'application/json' }; o.body = JSON.stringify(body); }
+    if (body) o.body = JSON.stringify(body);   // text/plain: a simple request, no preflight (booths up to 6de500a allow no Content-Type)
     return timed(BASE + path, o).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); });
   }
   function split(on) {
