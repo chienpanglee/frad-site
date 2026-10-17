@@ -63,7 +63,7 @@
     boot.hidden = on; con.hidden = !on; copy.hidden = on && !stale; login.hidden = !on;
     ['reset', 'stop'].forEach(function (id) { document.getElementById(id).hidden = !on; });
     paneTitle.textContent = on ? 'Console' : 'Start the booth';
-    if (on) { T.cancel(); con.src = BASE + '/console/'; probe(); loadMedia(); }
+    if (on) { T.cancel(); con.src = BASE + '/console/'; probe(); loadMedia(); state.textContent = ''; }
     else { con.removeAttribute('src'); split(false); unprobe(); setEmbed(false); ready = false; stale = ''; resetting = 0; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); dl.hidden = true; dlist.textContent = ''; }
   }
   // Without KVM the booth is a download server: the console pane goes, the downloads stay.
