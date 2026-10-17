@@ -59,6 +59,11 @@
     if (ev.origin !== BASE || !ev.data || ev.data.fradBooth !== 'probe') return;
     setEmbed(!!ev.data.cookies); unprobe();
   });
+  // A fresh, empty console frame: removing only its src keeps the old ttyd page loaded, and an
+  // older booth's ttyd then still asks "Leave site?" when the visitor leaves this page.
+  function dropConsole() {
+    var n = con.cloneNode(false); n.removeAttribute('src'); con.parentNode.replaceChild(n, con); con = n;
+  }
   function setBooth(on) {                     // the one box: the command to run, then the console it starts
     if (on === booth) return;
     booth = on;
@@ -67,7 +72,7 @@
     ['reset', 'stop'].forEach(function (id) { document.getElementById(id).hidden = !on; });
     paneTitle.textContent = on ? 'Console' : 'Start the booth';
     if (on) { T.cancel(); con.src = BASE + '/console/'; probe(); loadMedia(); state.textContent = ''; }
-    else { con.removeAttribute('src'); split(false); unprobe(); setEmbed(false); ready = false; stale = ''; resetting = 0; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); dl.hidden = true; dlist.textContent = ''; }
+    else { dropConsole(); document.getElementById('remove').hidden = true; split(false); unprobe(); setEmbed(false); ready = false; stale = ''; resetting = 0; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); dl.hidden = true; dlist.textContent = ''; }
   }
   // Without KVM the booth is a download server: the console pane goes, the downloads stay.
   function setKvm(on) {
@@ -167,7 +172,7 @@
   twice(document.getElementById('remove'), 'Remove node', function () { api('DELETE', '/api/nodes/' + current).then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; }); }, removeWarning);
   var resetting = 0, gone = false;             // after Reset: the console goes until the old h1 is gone and a new one answers
   twice(document.getElementById('reset'), 'Reset', function () {
-    split(false); con.removeAttribute('src'); con.hidden = true; boot.hidden = false; resetting = Date.now(); gone = false;
+    split(false); dropConsole(); con.hidden = true; boot.hidden = false; resetting = Date.now(); gone = false;
     state.textContent = 'the booth is resetting'; waiting('every node goes, h1 comes back fresh from the installed disk; this box is its console again');
     api('POST', '/api/reset').then(function () { current = 'h1'; }).catch(function (e) { err.textContent = e.message; showConsole(''); });
   });
