@@ -3,53 +3,183 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FRAD Storage OS</title>
-<meta name="description" content="FRAD: one image, one node to a cluster, storage that grows in every direction.">
+<meta name="description" content="FRAD: an appliance storage OS. One node grows into a cluster; storage scales up with ZFS and out with Ceph; an update can be undone.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta property="og:title" content="FRAD Storage OS">
 <meta property="og:description" content="One image. One node to a cluster. Storage that grows in every direction.">
-<meta property="og:image" content="logo/frad-social.png">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta property="og:image" content="https://chienpanglee.github.io/frad-site/logo/frad-social.png">
+<meta name="twitter:card" content="summary_large_image">
+<title>FRAD Storage OS</title>
 <link rel="stylesheet" href="fonts.css">
-<style>
-:root {
-  --bg: #fffdf3; --fg: #0b0b0b; --muted: #5e5b4c; --line: #e6dfbd; --yellow: #ffd400;
-  --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
-  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #0b0b0b; --fg: #f5f1dc; --muted: #a8a48f; --line: #2d2b22; color-scheme: dark; }
-  .logo-light { display: none; }
-  .logo-dark { display: inline; }
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.6 var(--body); }
-main { max-width: 760px; margin: 0 auto; padding: 56px 16px 40px; }
-.logo-dark { display: none; }
-.brand img { height: 44px; }
-h1 { font: 600 clamp(30px, 6vw, 46px)/1.12 var(--display); margin: 40px 0 18px; letter-spacing: -0.01em; }
-.lead { font-size: 19px; color: var(--muted); margin: 0 0 36px; }
-.mark { display: inline-block; width: 48px; height: 6px; background: var(--yellow); margin-bottom: 28px; }
-h2 { font: 600 22px/1.3 var(--display); margin: 36px 0 8px; }
-.mail { font-family: var(--mono); font-size: 16px; }
-footer { border-top: 1px solid var(--line); margin-top: 56px; padding-top: 16px; color: var(--muted); font-size: 14px; }
-</style>
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
-<main>
-  <div class="brand">
-    <img class="logo-light" src="logo/frad-logo.svg" alt="FRAD">
-    <img class="logo-dark" src="logo/frad-logo-dark.svg" alt="FRAD">
+
+<div class="wrap">
+<header class="top">
+  <a class="wordmark" href="index.html" aria-label="FRAD, Fünftes Rad: the main page"><svg class="mark-svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><g transform="translate(0 0) scale(1)"><circle cx="50" cy="50" r="47.5" fill="none" stroke="#ffd400" stroke-width="2"/><circle cx="50" cy="50" r="46" fill="#0b0b0b"/><circle cx="50" cy="50" r="40.5" fill="none" stroke="#ffd400" stroke-width="5.5" stroke-dasharray="4.4 6.2" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="31" fill="#ffd400"/><circle cx="50" cy="50" r="31" fill="none" stroke="#0b0b0b" stroke-width="1.6"/><path d="M37.5 31V69M37.5 31H65M37.5 49.5H59.5" fill="none" stroke="#0b0b0b" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter"/></g></svg>FRAD <small>(Fünftes Rad)</small></a>
+  <div class="right">
+    <nav>
+      <a href="#why">Why</a>
+      <a href="#who">Who</a>
+      <a href="cli.html">CLI</a>
+      <a href="#notes">Blog</a>
+      <a href="contact.html">Contact</a>
+    </nav>
   </div>
+</header>
+
+<section id="why" class="why">
+  <span id="ideas"></span>
+  <h2>Why FRAD</h2>
+  <div class="why-grid">
+    <article class="why-card" style="--accent: var(--zfs)">
+      <div class="why-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6c0 1.6 3.4 2.8 7.5 2.8s7.5-1.2 7.5-2.8v-6"/><path d="M4.5 11.5v6c0 1.6 3.4 2.8 7.5 2.8s7.5-1.2 7.5-2.8v-6"/></svg></div>
+      <h3>Storage: your data, under your control</h3>
+      <p>You want full control of your data, but it can be hard. FRAD is a storage platform that scales on demand, vertically with ZFS and horizontally with Ceph.</p>
+      <details>
+        <summary>More</summary>
+        <ul>
+          <li><strong>Up and down on one node.</strong> Disks join or leave the host pool one at a time, as stripe, mirror or raidz. A disk is evacuated before it is released, so shrinking is as easy as growing.</li>
+          <li><strong>Out and in across nodes.</strong> One node grows into a Ceph cluster with no re-install. Replicas and failure domain follow the number of hosts, and a node leaves after its disks drain.</li>
+          <li><strong>Block, file and object</strong> from the same cluster, on your own hardware. Each disk goes to ZFS or Ceph on its own, and can move between them.</li>
+        </ul>
+      </details>
+    </article>
+    <article class="why-card" style="--accent: var(--ok)">
+      <div class="why-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.8l7.5 3v5.6c0 4.7-3.2 8.6-7.5 9.8-4.3-1.2-7.5-5.1-7.5-9.8V5.8z"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/></svg></div>
+      <h3>Security: update safely, update fearlessly</h3>
+      <p>CVEs emerge nonstop, release cycles and patch delivery are too slow, and updating is a pain. When upstream has a fix, FRAD can have it.</p>
+      <details>
+        <summary>More</summary>
+        <ul>
+          <li><strong>Three channels by risk.</strong> Base-OS security fixes, FRAD&rsquo;s own code and a full image each travel on their own channel, so a CVE fix does not wait for a FRAD release.</li>
+          <li><strong>An update you can undo.</strong> <span class="why-tag">in progress</span> If a node does not come back healthy after an update, it returns to the version it ran before, by itself.</li>
+          <li><strong>Signed releases.</strong> Every release is signed, and air-gapped sites update from the same bundle.</li>
+        </ul>
+      </details>
+    </article>
+    <article class="why-card" style="--accent: var(--ceph)">
+      <div class="why-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 13l3.6-3.6"/><path d="M9.5 2.8h5"/></svg></div>
+      <h3>Quick deployment and scaling</h3>
+      <p>Everything should take a few minutes: installation, configuration, joining a cluster, decommissioning, upgrades.</p>
+      <details>
+        <summary>More</summary>
+        <ul>
+          <li><strong>One image, every medium.</strong> ISO, USB stick, PXE or UEFI HTTP boot install the same system.</li>
+          <li><strong>One screen at first boot.</strong> FRAD proposes a complete configuration, finds a cluster on the network, and applies it with one key, or runs unattended for a fleet.</li>
+          <li><strong>Join and leave in place.</strong> A new node joins the cluster it finds, and a node leaves after its disks drain, with no re-install of the rest.</li>
+          <li><strong>Try it first.</strong> A FRAD node runs on your own machine from a browser, before you download anything: <a href="contact.html">ask for the booth</a>.</li>
+        </ul>
+      </details>
+    </article>
+    <article class="why-card" style="--accent: var(--ctl)">
+      <div class="why-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7H4V3"/><path d="M4.4 7A8.5 8.5 0 1 1 3.6 13"/></svg></div>
+      <h3>Can change later</h3>
+      <p>Not sure what to choose on the first configuration screen? No problem. Press <kbd>a</kbd> to accept and apply the defaults. It just works, and everything can be changed afterwards.</p>
+      <details>
+        <summary>More</summary>
+        <ul>
+          <li><strong>Defaults that work.</strong> The proposed setup is a production-shaped node, not a demo: mirrored boot pool, replication, firewall and certificates already on.</li>
+          <li><strong>Every choice stays open.</strong> Hostname, addresses, the storage network, the control role and where each disk goes can all change on a running cluster.</li>
+          <li><strong>No re-install.</strong> A rename or readdress updates Ceph, the cluster and every peer together.</li>
+        </ul>
+      </details>
+    </article>
+  </div>
+
+  <div class="who" id="who">
+    <h2>Who needs FRAD</h2>
+    <p class="why-intro">Three kinds of teams run into these problems most often. If you recognise yours, FRAD is worth a closer look.</p>
+    <div class="who-grid">
+      <article class="why-card" style="--accent: var(--zfs)">
+        <div class="why-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="7" rx="1.5"/><rect x="4" y="13.5" width="16" height="7" rx="1.5"/><path d="M7.5 7h.01M7.5 17h.01M11 7h5.5M11 17h5.5"/></svg></div>
+        <h3>Regional hosting providers and smaller cloud operators</h3>
+        <p>You sell storage, or the services that run on it, without a large storage operations team behind it.</p>
+        <ul>
+          <li><strong>One product to run.</strong> Operating system, storage, clustering, high availability and the CLI install and update together.</li>
+          <li><strong>Grow without re-architecting.</strong> Start with one node, add nodes as customers come, and retire them after their disks drain.</li>
+          <li><strong>Patch without a project.</strong> Security fixes arrive on their own channel and roll through the cluster one node at a time.</li>
+        </ul>
+        <p class="who-fit"><strong>A good fit if</strong> installing, patching and growing storage takes most of your team's time.</p>
+      </article>
+      <article class="why-card" style="--accent: var(--ctl)">
+        <div class="why-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.8l8 4.2v10l-8 4.2-8-4.2V7z"/><path d="M4 7l8 4.2L20 7M12 11.2v10"/></svg></div>
+        <h3>Server OEMs and infrastructure integrators</h3>
+        <p>You ship hardware and want one storage software stack that goes onto every box the same way.</p>
+        <ul>
+          <li><strong>One image, every medium.</strong> ISO, USB, PXE or UEFI HTTP boot install the same system, attended or unattended for a fleet.</li>
+          <li><strong>Supportable in the field.</strong> Every release is signed, and sites without internet update from the same bundle.</li>
+          <li><strong>Easy to demo.</strong> Your customers can try a FRAD node in a browser before any hardware arrives.</li>
+        </ul>
+        <p class="who-fit"><strong>A good fit if</strong> you build storage appliances or turnkey racks and would rather not maintain your own OS.</p>
+      </article>
+      <article class="why-card" style="--accent: var(--ok)">
+        <div class="why-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20.5h16M6 20.5V9l6-4.5L18 9v11.5"/><rect x="9.5" y="12.5" width="5" height="4.5" rx="1"/><path d="M10.5 12.5v-1.3a1.5 1.5 0 0 1 3 0v1.3"/></svg></div>
+        <h3>Enterprises with on-premises or sovereign requirements</h3>
+        <p>Your data has to stay on hardware you own, in a place you choose.</p>
+        <ul>
+          <li><strong>Block, file and object</strong> from one cluster on your own hardware, from a single node upwards.</li>
+          <li><strong>Air-gapped by design.</strong> Install and update offline from signed bundles; nothing has to call home.</li>
+          <li><strong>No first-day lock-in.</strong> Names, addresses, networks and where each disk goes can all change later, without a re-install.</li>
+        </ul>
+        <p class="who-fit"><strong>A good fit if</strong> a workload must stay on premises, and the storage it needs is hard to install, update or grow.</p>
+      </article>
+    </div>
+    <p class="who-cta">Recognise yourself? <a href="contact.html">Let's talk about a technical evaluation</a>.</p>
+  </div>
+</section>
+
+<div class="hero">
+  <div class="eyebrow">The storage OS that scales in all directions</div>
   <h1>One image. One node to a cluster. Storage that grows in every direction.</h1>
-  <span class="mark" aria-hidden="true"></span>
-  <p class="lead">FRAD turns a machine into a storage platform. The operating system, the storage stack, clustering, high availability and the management CLI ship and update as one product, so scalable storage stays under your control with little effort.</p>
+  <p class="lead">FRAD boots a machine straight into a storage platform: operating system, storage stack, clustering, high availability and the management CLI ship and update as one product, so a scalable storage platform can be managed with little effort.</p>
+</div>
 
-  <h2>Interested in running FRAD on real hardware?</h2>
-  <p>I'm looking for infrastructure providers, server manufacturers and technology partners interested in evaluating FRAD. Write to me with <em>FRAD: technical evaluation</em> or <em>FRAD: partnership</em> in the subject.</p>
-  <p class="mail">lee.chienpang (at) gmail.com</p>
+<div class="builton" aria-label="Built on">
+  <span class="eyebrow">Built on proven foundations</span>
+  <ul>
+    <li>Ubuntu<small>base OS</small></li>
+    <li>OpenZFS<small>root and local pools</small></li>
+    <li>Ceph<small>scale-out storage</small></li>
+    <li>Corosync · Pacemaker<small>quorum and VIP</small></li>
+    <li>HAProxy<small>dashboard and S3 front</small></li>
+    <li>Podman<small>Ceph daemons</small></li>
+    <li>ZFSBootMenu<small>boot menu</small></li>
+  </ul>
+</div>
 
-  <footer>&copy; 2026 Chien-Pang Lee. FRAD is proprietary software. The full site is being updated.</footer>
-</main>
+<section id="notes">
+  <h2>Engineering notes</h2>
+  <div class="prose">
+    <p>FRAD comes out of problems met in production. The author writes them up on a personal engineering blog; three posts cover ground this page only summarises.</p>
+  </div>
+  <div class="cols" style="margin-top: 18px">
+    <div class="col">
+      <div class="mark" style="background: var(--ceph)"></div>
+      <h3><a href="https://chienpanglee.github.io/posts/ceph-orchestration-pitfalls/">Ceph orchestration pitfalls</a></h3>
+      <p>Moving Ceph from native daemons to cephadm, and making it work air-gapped: the registries, mirrors and defaults that are hard-coded along the way.</p>
+    </div>
+    <div class="col">
+      <div class="mark" style="background: var(--ctl)"></div>
+      <h3><a href="https://chienpanglee.github.io/posts/Dont-want-to-miss-a-ball-with-OpenCVE/">Don't want to miss a ball with OpenCVE</a></h3>
+      <p>A self-hosted CVE feed built into a CI pipeline, so security updates are noticed in time. The same need drives FRAD's update channels.</p>
+    </div>
+    <div class="col">
+      <div class="mark" style="background: var(--zfs)"></div>
+      <h3><a href="https://chienpanglee.github.io/posts/small-footprint-of-a-power-editor-in-initramfs/">A power editor in initramfs</a></h3>
+      <p>Fitting a real editor into a boot-time filesystem where every megabyte counts. The kind of appliance-image work FRAD's installer is made of.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>FRAD is closed-source. This page is its public face.</span>
+  <span>More on the <a href="https://chienpanglee.github.io/">author's blog</a>.</span>
+</footer>
+</div>
+
+<script src="wheel.js"></script>
 </body>
 </html>
