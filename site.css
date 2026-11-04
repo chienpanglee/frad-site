@@ -429,3 +429,7 @@ svg .pipe .now { stroke: var(--ctl); stroke-width: 1.5; stroke-dasharray: 2 2; a
 .stage[data-layout="diagram"] { grid-template-columns: minmax(0, 2.1fr) minmax(280px, 1fr); }
 .stage[data-layout="diagram"] .term, .stage[data-layout="diagram"] .legend { display: none; }
 @media (max-width: 860px) { .stage[data-layout="diagram"] { grid-template-columns: 1fr; } }
+/* status.html (#537) */
+.status table.pre td.pass { color: var(--ok); font-weight: 600; }
+.status table.pre td.fail { color: var(--warn); font-weight: 600; }
+.status table.pre td.notrun { color: var(--muted); }

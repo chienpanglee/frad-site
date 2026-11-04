@@ -5,7 +5,14 @@
   var CLI = window.FRAD_CLI, X = window.FRAD_EXAMPLES || {}, C = window.FRAD_CONTENT || { chapters: [] };
   if (!CLI) { console.error('FRAD_CLI missing'); return; }
   // Provenance (#532): the recorded run's date and build, and the commit of the command tree.
-  function prov(ex) { return 'recorded ' + ex.date + ' on build ' + ex.build + ' · tree ' + CLI.commit + (CLI.date ? ' of ' + CLI.date : ''); }
+  // The provenance line; the tree commit links to its row on status.html, what passed there (#1178).
+  function prov(el, ex) {
+    el.textContent = (ex ? 'recorded ' + ex.date + ' on build ' + ex.build
+                         : 'no recorded run on this page yet; the replay shows the prompt only') + ' · tree ';
+    var a = document.createElement('a'); a.href = 'status.html#c-' + String(CLI.commit).slice(0, 7);
+    a.textContent = CLI.commit; el.appendChild(a);
+    if (ex && CLI.date) el.appendChild(document.createTextNode(' of ' + CLI.date));
+  }
   var T = window.FRADTerm(document.getElementById('term'), { keep: 2000 });   // a run is read whole, nothing scrolls off
   var byPath = {}, children = { '': [] };
   CLI.commands.forEach(function (c) {
@@ -108,8 +115,7 @@
       });
     }
     var ex = X['cli-' + toks.join('-')];
-    if (ex) E.cprov.textContent = prov(ex);
-    else E.cprov.textContent = 'no recorded run on this page yet; the replay shows the prompt only · tree ' + CLI.commit;
+    prov(E.cprov, ex);
     seenIn(c.path).forEach(function (h) { var a = document.createElement('a'); a.href = h[1]; a.textContent = h[0]; E.cseen.appendChild(a); });
     if (E.cseen.firstChild) { var lbl = document.createElement('span'); lbl.className = 'muted'; lbl.textContent = 'Shown in: '; E.cseen.insertBefore(lbl, E.cseen.firstChild); }
     replay();
@@ -119,7 +125,7 @@
     E.cname.textContent = 'The prompt';
     E.cmeta.textContent = 'frad_cli is the login shell. The prompt names the node, then the mode once one is entered: h1> at the top, h1:node disks> inside node disks, cluster> in the cluster scope, which acts on every member. Every command names its scope first.';
     var ex = X['cli-login'];
-    if (ex) E.cprov.textContent = prov(ex);
+    if (ex) prov(E.cprov, ex);
     children[''].forEach(function (s) {
       var li = document.createElement('li'), a = document.createElement('a'); a.href = hashOf(s.path); a.appendChild(code(s.usage)); li.appendChild(a);
       var t = document.createElement('span'); t.className = 'muted'; t.textContent = s.kind === 'mode' ? 'mode' : s.effect; li.appendChild(t);

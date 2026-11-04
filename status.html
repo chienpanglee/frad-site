@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="FRAD provenance: which test stages passed at each commit of the main line.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>FRAD test status</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="wordmark" href="index.html" aria-label="FRAD, Fünftes Rad: the main page"><svg class="mark-svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><g transform="translate(0 0) scale(1)"><circle cx="50" cy="50" r="47.5" fill="none" stroke="#ffd400" stroke-width="2"/><circle cx="50" cy="50" r="46" fill="#0b0b0b"/><circle cx="50" cy="50" r="40.5" fill="none" stroke="#ffd400" stroke-width="5.5" stroke-dasharray="4.4 6.2" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="31" fill="#ffd400"/><circle cx="50" cy="50" r="31" fill="none" stroke="#0b0b0b" stroke-width="1.6"/><path d="M37.5 31V69M37.5 31H65M37.5 49.5H59.5" fill="none" stroke="#0b0b0b" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter"/></g></svg>FRAD <small>(Fünftes Rad)</small></a>
+  <div class="right">
+    <nav>
+      <a href="index.html#why">Why</a>
+      <a href="index.html#who">Who</a>
+      <a href="cli.html">CLI</a>
+      <a href="status.html" aria-current="page">Status</a>
+      <a href="index.html#notes">Blog</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+
+<div class="hero">
+  <div class="eyebrow">Status</div>
+  <h1>What passed at each commit</h1>
+  <p class="lead">Every commit of the main line, newest first, with the test gates that ran on it: the result, the number of tests and suites, and each pipeline stage as passed, failed or not run. A commit no gate ran on is listed as such.</p>
+</div>
+
+<section class="booth status">
+  <p class="note" id="status-note"></p>
+  <table class="pre" id="status-table"></table>
+</section>
+
+<footer class="foot">
+  <span>FRAD · the storage OS that scales in all directions</span>
+  <span><a href="index.html#who">Who needs FRAD</a> · <a href="https://github.com/chienpanglee/frad-site">this site</a></span>
+</footer>
+</div>
+<script src="status.js"></script>
+<script src="status-view.js"></script>
+<script src="wheel.js"></script>
+</body>
+</html>
