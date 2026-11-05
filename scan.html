@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="What the vulnerability scanners find in each FRAD release: totals by severity, every Critical and High finding with its state, and the change against the previous release.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>FRAD scan</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="site.css">
+<style>
+.scanhead { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; margin-block: 18px 8px; }
+.scanhead select { font: inherit; padding: 4px 8px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; }
+.report { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-block: 14px; display: grid; gap: 10px; min-width: 0; }
+.report h2 { margin: 0; font-size: 22px; }
+.totals { display: flex; gap: 8px; flex-wrap: wrap; font-family: var(--mono); font-size: 13px; }
+.totals span { border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; }
+.totals .Critical, .totals .High { border-color: var(--warn); color: var(--warn); }
+.meta { color: var(--muted); font-size: 13px; }
+.tablewrap { overflow-x: auto; }
+.findings { border-collapse: collapse; width: 100%; font-size: 13px; }
+.findings th, .findings td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.findings td.mono { font-family: var(--mono); word-break: break-all; }
+details summary { cursor: pointer; }
+</style>
+</head>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="wordmark" href="index.html" aria-label="FRAD, Fünftes Rad: the main page"><svg class="mark-svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><g transform="translate(0 0) scale(1)"><circle cx="50" cy="50" r="47.5" fill="none" stroke="#ffd400" stroke-width="2"/><circle cx="50" cy="50" r="46" fill="#0b0b0b"/><circle cx="50" cy="50" r="40.5" fill="none" stroke="#ffd400" stroke-width="5.5" stroke-dasharray="4.4 6.2" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="31" fill="#ffd400"/><circle cx="50" cy="50" r="31" fill="none" stroke="#0b0b0b" stroke-width="1.6"/><path d="M37.5 31V69M37.5 31H65M37.5 49.5H59.5" fill="none" stroke="#0b0b0b" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter"/></g></svg>FRAD <small>(Fünftes Rad)</small></a>
+  <div class="right">
+    <nav>
+      <a href="index.html#why">Why</a>
+      <a href="index.html#who">Who</a>
+      <a href="cli.html">CLI</a>
+      <a href="status.html">Status</a>
+      <a href="scan.html" aria-current="page">Scan</a>
+      <a href="index.html#notes">Blog</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="scanhead">
+    <h1>Scan</h1>
+    <label>Release <select id="release" aria-label="Release"></select></label>
+  </section>
+  <p class="meta" id="relmeta"></p>
+  <div id="reports"><p class="meta">Loading the scan reports ...</p></div>
+</main>
+
+<footer>
+  <span>FRAD is closed-source. This page is its public face.</span>
+  <span><a href="index.html">Back to the features</a></span>
+</footer>
+</div>
+
+<script src="wheel.js"></script>
+<script src="scan.js"></script>
+</body>
+</html>
