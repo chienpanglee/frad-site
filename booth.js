@@ -202,8 +202,9 @@
       }
       return;
     }
-    park(false);
-    idle(!j.nodes.filter(function (n) { return n.alive; }).length); open.hidden = !j.nodes.length; openTitle();   // an off node has no console
+    var alive = j.nodes.filter(function (n) { return n.alive; }).length;
+    park(!alive);                               // no console to show (last node removed, all off): the controls in the window on the art (#1433)
+    idle(!alive); open.hidden = !j.nodes.length; openTitle();   // an off node has no console
     j.nodes.forEach(function (n) {
       var b = document.createElement('button'); b.className = n.name === current ? 'on' : ''; b.textContent = n.name + (n.alive ? '' : ' (off)');
       b.addEventListener('click', function () { api('POST', '/api/console/' + n.name).then(function () { current = n.name; drawNodes(j); }); });
@@ -218,7 +219,8 @@
     // Not while a removed node is still going: the booth would add a next node beside it.
     add.disabled = !!removing; if (removing) add.title = removing + ' is still going; Add node when it is gone';
     addEl = add;
-    if (!stale) state.textContent = '';   // installed: the install and boot notes go
+    if (!alive) add.classList.add('next');   // the next step for the audience
+    if (!stale) state.textContent = alive ? '' : 'no node runs: Add node boots a new one (' + j.node_mb + ' MB of memory)';
   }
   // Clean-up: a node away, or the booth gone. Each asks twice.
   function twice(b, label, go, warn) {
