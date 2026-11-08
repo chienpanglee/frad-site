@@ -185,7 +185,7 @@
           button(m === 'iso' ? 'Install via CDROM' : 'Install via USB', false, function () {
             err.textContent = '';
             api('POST', '/api/install', { media: m }).then(function () { return api('GET', '/api/nodes'); }).then(drawNodes).catch(function (e) { err.textContent = e.message; });
-          });
+          }).classList.add('next');   // the next step for the audience: the buttons pulse (#1419)
         });
         if (!stale) state.textContent = st === 'failed' ? 'the install failed: ' + j.install.error : 'no node yet: install one from the image (' + (j.h1_mb || 6144) + ' MB of memory, a few minutes)';
       }

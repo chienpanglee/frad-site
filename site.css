@@ -218,9 +218,6 @@ section { padding-block: 36px; border-top: 1px solid var(--line); scroll-margin-
 .elsewhere a { margin: 0 4px; }
 .cta.ended { margin: 0 0 16px; }
 .cta[hidden] { display: none; }
-.cta.contact-mail { position: relative; overflow: hidden; min-height: 230px; background: var(--panel) url("art/pool.png") right center / cover no-repeat; }
-.cta.contact-mail::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--panel) 0%, var(--panel) 50%, transparent 100%); }
-.cta.contact-mail > * { position: relative; }
 .contact-grid { margin-top: 22px; }
 @media (max-width: 1100px) { .who-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 860px) { .why-grid, .who-grid { grid-template-columns: 1fr; } }
@@ -323,6 +320,9 @@ svg .tick.dead { stroke-dasharray: 3 3; opacity: 0.5; }
 .booth .nodes { display: flex; gap: 6px; }
 .booth .nodes button { font: 600 11px/1 var(--body); letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 9px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
 .booth .nodes button.on { color: var(--zfs); border-color: var(--zfs); }
+.booth .nodes button.next { color: var(--fg); border-color: var(--yellow); background: color-mix(in srgb, var(--yellow) 18%, transparent); animation: nudge 1.6s ease-out infinite; }   /* no node yet: the install is the next step (#1419) */
+@keyframes nudge { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--yellow) 75%, transparent); } 70% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--yellow) 0%, transparent); } 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--yellow) 0%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .booth .nodes button.next { animation: none; } }
 .booth iframe { flex: 1; border: 0; background: #000; width: 100%; }
 .booth .term.boot { flex: 1; height: auto; margin: 0; border: 0; border-radius: 0; justify-content: flex-start; font-size: 14px; padding: 14px 16px; }
 .booth .pane [hidden] { display: none; }
