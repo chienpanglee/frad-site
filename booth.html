@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Try FRAD on your own machine: one command brings the release to a container; download it, or install a node from it and see its console and dashboard on this page.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>FRAD booth</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="site.css">
+<style>
+/* The manual: a rail with the command tree, a panel for one command */
+.manual { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 24px; margin-block: 18px 56px; align-items: start; }
+.rail { position: sticky; top: 72px; max-height: calc(100vh - 90px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 6px; font-family: var(--mono); font-size: 13px; }
+.rail ul { list-style: none; margin: 0; padding-left: 0; }
+.rail ul ul { padding-left: 14px; border-left: 1px solid var(--line); margin-left: 9px; }
+.rail li { margin: 1px 0; }
+.rail a { display: block; padding: 3px 8px; border-radius: 5px; text-decoration: none; color: var(--fg); }
+.rail li.mode > a { font-weight: 600; }
+.rail li.global > a { color: var(--muted); }
+.rail a.destructive::after { content: " !"; color: var(--warn); }
+.rail a:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.rail a.on { background: var(--fg); color: var(--bg); }
+.cmdpanel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: grid; gap: 14px; min-width: 0; }
+.cmdpanel h2 { font-family: var(--mono); font-size: 26px; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cmdpanel .chip { margin-left: 0; }
+.chip.mode { border-color: var(--ctl); color: var(--ctl); }
+.chip.readonly { border-color: var(--ok); color: var(--ok); }
+.chip.mutating { border-color: var(--zfs); color: var(--zfs); }
+.chip.destructive { border-color: var(--warn); color: var(--warn); }
+.forms { display: grid; gap: 8px; }
+.form { font-family: var(--mono); font-size: 13.5px; white-space: pre-wrap; background: color-mix(in srgb, var(--fg) 5%, var(--panel)); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.form .ps { color: var(--muted); }
+.usage code { font-size: 13px; color: var(--muted); }
+.cmeta { color: var(--muted); max-width: 70ch; }
+.subs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.subs li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--line); padding: 6px 2px; }
+.subs a { text-decoration: none; }
+.subs a:hover code { text-decoration: underline; }
+.subs code { font-size: 13px; }
+.subs .muted { font-size: 12px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+.muted { color: var(--muted); }
+.cmdpanel .term { margin-top: 0; height: auto; min-height: 14em; max-height: 75vh; overflow: auto; justify-content: flex-start; }   /* grows with the run, every line kept */
+.replayrow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.replayrow button { font: 500 14px var(--body); padding: 9px 14px; border-radius: 6px; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; }
+.cprov { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.cseen { font-size: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+.cseen a { color: var(--fg); }
+.source { font-size: 13px; color: var(--muted); }
+@media (max-width: 860px) {
+  .manual { grid-template-columns: 1fr; }
+  .rail { position: static; max-height: 40vh; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="wordmark" href="index.html" aria-label="FRAD, Fünftes Rad: the main page"><svg class="mark-svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true"><g transform="translate(0 0) scale(1)"><circle cx="50" cy="50" r="47.5" fill="none" stroke="#ffd400" stroke-width="2"/><circle cx="50" cy="50" r="46" fill="#0b0b0b"/><circle cx="50" cy="50" r="40.5" fill="none" stroke="#ffd400" stroke-width="5.5" stroke-dasharray="4.4 6.2" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="31" fill="#ffd400"/><circle cx="50" cy="50" r="31" fill="none" stroke="#0b0b0b" stroke-width="1.6"/><path d="M37.5 31V69M37.5 31H65M37.5 49.5H59.5" fill="none" stroke="#0b0b0b" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter"/></g></svg>FRAD <small>(Fünftes Rad)</small></a>
+  <div class="right">
+    <nav>
+      <a href="index.html#why">Why</a>
+      <a href="index.html#who">Who</a>
+      <a href="cli.html">CLI</a>
+      <a href="status.html">Status</a>
+      <a href="scan.html">Scan</a>
+      <a href="index.html#notes">Blog</a>
+      <a href="booth.html" aria-current="page">Try it</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">Try it · a FRAD node on your own machine</div>
+  <h1>One command. The release arrives here, in a container.</h1>
+  <p class="lead">The booth is the release: a container holding the install image, with its signatures when the build was signed, and qemu to run it. Run it, and this page finds it: the files to download, an install you can watch, then the console of the node it made, the nodes you add, and the Ceph dashboard, all right here. Nothing leaves your machine.</p>
+</div>
+
+<section class="booth" id="booth">
+  <div class="absent" id="absent">
+    <div class="ostabs" role="tablist" aria-label="Your system">
+      <button type="button" role="tab" id="tab-linux" aria-controls="os-linux" data-os="linux">Linux</button>
+      <button type="button" role="tab" id="tab-macos" aria-controls="os-macos" data-os="macos">macOS</button>
+      <button type="button" role="tab" id="tab-windows" aria-controls="os-windows" data-os="windows">Windows</button>
+      <span class="ostabs-hint muted" id="osHint"></span>
+    </div>
+
+    <div class="ospanel" id="os-linux" role="tabpanel" aria-labelledby="tab-linux">
+      <p><strong>What you get:</strong> the whole booth. Download the release, install a node, add nodes, open the Ceph dashboard.</p>
+      <table class="pre">
+        <tr><th>You need</th><th>Check</th><th>If it is missing</th></tr>
+        <tr><td>Docker</td><td><code>docker run --rm hello-world</code></td><td>Install <a href="https://docs.docker.com/engine/install/">Docker Engine</a> for your distribution.</td></tr>
+        <tr><td>KVM</td><td><code>ls -l /dev/kvm</code></td><td>Turn on virtualization (Intel VT-x or AMD-V) in the firmware setup. Inside a VM, turn on nested virtualization on its host.</td></tr>
+        <tr><td>Memory</td><td><code>free -g</code></td><td>6 GB free for the install and h1, 4 GB more for each node you add. With less, the booth still serves the downloads.</td></tr>
+      </table>
+      <p><strong>Run:</strong> paste the line in the box below into a terminal.</p>
+    </div>
+
+    <div class="ospanel" id="os-macos" role="tabpanel" aria-labelledby="tab-macos" hidden>
+      <p><strong>What you get:</strong> the downloads (the install image and its checksums). Installing and running nodes needs KVM, which macOS does not have: try those on a Linux or Windows machine, or watch the <a href="index.html#story">replays</a>.</p>
+      <table class="pre">
+        <tr><th>You need</th><th>Check</th><th>If it is missing</th></tr>
+        <tr><td>Docker Desktop</td><td><code>docker version</code></td><td>Install <a href="https://docs.docker.com/desktop/setup/install/mac-install/">Docker Desktop for Mac</a>. On Apple Silicon the booth runs under emulation, so it takes longer to start.</td></tr>
+      </table>
+      <p><strong>Run:</strong> paste the line in the box below into Terminal. It leaves out the KVM and network devices, which Docker on macOS refuses.</p>
+    </div>
+
+    <div class="ospanel" id="os-windows" role="tabpanel" aria-labelledby="tab-windows" hidden>
+      <p><strong>What you get:</strong> the whole booth when WSL2 has KVM, otherwise the downloads. Windows is not tested yet: <a href="contact.html">tell me</a> how it goes.</p>
+      <table class="pre">
+        <tr><th>You need</th><th>Check</th><th>If it is missing</th></tr>
+        <tr><td>Windows 11 with WSL2</td><td><code>wsl --status</code> in PowerShell</td><td><code>wsl --install</code> in PowerShell as administrator, then restart (<a href="https://learn.microsoft.com/windows/wsl/install">Microsoft's guide</a>).</td></tr>
+        <tr><td>Docker in WSL2</td><td><code>docker version</code> in the WSL2 shell</td><td><a href="https://docs.docker.com/engine/install/ubuntu/">Docker Engine</a> inside the WSL2 distribution, or <a href="https://docs.docker.com/desktop/features/wsl/">Docker Desktop</a> with its WSL2 backend.</td></tr>
+        <tr><td>KVM in WSL2</td><td><code>ls -l /dev/kvm</code> in the WSL2 shell</td><td>In <code>%UserProfile%\.wslconfig</code>, under <code>[wsl2]</code>, set <code>nestedVirtualization=true</code>, then <code>wsl --shutdown</code> and open the shell again. The CPU must support it. No KVM: use the downloads-only line.</td></tr>
+        <tr><td>Memory</td><td><code>free -g</code> in the WSL2 shell</td><td>WSL2 gets half of the RAM by default: raise <code>memory=</code> in <code>.wslconfig</code> for 6 GB free, plus 4 GB for each node.</td></tr>
+      </table>
+      <p><strong>Run:</strong> paste the line in the box below into the WSL2 shell (for example Ubuntu), not PowerShell. <button type="button" class="btn small" id="winLine">Use the downloads-only line</button></p>
+    </div>
+
+    <p class="note">The moment the booth answers, this page shows its downloads and the box below offers the install. The image is about 2.4 GB, and the line pulls the current one each time. Install via CDROM or via USB runs unattended in the console for a few minutes, and the node that boots from it is h1.</p>
+  </div>
+  <div class="present" id="present">
+    <div class="cta ended" id="ended" hidden>
+      <h2>Thanks for trying FRAD</h2>
+      <p>Interested in running FRAD on real hardware? Let's discuss your requirements and arrange a technical evaluation.</p>
+      <p><a class="btn primary" href="contact.html">Arrange a technical evaluation</a></p>
+    </div>
+    <div class="panes idle" id="panes">
+      <div class="pane">
+        <h2><span id="paneTitle">Start the booth</span><span class="nodes" id="nodes"></span><span class="muted" id="login" hidden>log in as <code>admin</code>, password <code>admin</code> (the factory login; the setup screen sets a new one)</span><span class="muted" id="dashnote">on the virtual IP: user <code>admin</code> with the admin password set at the first console login (the factory <code>admin</code> is refused)</span><span class="err" id="err"></span>
+          <span class="right"><span class="muted" id="state">looking for a booth on this machine…</span><button class="btn small" id="copy">Copy the command</button><button class="btn small primary" id="open" hidden disabled>Ceph dashboard</button><button class="btn small primary" id="back">Console</button><button class="btn small" id="tab">Open in a tab</button><button class="btn small" id="remove" hidden>Remove node</button><button class="btn small" id="stop" hidden>End booth</button></span></h2>
+        <div class="term boot" id="boot"></div>
+        <iframe id="console" title="Node console" hidden></iframe>
+        <iframe id="dashframe" title="Ceph dashboard"></iframe>
+      </div>
+    </div>
+    <div class="downloads" id="downloads" hidden>
+      <h2>Downloads <span class="muted" id="dlrel"></span></h2>
+      <ul id="dlist"></ul>
+      <p class="note" id="dlnote"></p>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="next">
+  <h2>Interested in running FRAD on real hardware?</h2>
+  <p>I'm looking for infrastructure providers, server manufacturers and technology partners interested in evaluating FRAD for production use. Let's discuss your requirements and arrange a technical evaluation.</p>
+  <p><a class="btn primary" href="contact.html">Arrange a technical evaluation</a></p>
+</section>
+
+<footer class="foot">
+  <span>FRAD · the storage OS that scales in all directions</span>
+  <span><a href="index.html#story">Feature</a> · <a href="cli.html">CLI</a> · <a href="https://github.com/chienpanglee/frad-site">this site</a></span>
+</footer>
+</div>
+
+<script src="wheel.js"></script>
+<script src="term.js"></script>
+<script src="booth.js"></script>
+</body>
+</html>
