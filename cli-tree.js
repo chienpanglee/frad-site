@@ -17,6 +17,7 @@ window.FRAD_CLI = { commit: "abf07de", date: "2026-10-19", commands: [
   {"kind": "mode", "path": "cluster diag perf", "usage": "perf [<command>]", "effect": "-"},
   {"kind": "cmd", "path": "cluster diag perf cephfs", "usage": "cephfs [<seconds> [<count>]]", "effect": "mutating"},
   {"kind": "cmd", "path": "cluster diag perf cleanup", "usage": "cleanup [<pool>]", "effect": "mutating"},
+  {"kind": "cmd", "path": "cluster diag perf nfs", "usage": "nfs [<seconds> [<count>]]", "effect": "mutating"},
   {"kind": "cmd", "path": "cluster diag perf osd", "usage": "osd [<osd_id>]", "effect": "mutating"},
   {"kind": "cmd", "path": "cluster diag perf pool", "usage": "pool [<pool> [<seconds>]]", "effect": "mutating"},
   {"kind": "cmd", "path": "cluster diag perf rbd", "usage": "rbd [<pool> [<size_gb>]]", "effect": "mutating"},
