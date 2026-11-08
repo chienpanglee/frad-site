@@ -119,7 +119,7 @@
       <p><strong>Run:</strong> paste the line in the box below into the WSL2 shell (for example Ubuntu), not PowerShell. <button type="button" class="btn small" id="winLine">Use the downloads-only line</button></p>
     </div>
 
-    <p class="note">The moment the booth answers, this page shows its downloads and the box below offers the install. The image is about 2.4 GB, and the line pulls the current one each time. Install via CDROM or via USB runs unattended in the console for a few minutes, and the node that boots from it is h1.</p>
+    <p class="note">The moment the booth answers, this page shows its downloads and the box below offers the install. The image is about 1.3 GB, and the line pulls the current one each time. Install via CDROM or via USB runs unattended in the console for a few minutes, and the node that boots from it is h1.</p>
   </div>
   <div class="present" id="present">
     <div class="cta ended" id="ended" hidden>
@@ -132,6 +132,7 @@
         <h2><span id="paneTitle">Start the booth</span><span class="nodes" id="nodes"></span><span class="muted" id="login" hidden>log in as <code>admin</code>, password <code>admin</code> (the factory login; the setup screen sets a new one)</span><span class="muted" id="dashnote">on the virtual IP: user <code>admin</code> with the admin password set at the first console login (the factory <code>admin</code> is refused)</span><span class="err" id="err"></span>
           <span class="right"><span class="muted" id="state">looking for a booth on this machine…</span><button class="btn small" id="copy">Copy the command</button><button class="btn small primary" id="open" hidden disabled>Ceph dashboard</button><button class="btn small primary" id="back">Console</button><button class="btn small" id="tab">Open in a tab</button><button class="btn small" id="remove" hidden>Remove node</button><button class="btn small" id="stop" hidden>End booth</button></span></h2>
         <div class="term boot" id="boot"></div>
+        <div class="nonode" id="nonode" hidden><div class="card" id="nonodeRow"></div></div>
         <iframe id="console" title="Node console" hidden></iframe>
         <iframe id="dashframe" title="Ceph dashboard"></iframe>
       </div>

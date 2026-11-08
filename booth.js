@@ -26,6 +26,15 @@
   setImage(IMAGE, '');
   var boot = document.getElementById('boot'), T = window.FRADTerm(boot, { keep: 20 }), copy = document.getElementById('copy');
   var login = document.getElementById('login'), paneTitle = document.getElementById('paneTitle');
+  // Before the install the controls (install buttons, state line, End booth) sit in a console-sized
+  // window on the pool art instead of the header strip; from the install on they move back (#1431).
+  var nonode = document.getElementById('nonode'), nonodeRow = document.getElementById('nonodeRow'), stopBtn = document.getElementById('stop'), parked = false;
+  function park(on) {
+    if (on === parked) return;
+    parked = on; nonode.hidden = !on;
+    if (on) { nonodeRow.appendChild(nodesEl); nonodeRow.appendChild(state); nonodeRow.appendChild(stopBtn); }
+    else { login.parentNode.insertBefore(nodesEl, login); copy.parentNode.insertBefore(state, copy); copy.parentNode.appendChild(stopBtn); }
+  }
   function waiting(text) { T.clear(); T.play([{ k: 'type', prompt: '$ ', s: CMD }, { k: 'note', s: '# ' + text }], null, true); }
   function idleText() {
     return 'paste this into ' + (os === 'windows' ? 'the WSL2 shell' : os === 'macos' ? 'Terminal' : 'a terminal') + ' on this machine; ' +
@@ -121,7 +130,7 @@
     paneTitle.textContent = on ? '' : 'Start the booth';
     idle(!on);
     if (on) { document.getElementById('ended').hidden = true; T.cancel(); con.src = BASE + '/console/'; probe(); loadMedia(); state.textContent = ''; }
-    else { dropConsole(); document.getElementById('remove').hidden = true; split(false); unprobe(); setEmbed(false); ready = false; stale = ''; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); dl.hidden = true; dlist.textContent = ''; }
+    else { dropConsole(); park(false); document.getElementById('remove').hidden = true; split(false); unprobe(); setEmbed(false); ready = false; stale = ''; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); dl.hidden = true; dlist.textContent = ''; }
   }
   // Without KVM the booth is a download server: the console pane goes, the downloads stay.
   function setKvm(on) {
@@ -179,8 +188,10 @@
     if (st !== 'installed') {
       idle(st !== 'installing' && st !== 'booting'); open.hidden = true;
       if (st === 'installing' || st === 'booting') {
+        park(false);
         if (!stale) state.textContent = st === 'installing' ? 'installing from the ' + (j.install.media === 'usb' ? 'USB stick' : 'CD') + '; the node powers off when done' : 'h1 boots the installed disk for the first time';
       } else {
+        park(true);
         ['iso', 'usb'].forEach(function (m) {
           button(m === 'iso' ? 'Install via CDROM' : 'Install via USB', false, function () {
             err.textContent = '';
@@ -191,6 +202,7 @@
       }
       return;
     }
+    park(false);
     idle(!j.nodes.filter(function (n) { return n.alive; }).length); open.hidden = !j.nodes.length; openTitle();   // an off node has no console
     j.nodes.forEach(function (n) {
       var b = document.createElement('button'); b.className = n.name === current ? 'on' : ''; b.textContent = n.name + (n.alive ? '' : ' (off)');

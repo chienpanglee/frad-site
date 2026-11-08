@@ -326,6 +326,13 @@ svg .tick.dead { stroke-dasharray: 3 3; opacity: 0.5; }
 .booth iframe { flex: 1; border: 0; background: #000; width: 100%; }
 .booth .term.boot { flex: 1; height: auto; margin: 0; border: 0; border-radius: 0; justify-content: flex-start; font-size: 14px; padding: 14px 16px; }
 .booth .pane [hidden] { display: none; }
+/* Before the install (booth up, no node): a console-sized window on the pool art carries the install buttons, the state line and End booth (#1431) */
+.booth .nonode { flex: 1; min-height: 22em; display: grid; place-items: center; padding: 24px; background: linear-gradient(color-mix(in srgb, #0b0b0b 30%, transparent), color-mix(in srgb, #0b0b0b 55%, transparent)), url(art/pool.png) center / cover no-repeat; }
+.booth .nonode .card { display: grid; gap: 14px; justify-items: center; text-align: center; max-width: 38em; padding: 20px 26px; border: 1px solid #3a3828; border-radius: 8px; background: color-mix(in srgb, #0b0b0b 78%, transparent); color: #e8e2c8; font-family: var(--mono); font-size: 13px; line-height: 1.5; }
+.booth .nonode .card .muted { color: #cfc9ae; }
+.booth .nonode .nodes { flex-wrap: wrap; justify-content: center; gap: 12px; }
+.booth .nonode .nodes button { font-size: 13px; padding: 10px 16px; color: #e8e2c8; border-color: #3a3828; }
+.booth .nonode .nodes button.next { color: #0b0b0b; background: var(--yellow); border-color: var(--yellow); }
 .booth .downloads { margin-top: 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 14px 18px; }
 .booth .downloads h2 { margin: 0 0 8px; font: 600 12px/1 var(--body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: flex; gap: 12px; align-items: baseline; }
 .booth .downloads h2 .muted { text-transform: none; letter-spacing: 0; font-family: var(--mono); }
