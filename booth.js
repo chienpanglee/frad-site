@@ -87,7 +87,7 @@
     panes.classList.toggle('split', on);
     if (on && !frame.getAttribute('src')) frame.src = BASE + '/ceph/';
     if (!on && !keep) frame.removeAttribute('src');
-    paneTitle.textContent = on ? 'Dashboard' : booth ? 'Console' : 'Start the booth';
+    paneTitle.textContent = on ? 'Dashboard' : booth ? '' : 'Start the booth';   // a showing console needs no title
   }
   // The dashboard's cookies are cross-site from this page. The booth's probe sets one with the
   // same attributes in a hidden frame and says whether the browser sent it back; no answer
@@ -118,7 +118,7 @@
     absent.hidden = on;
     boot.hidden = on; con.hidden = !on; copy.hidden = on; login.hidden = !on;
     document.getElementById('stop').hidden = !on;
-    paneTitle.textContent = on ? 'Console' : 'Start the booth';
+    paneTitle.textContent = on ? '' : 'Start the booth';
     idle(!on);
     if (on) { document.getElementById('ended').hidden = true; T.cancel(); con.src = BASE + '/console/'; probe(); loadMedia(); state.textContent = ''; }
     else { dropConsole(); document.getElementById('remove').hidden = true; split(false); unprobe(); setEmbed(false); ready = false; stale = ''; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); dl.hidden = true; dlist.textContent = ''; }
