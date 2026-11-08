@@ -433,3 +433,8 @@ svg .pipe .now { stroke: var(--ctl); stroke-width: 1.5; stroke-dasharray: 2 2; a
 .status table.pre td.pass { color: var(--ok); font-weight: 600; }
 .status table.pre td.fail { color: var(--warn); font-weight: 600; }
 .status table.pre td.notrun { color: var(--muted); }
+
+/* contact: the Write-to-me card carries the pool illustration; text on the panel colour at the left, the picture from the middle on (#1415) */
+.cta.contact-mail { position: relative; overflow: hidden; padding: 30px 30px 26px; min-height: 230px; align-content: center; background: url(art/pool.png) center 58% / cover no-repeat; }
+.cta.contact-mail::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--panel) 96%, transparent) 0 46%, color-mix(in srgb, var(--panel) 40%, transparent) 76%, color-mix(in srgb, var(--panel) 10%, transparent) 100%); }
+.cta.contact-mail > * { position: relative; }
