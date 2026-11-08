@@ -1,5 +1,5 @@
 /* The CLI manual: the frad_cli command tree (cli-tree.js), one page per path, each with a replay of a recorded
-   session (examples.js) when one exists. URL: #node/disks/zfs_add. */
+   session (examples-cli.js) when one exists. URL: #node/disks/zfs_add. */
 (function () {
   'use strict';
   var CLI = window.FRAD_CLI, X = window.FRAD_EXAMPLES || {}, C = window.FRAD_CONTENT || { chapters: [] };
