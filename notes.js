@@ -1,4 +1,5 @@
-// Engineering notes (#1493): every post of the blog, newest first, from its posts.json at each load.
+// Engineering notes (#1493): every post of the blog, newest first, from its posts.json at each load,
+// each with its cover image scaled down in proportion (the blog's small copy, posts.json "image").
 // The static content of [data-notes] stays when the script, the fetch or the list fails.
 (function () {
   var BLOG = 'https://chienpanglee.github.io/';
@@ -15,9 +16,15 @@
     return ok.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
   }
 
+  // The cover of a post: an address on the blog, or nothing.
+  function cover(p) {
+    return typeof p.image === 'string' && p.image.indexOf(BLOG) === 0 ? p.image : '';
+  }
+
   function render(box, list) {
     var ol = document.createElement('ol');
-    ol.className = 'notes';
+    // One column for the covers as soon as one post has one, so the titles stay aligned.
+    ol.className = list.some(cover) ? 'notes pics' : 'notes';
     list.forEach(function (p) {
       var li = document.createElement('li'), time = document.createElement('time'),
         h = document.createElement('h3'), a = document.createElement('a');
@@ -32,6 +39,16 @@
         var s = document.createElement('p');
         s.textContent = p.summary;
         li.appendChild(s);
+      }
+      if (cover(p)) {
+        // Last in the entry, placed by the grid: the title stays the first thing read out.
+        var img = document.createElement('img');
+        img.src = cover(p);
+        img.alt = typeof p.image_alt === 'string' ? p.image_alt : '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.onerror = function () { img.remove(); };
+        li.appendChild(img);
       }
       ol.appendChild(li);
     });
