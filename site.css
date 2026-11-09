@@ -226,6 +226,14 @@ section { padding-block: 36px; border-top: 1px solid var(--line); scroll-margin-
 .col p { color: var(--muted); }
 .col h3 a { text-decoration-color: var(--line); }
 .col h3 a:hover { text-decoration-color: currentColor; }
+.notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.notes li { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); column-gap: 18px; row-gap: 4px; }
+.notes time { grid-row: span 2; color: var(--muted); font-variant-numeric: tabular-nums; }
+.notes h3, .notes p { margin: 0; grid-column: 2; }
+.notes p { color: var(--muted); }
+.notes h3 a { text-decoration-color: var(--line); }
+.notes h3 a:hover { text-decoration-color: currentColor; }
+@media (max-width: 560px) { .notes li { grid-template-columns: 1fr; } .notes time { grid-row: auto; } .notes h3, .notes p { grid-column: 1; } }
 .prose { max-width: 68ch; display: grid; gap: 12px; }
 .prose p { color: var(--muted); }
 footer { padding-block: 26px 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
