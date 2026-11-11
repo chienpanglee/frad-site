@@ -35,6 +35,7 @@ window.FRAD_CLI = { commit: "abf07de", date: "2026-10-19", commands: [
   {"kind": "cmd", "path": "cluster poweroff", "usage": "poweroff", "effect": "destructive"},
   {"kind": "cmd", "path": "cluster recover", "usage": "recover", "effect": "destructive"},
   {"kind": "cmd", "path": "cluster remove_node", "usage": "remove_node <member> [lost]", "effect": "destructive"},
+  {"kind": "cmd", "path": "cluster rename_node", "usage": "rename_node <member> <hostname>", "effect": "mutating"},
   {"kind": "cmd", "path": "cluster repair", "usage": "repair [<ceph_mds|ceph_mgr|ceph_mon|ceph_osd|ceph_rgw|clock|cluster_sync|hacluster|vip>]", "effect": "mutating"},
   {"kind": "cmd", "path": "cluster rotate_ca", "usage": "rotate_ca", "effect": "mutating"},
   {"kind": "cmd", "path": "cluster rotate_cephx", "usage": "rotate_cephx", "effect": "mutating"},
