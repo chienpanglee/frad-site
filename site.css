@@ -12,6 +12,7 @@
   --ctl: #9a6b00;      /* control role / VIP: deep gold */
   --ok: #2f7d32;
   --warn: #c2410c;
+  --logo: #0b0b0b; --logo-sub: #666; --logo-link: #ffd400;   /* the lockup: one colour, black here, yellow on dark (#2126) */
   --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
   --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -19,12 +20,12 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0b0b0b; --panel: #151515; --fg: #f5f1dc; --muted: #a8a48f; --line: #2d2b22;
-    --zfs: #ffd400; --ceph: #d9d4c0; --ctl: #f0b429; --ok: #6fcf6f; --warn: #fb923c; color-scheme: dark;
+    --zfs: #ffd400; --ceph: #d9d4c0; --ctl: #f0b429; --ok: #6fcf6f; --warn: #fb923c; --logo: #ffd400; --logo-sub: #999; --logo-link: #0b0b0b; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0b0b0b; --panel: #151515; --fg: #f5f1dc; --muted: #a8a48f; --line: #2d2b22;
-  --zfs: #ffd400; --ceph: #d9d4c0; --ctl: #f0b429; --ok: #6fcf6f; --warn: #fb923c; color-scheme: dark;
+  --zfs: #ffd400; --ceph: #d9d4c0; --ctl: #f0b429; --ok: #6fcf6f; --warn: #fb923c; --logo: #ffd400; --logo-sub: #999; --logo-link: #0b0b0b; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55; }
@@ -41,10 +42,11 @@ a { color: inherit; }
 
 header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; border-bottom: 3px solid var(--yellow); flex-wrap: wrap; position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 header.top .right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-.wordmark { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: 0.04em; display: flex; align-items: center; gap: 10px; }
-.wordmark .mark-svg { display: block; flex: none; }
-a.wordmark { text-decoration: none; color: inherit; }
-.wordmark small { font: 500 13px var(--body); letter-spacing: 0; color: var(--muted); margin-left: 2px; }
+.wordmark { display: flex; align-items: center; gap: 11px; color: var(--logo); }   /* the lockup: mark 56, name 29, sub 8 (owner's .lock 84/44/12 scaled) */
+.wordmark .mark-svg { display: block; flex: none; width: 56px; height: 56px; }
+.lock-name strong { display: block; font: 600 29px/1 var(--body); letter-spacing: .05em; }
+.lock-name small { display: block; margin-top: 4px; font: 500 8px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--logo-sub); }
+a.wordmark { text-decoration: none; }
 nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; align-items: center; min-height: 28px; }
 nav a { text-decoration: none; color: var(--muted); }
 .btn { display: inline-flex; align-items: center; gap: 8px; font: 600 15px var(--body); padding: 11px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-decoration: none; cursor: pointer; transition: transform 0.15s, border-color 0.2s, background 0.2s; }
@@ -55,8 +57,9 @@ nav a { text-decoration: none; color: var(--muted); }
 .booth .btn:disabled { opacity: 0.4; cursor: default; }
 .cta .note { align-self: center; font-size: 13px; color: var(--muted); }
 nav a:hover, nav a.docked { color: var(--fg); }
-nav a.docked { padding-left: 34px; }   /* room for the tire (wheel.js) at the left of the link that is current */
-#wheel { position: fixed; left: 0; top: 0; width: 28px; height: 28px; transform-origin: 14px 14px; z-index: 6; pointer-events: none; }
+nav a.docked { padding: 3px 8px 3px 40px; background: var(--fg); color: var(--bg); }   /* the room for the mark (wheel.js), in the current-link style */
+#wheel { color: var(--logo); position: fixed; left: 0; top: 0; z-index: 6; pointer-events: none; }   /* size and origin from wheel.js */
+#wheel.on-link { color: var(--logo-link); }
 
 .hero { padding-block: 26px 6px; display: grid; gap: 12px; max-width: 980px; }
 .hero .lead { font-size: 17px; color: var(--muted); max-width: 78ch; }

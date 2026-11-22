@@ -1,30 +1,33 @@
-/* The tire of the logo rolls along the header: from its place at the top left to the left of the
-   link that is clicked, then the link is followed. On a page whose link is current, the tire starts
-   there. */
+/* The logo mark rolls along the header: from its place in the lockup to the left of the link that is
+   clicked (shrunk to 26 px, the link in its current style), then the link is followed. On a page whose
+   link is current, the mark starts there. */
 (function () {
   var home = document.querySelector('header.top .mark-svg');
   var links = Array.prototype.slice.call(document.querySelectorAll('header.top nav a'));
   if (!home) return;
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var ROLL = 900, SIZE = 28;
+  var ROLL = 900, SIZE = home.getBoundingClientRect().width, DOCK = 26;
   var w = home.cloneNode(true), target = home, rot = 0, lastX = null, busy = null;
   w.removeAttribute('class'); w.id = 'wheel'; w.setAttribute('aria-hidden', 'true');
   document.body.appendChild(w); home.style.visibility = 'hidden';
+  w.style.width = w.style.height = SIZE + 'px'; w.style.transformOrigin = '50% 50%';
 
-  function spot(el) {                                   // where the tire sits: the mark's place, or the room a docked link makes at its left
+  function spot(el) {                                   // where the mark sits: the mark's place, or the room a docked link makes at its left
     var r = el.getBoundingClientRect();
-    return { x: r.left + SIZE / 2, y: r.top + r.height / 2 };
+    return el === home ? { x: r.left + SIZE / 2, y: r.top + r.height / 2 } : { x: r.left + 12 + DOCK / 2, y: r.top + r.height / 2 };
   }
   function place(animate) {
     links.forEach(function (a) { a.classList.toggle('docked', a === target); });   // the room first, then the measure
     var s = spot(target);
     if (lastX !== null && animate) {                   // one or two turns the way it travels, the F upright at rest
       var d = (s.x - lastX) / (Math.PI * SIZE);
+      w.classList.toggle('on-link', target !== home);
       rot += (d < 0 ? -1 : 1) * Math.max(1, Math.min(2, Math.round(Math.abs(d)))) * 360;
     }
     lastX = s.x;
-    w.style.transition = animate && !reduced ? 'transform ' + ROLL + 'ms cubic-bezier(.45, 0, .2, 1)' : 'none';
-    w.style.transform = 'translate(' + (s.x - 14).toFixed(1) + 'px,' + (s.y - 14).toFixed(1) + 'px) rotate(' + rot + 'deg)';
+    w.style.transition = animate && !reduced ? 'transform ' + ROLL + 'ms cubic-bezier(.45, 0, .2, 1), color ' + ROLL + 'ms' : 'none';
+    w.style.transform = 'translate(' + (s.x - SIZE / 2).toFixed(1) + 'px,' + (s.y - SIZE / 2).toFixed(1) + 'px) rotate(' + rot + 'deg) scale(' + (target === home ? 1 : DOCK / SIZE).toFixed(3) + ')';
+    w.classList.toggle('on-link', target !== home);
   }
   function to(el, animate) { if (el !== target) { target = el; place(animate); } }
   function slotFor(url) {                             // the link whose target is this page and hash
@@ -46,7 +49,7 @@
       busy = setTimeout(function () { busy = null; location.href = href; }, reduced ? 0 : ROLL + 80);
     });
   });
-  var mark = home.closest('a');                        // the wordmark: back to the main page, the tire back to its place
+  var mark = home.closest('a');                        // the wordmark: back to the main page, the mark back to its place
   if (mark) mark.addEventListener('click', function (ev) {
     if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button) return;
     ev.preventDefault();
