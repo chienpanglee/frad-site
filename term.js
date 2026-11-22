@@ -12,7 +12,10 @@ window.FRADTerm = function (el, opts) {
   function line(kind, prompt, text) {
     var ln = document.createElement('div'); ln.className = 'ln ' + kind;
     if (kind === 'cmd') { var ps = document.createElement('span'); ps.className = 'ps'; ps.textContent = prompt || 'h1> '; ln.appendChild(ps); }
-    var body = document.createElement('span'); body.className = 'body'; body.textContent = text; ln.appendChild(body);
+    var body = document.createElement('span'); body.className = 'body'; ln.appendChild(body);
+    (kind === 'out' ? String(text).split(/(\bNG\b)/) : [text]).forEach(function (t, i) {   // a failing check's NG is marked (#2127)
+      if (i % 2) { var ng = document.createElement('span'); ng.className = 'ng'; ng.textContent = t; body.appendChild(ng); } else body.appendChild(document.createTextNode(t));
+    });
     el.appendChild(ln);
     while (el.children.length > KEEP) el.removeChild(el.firstChild);
     el.scrollTop = el.scrollHeight;

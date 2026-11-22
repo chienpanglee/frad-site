@@ -33,6 +33,35 @@
   </div>
 </header>
 
+<section class="hero">
+  <div class="eyebrow">The storage OS that scales in all directions</div>
+  <h1><span>One image.</span> <span>One node to a cluster.</span> <span class="s3">Storage that grows in every direction.</span></h1>
+  <p class="lead">FRAD boots a machine straight into a storage platform: operating system, storage stack, clustering, high availability and the management CLI ship and update as one product, so a scalable storage platform can be managed with little effort.</p>
+  <figure class="hero-fig">
+    <svg class="dia" viewBox="0 0 560 430" role="img" aria-label="One node grows up and down by disks with OpenZFS, and out and in by nodes with Ceph">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="d-fill"/></marker></defs>
+      <g class="d-tick"><path d="M70 52h-6"/><path d="M70 84h-6"/><path d="M70 116h-6"/><path d="M70 148h-6"/><path d="M70 180h-6"/><path d="M70 212h-6"/><path d="M70 244h-6"/><path d="M70 276h-6"/><path d="M70 308h-6"/><path d="M70 340h-6"/><path d="M102 372v6"/><path d="M134 372v6"/><path d="M166 372v6"/><path d="M198 372v6"/><path d="M230 372v6"/><path d="M262 372v6"/><path d="M294 372v6"/><path d="M326 372v6"/><path d="M358 372v6"/><path d="M390 372v6"/><path d="M422 372v6"/><path d="M454 372v6"/><path d="M486 372v6"/><path d="M518 372v6"/></g>
+      <path class="d-axis" d="M70 372V34" marker-end="url(#ah)" marker-start="url(#ah)"/>
+      <path class="d-axis" d="M70 372H532" marker-end="url(#ah)" marker-start="url(#ah)"/>
+      <g class="d-ghost"><rect x="112" y="162" width="96" height="74"/><rect x="112" y="68" width="96" height="74"/><rect x="248" y="256" width="96" height="74"/><rect x="384" y="256" width="96" height="74"/><path d="M208 293H248M344 293H384M480 293H522"/></g>
+      <g class="d-disk"><path d="M124 180h72M124 198h72M124 216h72M124 86h72M124 104h72M124 122h72"/><path d="M260 274h72M260 292h72M260 310h72M396 274h72M396 292h72M396 310h72"/></g>
+      <rect class="d-node" x="112" y="256" width="96" height="74"/>
+      <path class="d-nodedisk" d="M124 274h72M124 292h72M124 310h72"/>
+      <text class="d-lab" x="112" y="350">1 NODE</text><text class="d-lab" x="248" y="350">+ NODE</text><text class="d-lab" x="384" y="350">+ NODE</text>
+      <text class="d-lab" x="218" y="204">+ DISKS</text><text class="d-lab" x="218" y="110">+ DISKS</text>
+      <text class="d-ax" x="300" y="402" text-anchor="middle">OUT · IN — nodes, Ceph</text>
+      <text class="d-ax" transform="translate(42 204) rotate(-90)" text-anchor="middle">UP · DOWN — disks, OpenZFS</text>
+    </svg>
+    <figcaption>Fig. 1 — the two directions of growth</figcaption>
+  </figure>
+  <table class="titleblock">
+    <tr><th>Title</th><td>FRAD Storage OS</td></tr>
+    <tr><th>Sheet</th><td>1 of 2 — Overview</td></tr>
+    <tr><th>Scale</th><td>1 node : n nodes</td></tr>
+    <tr><th>Built on</th><td>Ubuntu · OpenZFS · Ceph</td></tr>
+  </table>
+</section>
+
 <section id="why" class="why">
   <span id="ideas"></span>
   <h2>Why FRAD</h2>
@@ -134,14 +163,18 @@
   </div>
 </section>
 
-<div class="hero">
-  <div class="eyebrow">The storage OS that scales in all directions</div>
-  <h1>One image. One node to a cluster. Storage that grows in every direction.</h1>
-  <p class="lead">FRAD boots a machine straight into a storage platform: operating system, storage stack, clustering, high availability and the management CLI ship and update as one product, so a scalable storage platform can be managed with little effort.</p>
-</div>
 
-<div class="builton" aria-label="Built on">
-  <span class="eyebrow">Built on proven foundations</span>
+<section id="proof">
+  <h2>What you operate</h2>
+  <p class="sec-sub">One command line for the whole product.</p>
+  <figure class="proof">
+    <pre class="term run" id="home-run" data-example="cli-cluster-check" data-head="8" data-tail="3"></pre>
+    <figcaption><span class="cap-l">Recorded run, <span id="home-run-date"></span></span> A real <code>cluster check</code> on a FRAD node: one line per service, the failing check named. <a href="cli.html">The whole CLI, with its recorded runs</a>.</figcaption>
+  </figure>
+</section>
+
+<section class="builton" id="built">
+  <h2>Built on proven foundations</h2>
   <ul>
     <li>Ubuntu<small>base OS</small></li>
     <li>OpenZFS<small>root and local pools</small></li>
@@ -151,7 +184,7 @@
     <li>Podman<small>Ceph daemons</small></li>
     <li>ZFSBootMenu<small>boot menu</small></li>
   </ul>
-</div>
+</section>
 
 <section id="notes">
   <h2>Engineering notes</h2>
@@ -185,5 +218,7 @@
 
 <script src="wheel.js"></script>
 <script src="notes.js"></script>
+<script src="examples-cli.js"></script>
+<script src="home-run.js"></script>
 </body>
 </html>

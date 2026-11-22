@@ -10,17 +10,18 @@
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="site.css">
 <style>
-.scanhead { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; margin-block: 18px 8px; }
-.scanhead select { font: inherit; padding: 4px 8px; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; }
-.report { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-block: 14px; display: grid; gap: 10px; min-width: 0; }
-.report h2 { margin: 0; font-size: 22px; }
+.scanhead { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; margin-block: 40px 8px; }
+.scanhead { background: var(--panel); width: fit-content; padding: 6px 10px 6px 0; }
+.scanhead select { font: 500 13px var(--mono); padding: 4px 8px; background: var(--panel); color: var(--fg); border: 1.5px solid var(--rule); }
+.report { background: var(--panel); border: 1.5px solid var(--rule); padding: 18px 20px; margin-block: 14px; display: grid; gap: 10px; min-width: 0; }
+.report h2 { margin: 0; font-size: 15px; letter-spacing: .12em; text-transform: uppercase; }
 .totals { display: flex; gap: 8px; flex-wrap: wrap; font-family: var(--mono); font-size: 13px; }
-.totals span { border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; }
-.totals .Critical, .totals .High { border-color: var(--warn); color: var(--warn); }
+.totals span { border: 1px solid var(--rule); padding: 3px 8px; }
+.totals .Critical, .totals .High { background: var(--yellow); color: var(--black); }
 .meta { color: var(--muted); font-size: 13px; }
 .tablewrap { overflow-x: auto; }
 .findings { border-collapse: collapse; width: 100%; font-size: 13px; }
-.findings th, .findings td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.findings th, .findings td { text-align: left; vertical-align: top; }
 .findings td.mono { font-family: var(--mono); word-break: break-all; }
 details summary { cursor: pointer; }
 </style>

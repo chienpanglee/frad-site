@@ -10,47 +10,50 @@
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="site.css">
 <style>
-/* The manual: a rail with the command tree, a panel for one command */
-.manual { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 24px; margin-block: 18px 56px; align-items: start; }
-.rail { position: sticky; top: 72px; max-height: calc(100vh - 90px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 6px; font-family: var(--mono); font-size: 13px; }
+/* The manual: a rail with the command tree joined to a panel for one command (concept B, #2127) */
+.manual { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 0; margin-block: 18px 0; align-items: start; border: 1.5px solid var(--rule); background: var(--panel); }
+.rail { position: sticky; top: 92px; max-height: calc(100vh - 100px); overflow: auto; background: var(--panel); border-right: 1.5px solid var(--rule); padding: 14px 0; font: 400 12.5px var(--mono); }
+.rail nav { display: block; font-size: inherit; min-height: 0; }   /* not the header nav's flex row */
 .rail ul { list-style: none; margin: 0; padding-left: 0; }
-.rail ul ul { padding-left: 14px; border-left: 1px solid var(--line); margin-left: 9px; }
-.rail li { margin: 1px 0; }
-.rail a { display: block; padding: 3px 8px; border-radius: 5px; text-decoration: none; color: var(--fg); }
-.rail li.mode > a { font-weight: 600; }
+.rail ul ul { padding-left: 0; }
+.rail ul ul a { padding-left: 32px; } .rail ul ul ul a { padding-left: 48px; } .rail ul ul ul ul a { padding-left: 64px; }
+.rail li { margin: 0; }
+.rail a { display: block; padding: 2px 16px; text-decoration: none; color: var(--fg); }
+.rail li.mode > a { font-weight: 500; }
 .rail li.global > a { color: var(--muted); }
-.rail a.destructive::after { content: " !"; color: var(--warn); }
-.rail a:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
-.rail a.on { background: var(--fg); color: var(--bg); }
-.cmdpanel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: grid; gap: 14px; min-width: 0; }
-.cmdpanel h2 { font-family: var(--mono); font-size: 26px; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rail a.destructive::after { content: " !"; }
+.rail a:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.rail a.on { background: var(--yellow); color: var(--black); box-shadow: inset 4px 0 0 var(--black); font-weight: 500; }
+.cmdpanel { padding: 32px; display: grid; gap: 16px; min-width: 0; }
+.cmdpanel h2 { font-family: var(--mono); font-size: clamp(26px, 3.2vw, 40px); font-weight: 500; letter-spacing: -.01em; margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .cmdpanel .chip { margin-left: 0; }
-.chip.mode { border-color: var(--ctl); color: var(--ctl); }
-.chip.readonly { border-color: var(--ok); color: var(--ok); }
-.chip.mutating { border-color: var(--zfs); color: var(--zfs); }
-.chip.destructive { border-color: var(--warn); color: var(--warn); }
-.forms { display: grid; gap: 8px; }
-.form { font-family: var(--mono); font-size: 13.5px; white-space: pre-wrap; background: color-mix(in srgb, var(--fg) 5%, var(--panel)); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.forms { display: grid; gap: 0; border: 1.5px solid var(--rule); }
+.form { font-family: var(--mono); font-size: 13.5px; white-space: pre-wrap; padding: 9px 12px; border-left: 8px solid var(--rule); }
+.forms:empty { display: none; }
+.form + .form { border-top: 1px solid var(--line); }
 .form .ps { color: var(--muted); }
 .usage code { font-size: 13px; color: var(--muted); }
 .cmeta { color: var(--muted); max-width: 70ch; }
-.subs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.subs li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--line); padding: 6px 2px; }
-.subs a { text-decoration: none; }
+.subs { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border: 1.5px solid var(--rule); }
+.subs li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--rule); padding: 7px 10px; }
+.subs li:last-child { border-bottom: 0; }
+.subs:empty { display: none; }
+.subs a { text-decoration: none; font-weight: 500; }
 .subs a:hover code { text-decoration: underline; }
 .subs code { font-size: 13px; }
-.subs .muted { font-size: 12px; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+.subs .muted { font: var(--lab); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 .muted { color: var(--muted); }
-.cmdpanel .term { margin-top: 0; height: auto; min-height: 14em; max-height: 75vh; overflow: auto; justify-content: flex-start; }   /* grows with the run, every line kept */
+.cmdpanel .term { margin-top: 0; height: auto; min-height: 14em; max-height: 75vh; overflow: auto; justify-content: flex-start; font-size: 13px; padding: 18px 20px; }   /* grows with the run, every line kept */
 .replayrow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.replayrow button { font: 500 14px var(--body); padding: 9px 14px; border-radius: 6px; border: 1px solid var(--fg); background: var(--fg); color: var(--bg); cursor: pointer; }
-.cprov { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.replayrow button { font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 9px 14px; border: 1.5px solid var(--rule); background: var(--fg); color: var(--panel); cursor: pointer; }
+.replayrow button:hover { background: var(--yellow); color: var(--black); }
+.cprov { font: var(--lab); letter-spacing: .04em; color: var(--muted); }
 .cseen { font-size: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
 .cseen a { color: var(--fg); }
-.source { font-size: 13px; color: var(--muted); }
-@media (max-width: 860px) {
+.source { font-size: 13px; color: var(--muted); margin-top: 18px; }
+@media (max-width: 900px) {
   .manual { grid-template-columns: 1fr; }
-  .rail { position: static; max-height: 40vh; }
+  .rail { position: static; max-height: 40vh; border-right: 0; border-bottom: 1.5px solid var(--rule); }
 }
 </style>
 </head>
