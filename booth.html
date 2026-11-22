@@ -7,6 +7,8 @@
 <meta name="color-scheme" content="light dark">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>FRAD booth</title>
+<script>try{var t=localStorage.getItem("frad-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+<script src="theme.js" defer></script>
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="site.css">
 <style>
@@ -28,6 +30,7 @@
       <a href="booth.html" aria-current="page">Try it</a>
       <a href="contact.html">Contact</a>
     </nav>
+    <button class="theme-toggle" type="button" hidden>Dark</button>
   </div>
 </header>
 
