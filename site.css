@@ -636,3 +636,34 @@ header.top .theme-toggle { font: var(--lab); letter-spacing: .1em; text-transfor
   padding: 0 16px; min-height: 40px; cursor: pointer; }
 header.top .theme-toggle:hover { background: var(--fg); color: var(--panel); }
 header.top .theme-toggle[hidden] { display: none; }
+/* phone layout (#2128): lockup and toggle on the first row, the nav as a grid of cells under them;
+   not sticky (two rows would cover a third of a phone); a narrower frame below 560 px */
+@media (max-width: 900px) {
+  header.top { position: relative; flex-wrap: wrap; }
+  header.top .right { display: contents; }
+  header.top .wordmark { flex: 1; border-right: 0; }
+  header.top .theme-toggle { order: 2; }
+  header.top nav { order: 3; flex: 0 0 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1.5px solid var(--rule); }
+  header.top nav a { justify-content: center; padding: 0 6px; border-bottom: 1px solid var(--line); }
+  header.top nav a:nth-child(4n) { border-right: 0; }
+  header.top nav a.docked { justify-content: flex-start; padding: 0 4px 0 40px; }   /* wheel.js puts the mark at 12..38 px */
+  footer span { flex: 1 1 100%; border-right: 0; border-bottom: 1px solid var(--rule); }
+  footer span:last-child { border-bottom: 0; }
+}
+@media (max-width: 560px) {
+  .wrap { padding-inline: 16px; }
+  header.top, footer { margin-inline: -16px; }
+  header.top nav a { letter-spacing: .04em; }
+}
+/* tables on a phone (#2128): the booth's stacked rows lose the cell boxes; status keeps its columns
+   and scrolls inside its box (stage names are column heads, a stacked row would lose them) */
+.booth table.pre { border-radius: 0; }
+@media (max-width: 640px) {
+  .booth table.pre td { border: 0; }
+  .booth table.pre tr { border-bottom: 1px solid var(--rule); }
+  .booth table.pre tr:last-child { border-bottom: 0; }
+  .status table.pre { display: block; overflow-x: auto; }
+  .status table.pre tbody { display: table; }
+  .status table.pre tr, .status table.pre tr:first-child { display: table-row; padding: 0; }
+  .status table.pre td, .status table.pre th { display: table-cell; border: 1px solid var(--rule); padding: 6px 8px; white-space: nowrap; }
+}
