@@ -49,7 +49,7 @@ window.FRAD_CLI = { commit: "abf07de", date: "2026-10-19", commands: [
   {"kind": "cmd", "path": "cluster s3 user_list", "usage": "user_list", "effect": "readonly"},
   {"kind": "cmd", "path": "cluster s3 user_rm", "usage": "user_rm <uid> [purge]", "effect": "mutating"},
   {"kind": "cmd", "path": "cluster s3 user_show", "usage": "user_show <uid>", "effect": "readonly"},
-  {"kind": "cmd", "path": "cluster set", "usage": "set (vip <ip>|name <cluster_name>|timezone [<timezone>]|      nfs (on|off)|iscsi (on|off)|nvmeof (on|off)|      admin_cidrs (<cidr>[,<cidr>]...|default)|      iscsi-initiators (<cidr>[,<cidr>]...|none)|      control <hostname>[,<hostname>,<hostname>]|dns [<index> [<ip>]]|      ntp [<address>]|datetime <datetime>|storage (<ifname> <cidr>|none)|      password|role_password [all [<password> [<password> [<password>]]]])", "effect": "mutating"},
+  {"kind": "cmd", "path": "cluster set", "usage": "set (vip <ip>|name <cluster_name>|timezone [<timezone>]|      nfs (on|off)|iscsi (on|off)|nvmeof (on|off)|      admin_cidrs (<cidr>[,<cidr>]...|default)|      iscsi-initiators (<cidr>[,<cidr>]...|none)|      control <hostname>[,<hostname>,<hostname>]|dns [<index> [<ip>]]|      ntp [<address>]|datetime <datetime>|storage (<ifname> <cidr>|none)|      password|role_password [all [<password> [<password>]]])", "effect": "mutating"},
   {"kind": "cmd", "path": "cluster show", "usage": "show [nodes|control|dns|ntp|time|gateways]", "effect": "readonly"},
   {"kind": "cmd", "path": "cluster status", "usage": "status", "effect": "readonly"},
   {"kind": "mode", "path": "cluster storage", "usage": "storage [<command>]", "effect": "-"},
