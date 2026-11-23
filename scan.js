@@ -25,6 +25,7 @@
     box.appendChild(el("h2", "", r.name));
     var t = el("div", "totals");
     SEV.forEach(function (s) { if (r.totals[s]) t.appendChild(el("span", s, r.totals[s] + " " + s)); });
+    if (!("Medium" in r.totals)) t.appendChild(el("span", "", "Medium and lower not counted for this release"));
     box.appendChild(t);
     box.appendChild(el("p", "meta", metaLine(r.metadata || {})));
     if (!r.findings.length) { box.appendChild(el("p", "meta", "No Critical or High finding.")); return box; }
