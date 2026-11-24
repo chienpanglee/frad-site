@@ -594,8 +594,10 @@ footer span { padding: 10px 20px; border-right: 1px solid var(--rule); }
 .hero:has(.hero-fig) { margin-top: 0; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 0 40px; max-width: none; padding-top: 54px; }
 .hero:has(.hero-fig) .eyebrow { grid-column: 1 / -1; margin-bottom: 22px; }
 .hero:has(.hero-fig) h1 { grid-column: 1; align-self: start; padding: 6px 0; }
-.hero h1 span { display: block; }
-.hero h1 .s3 { text-decoration: underline; text-decoration-color: var(--yellow); text-decoration-thickness: .22em; text-underline-offset: -.04em; text-decoration-skip-ink: none; }
+/* the headline as three ruled rows at reading size, the yellow bar under the last one */
+.hero h1 { font-size: clamp(21px, 2.1vw, 29px); line-height: 1.2; letter-spacing: -.01em; }
+.hero h1 span { display: block; padding: .42em 1.2em .42em 0; border-top: 1px solid var(--rule); }
+.hero h1 .s3 { border-bottom: .2em solid var(--yellow); }
 .hero:has(.hero-fig) .lead { grid-column: 1; margin-top: 22px; max-width: 46ch; }
 .hero-fig { grid-column: 2; grid-row: 2 / span 3; width: auto; margin: 0; padding: 18px 18px 10px; background: var(--panel); border: 1.5px solid var(--rule); align-self: start;
   --d-ink: var(--fg); --d-node: var(--yellow); --d-nodedisk: var(--black); }
