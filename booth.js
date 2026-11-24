@@ -21,7 +21,7 @@
   function setImage(image, tag) {
     IMAGE = image || IMAGE; TAG = tag || '';
     CMD = 'docker run --rm --pull always ' + (full() ? '--device /dev/kvm --device /dev/net/tun --cap-add NET_ADMIN ' : '') +
-      '-p 8080:8080 ' + IMAGE + (TAG ? ':' + TAG : '');
+      '-p 8080:8080 ' + (full() ? '-p 2049:2049 -p 8888:8888 -p 8890:8890 ' : '') + IMAGE + (TAG ? ':' + TAG : '');
   }
   setImage(IMAGE, '');
   var boot = document.getElementById('boot'), T = window.FRADTerm(boot, { keep: 20 }), copy = document.getElementById('copy');
