@@ -102,7 +102,7 @@
   // same attributes in a hidden frame and says whether the browser sent it back; no answer
   // (an older booth has no probe) means a tab.
   // The dashboard button shows with the node and works once the dashboard answers (/ready).
-  function openTitle() { open.title = !ready ? 'the Ceph dashboard comes with the cluster: F2 on the console, then the setup screen' : embed ? '' : 'Opens in a new tab: user admin, password admin'; }
+  function openTitle() { open.title = !ready ? 'the Ceph dashboard comes with the cluster: F2 on the console, then the setup screen' : embed ? '' : 'Opens in a new tab: user admin, the password the setup set'; }
   function setEmbed(v) { embed = v; openTitle(); }
   function unprobe() { if (probeTimer) clearTimeout(probeTimer); probeTimer = null; if (probeFrame) probeFrame.remove(); probeFrame = null; }
   function probe() {
