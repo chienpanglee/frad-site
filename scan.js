@@ -154,7 +154,8 @@
   function show(rel) {
     var m = "Commit " + rel.commit + ", built " + rel.built + (rel.production ? ", production build" : ", development build");
     if (rel.change) m += ". Since " + rel.change.previous + ": " + rel.change.added + " Critical/High " +
-      (rel.change.unit === "cve" ? "CVEs " : "") + "added, " + rel.change.gone + " gone";
+      (rel.change.unit === "cve" ? "CVEs " : "") + "added, " + rel.change.gone + " gone" +
+      (rel.change.moved ? ", " + rel.change.moved + " moved to the upstream class" : "");
     var rm = document.getElementById("relmeta");
     rm.textContent = m + ".";
     if (rel.vex) {  // one document-level link: the release's OpenVEX, for a reader's own tooling
