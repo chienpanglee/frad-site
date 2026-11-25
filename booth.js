@@ -130,7 +130,7 @@
     paneTitle.textContent = on ? '' : 'Start the booth';
     idle(!on);
     if (on) { document.getElementById('ended').hidden = true; T.cancel(); con.src = BASE + '/console/'; probe(); loadMedia(); state.textContent = ''; }
-    else { dropConsole(); park(false); document.getElementById('remove').hidden = true; split(false); unprobe(); setEmbed(false); ready = false; stale = ''; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); dl.hidden = true; dlist.textContent = ''; }
+    else { dropConsole(); park(false); document.getElementById('remove').hidden = true; split(false); unprobe(); setEmbed(false); ready = false; open.hidden = true; nodesEl.textContent = ''; state.textContent = 'no booth answered at localhost:8080 yet; this page keeps looking'; waiting('the booth went away; run it again and this box is its console'); dl.hidden = true; dlist.textContent = ''; }
   }
   // Without KVM the booth is a download server: the console pane goes, the downloads stay.
   function setKvm(on) {
@@ -157,18 +157,13 @@
       dl.hidden = false;
     }).catch(function () { dl.hidden = true; });
   }
-  var stale = '';                               // the running booth's image when it is not the one the site names
-  function setStale(version) {                 // an image that reports no version predates this check: no verdict on it
-    var v = version && TAG && version !== TAG ? version : '';
-    if (v === stale) return;
-    stale = v;
-    if (v) state.textContent = 'this booth runs an older image (' + v + '); End booth, then paste the line again';
-  }
+  // The run line pulls latest each run (#2234): no older-image verdict, the state line shows the running build.
+  function setStale(version) { if (version && !state.textContent) state.textContent = 'booth build ' + version; }
   function setReady(up) {
     if (up === ready) return;
     ready = up;
     open.disabled = !up; openTitle();
-    if (!stale && installed) state.textContent = up ? '' : 'the node is not reachable';
+    if (installed) state.textContent = up ? '' : 'the node is not reachable';
     if (!up) split(false);
   }
   function button(label, on, go) {
@@ -188,7 +183,7 @@
       idle(st !== 'installing' && st !== 'booting'); open.hidden = true;
       if (st === 'installing' || st === 'booting') {
         park(false);
-        if (!stale) state.textContent = st === 'installing' ? 'installing from the ' + (j.install.media === 'usb' ? 'USB stick' : 'CD') + '; the node powers off when done' : 'h1 boots the installed disk for the first time';
+        state.textContent = st === 'installing' ? 'installing from the ' + (j.install.media === 'usb' ? 'USB stick' : 'CD') + '; the node powers off when done' : 'h1 boots the installed disk for the first time';
       } else {
         park(true);
         ['iso', 'usb'].forEach(function (m) {
@@ -197,7 +192,7 @@
             api('POST', '/api/install', { media: m }).then(function () { return api('GET', '/api/nodes'); }).then(drawNodes).catch(function (e) { err.textContent = e.message; });
           }).classList.add('next');   // the next step for the audience: the buttons pulse (#1419)
         });
-        if (!stale) state.textContent = st === 'failed' ? 'the install failed: ' + j.install.error : 'no node yet: install one from the image (' + (j.h1_mb || 6144) + ' MB of memory, a few minutes)';
+        state.textContent = st === 'failed' ? 'the install failed: ' + j.install.error : 'no node yet: install one from the image (' + (j.h1_mb || 6144) + ' MB of memory, a few minutes)';
       }
       return;
     }
@@ -219,7 +214,7 @@
     add.disabled = !!removing; if (removing) add.title = removing + ' is still going; Add node when it is gone';
     addEl = add;
     if (!alive) add.classList.add('next');   // the next step for the audience
-    if (!stale) state.textContent = alive ? '' : 'no node runs: Add node boots a new one (' + j.node_mb + ' MB of memory)';
+    state.textContent = alive ? '' : 'no node runs: Add node boots a new one (' + j.node_mb + ' MB of memory)';
   }
   // Clean-up: a node away, or the booth gone. Each asks twice.
   function twice(b, label, go, warn) {
