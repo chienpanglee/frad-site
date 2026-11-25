@@ -376,7 +376,7 @@ svg .tick.dead { stroke-dasharray: 3 3; opacity: 0.5; }
 .booth .panes.split #dashframe { display: block; }
 .booth .panes.split #back, .booth .panes.split #tab { display: inline-flex; }
 .booth .panes.split #dashnote { display: inline; }
-.booth .panes.split #console, .booth .panes.split #boot, .booth .panes.split #open, .booth .panes.split #login { display: none; }
+.booth .panes.split #console, .booth .panes.split #boot, .booth .panes.split #open { display: none; }
 @media (max-width: 900px) { .booth .panes, .booth .panes.split { grid-template-columns: 1fr; height: auto; } .booth iframe { height: 55vh; } }
 svg .med { pointer-events: none; }
 svg .med .pane-g { transition: opacity 0.45s, transform 0.5s cubic-bezier(.2,.8,.2,1); }

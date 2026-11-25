@@ -25,7 +25,7 @@
   }
   setImage(IMAGE, '');
   var boot = document.getElementById('boot'), T = window.FRADTerm(boot, { keep: 20 }), copy = document.getElementById('copy');
-  var login = document.getElementById('login'), paneTitle = document.getElementById('paneTitle');
+  var dashnote = document.getElementById('dashnote'), paneTitle = document.getElementById('paneTitle');
   // Before the install the controls (install buttons, state line, End booth) sit in a console-sized
   // window on the pool art instead of the header strip; from the install on they move back (#1431).
   var nonode = document.getElementById('nonode'), nonodeRow = document.getElementById('nonodeRow'), stopBtn = document.getElementById('stop'), parked = false;
@@ -33,7 +33,7 @@
     if (on === parked) return;
     parked = on; nonode.hidden = !on;
     if (on) { nonodeRow.appendChild(nodesEl); nonodeRow.appendChild(state); nonodeRow.appendChild(stopBtn); }
-    else { login.parentNode.insertBefore(nodesEl, login); copy.parentNode.insertBefore(state, copy); copy.parentNode.appendChild(stopBtn); }
+    else { dashnote.parentNode.insertBefore(nodesEl, dashnote); copy.parentNode.insertBefore(state, copy); copy.parentNode.appendChild(stopBtn); }
   }
   function waiting(text) { T.clear(); T.play([{ k: 'type', prompt: '$ ', s: CMD }, { k: 'note', s: '# ' + text }], null, true); }
   function idleText() {
@@ -125,7 +125,7 @@
     if (on === booth) return;
     booth = on;
     absent.hidden = on;
-    boot.hidden = on; con.hidden = !on; copy.hidden = on; login.hidden = !on;
+    boot.hidden = on; con.hidden = !on; copy.hidden = on;
     document.getElementById('stop').hidden = !on;
     paneTitle.textContent = on ? '' : 'Start the booth';
     idle(!on);
@@ -182,7 +182,6 @@
     nodeNames = j.nodes.map(function (n) { return n.name; });
     if (removing && nodeNames.indexOf(removing) < 0) removing = '';
     installed = st === 'installed';
-    login.hidden = !cur;
     nodesEl.textContent = '';
     document.getElementById('remove').hidden = !cur;
     if (st !== 'installed') {
