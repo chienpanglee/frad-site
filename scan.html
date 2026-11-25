@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="What the vulnerability scanners find in each FRAD release: totals by severity, every Critical and High finding with its state, and the change against the previous release.">
+<meta name="description" content="What the vulnerability scanners find in each FRAD release: totals by CVE and severity, every Critical and High CVE with the packages it matches and their VEX status, and the change against the previous release.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>FRAD scan</title>
@@ -26,6 +26,14 @@
 .findings th, .findings td { text-align: left; vertical-align: top; }
 .findings td.mono { font-family: var(--mono); word-break: break-all; }
 details summary { cursor: pointer; }
+.upstream { border-top: 1px solid var(--rule); padding-top: 10px; display: grid; gap: 8px; min-width: 0; }
+.cves { display: grid; gap: 8px; min-width: 0; }
+.statuses { display: flex; gap: 6px; flex-wrap: wrap; }
+.statuses .chip { margin: 0; cursor: pointer; background: var(--panel); }
+.statuses .chip[aria-pressed="false"] { color: var(--muted); border-style: dashed; }
+.findings button.expand { font: inherit; color: var(--fg); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; word-break: break-all; text-align: left; }
+.findings tr.pkgs > td { padding: 6px; }
+.upstream h3 { margin: 0; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
 </style>
 </head>
 </head>
